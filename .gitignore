@@ -1,0 +1,47 @@
+# Build outputs
+build/
+dist/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Node
+node_modules/
+.pnpm-store/
+
+# Go
+vendor/
+
+# Environment
+.env
+.env.local
+*.env
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+**/dev_secrets.go
+**/secrets/
+
+# Test
+coverage/
+test-results/
+playwright-report/
