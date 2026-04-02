@@ -2,6 +2,7 @@ package service
 
 import (
 	"bard/internal/domain"
+	"bard/internal/errors"
 	"bard/internal/logger"
 	"bard/internal/repository"
 	"bard/pkg/utils"
@@ -33,6 +34,18 @@ func (s *ProductService) GetByBarcode(barcode string) (*domain.Product, error) {
 }
 
 func (s *ProductService) Create(product *domain.Product) error {
+	if product.Name == "" {
+		return errors.NewValidationError(domain.ModuleProduct, "name", "Name is required")
+	}
+	if product.Barcode == "" {
+		return errors.NewValidationError(domain.ModuleProduct, "barcode", "Barcode is required")
+	}
+	if product.Price < 0 {
+		return errors.NewValidationError(domain.ModuleProduct, "price", "Price cannot be negative")
+	}
+	if product.Stock < 0 {
+		return errors.NewValidationError(domain.ModuleProduct, "stock", "Stock cannot be negative")
+	}
 	product.ID = uuid.New().String()
 	product.CreatedAt = time.Now()
 	product.UpdatedAt = time.Now()

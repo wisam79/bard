@@ -196,7 +196,8 @@ export const useAuthStore = create<AuthState>()(
           return false;
         } catch (error: any) {
           set({ isLoading: false });
-          throw new Error(error?.message || error?.toString() || "Unknown login error");
+          // Return false instead of throwing to handle API errors gracefully
+          return false;
         }
       },
 

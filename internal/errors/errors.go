@@ -18,6 +18,7 @@ var (
 	ErrAccountLocked      = errors.New("account locked")
 	ErrShiftRequired      = errors.New("shift required")
 	ErrBusinessLogic      = errors.New("business logic error")
+	ErrValidationError    = errors.New("validation error")
 )
 
 func NewNotFoundError(module domain.ErrorModule, entity string) *domain.AppError {
