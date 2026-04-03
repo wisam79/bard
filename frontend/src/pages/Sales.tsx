@@ -2,9 +2,8 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/store';
 import { Product, CartItem, AppPreferences, Sale } from '@/types';
-import { ShoppingCart, User, CreditCard, Search } from 'lucide-react';
+import { ShoppingCart, User, CreditCard } from 'lucide-react';
 import BarcodeScanner from '@/components/features/BarcodeScanner';
-import Button from '@/components/ui/Button';
 import { PrintReceipt, ReceiptData } from '@/components/ui';
 import CategoryBar from '../components/features/sales/CategoryBar';
 import ProductGrid from '../components/features/sales/ProductGrid';
@@ -16,7 +15,6 @@ const Sales: React.FC = () => {
   const { notify } = useAppStore();
   const queryClient = useQueryClient();
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('الكل');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -32,22 +30,14 @@ const Sales: React.FC = () => {
   });
 
   const { data: productsData } = useQuery({
-    queryKey: ['products', 1, 100, searchQuery, selectedCategory],
-    queryFn: () => wailsApp.GetProducts(1, 100, searchQuery, selectedCategory),
+    queryKey: ['products', 1, 100, selectedCategory],
+    queryFn: () => wailsApp.GetProducts(1, 100, '', selectedCategory),
   });
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: () => wailsApp.GetCategories(),
   });
-
-  // Auto-print after sale completion
-  useEffect(() => {
-    if (preferences?.autoPrint && lastSale) {
-      generateAndPrintReceipt(lastSale);
-      setLastSale(null);
-    }
-  }, [lastSale, preferences]);
 
   const handleProductFound = useCallback((product: Product) => {
     setCart((prev) => {
@@ -104,6 +94,14 @@ const Sales: React.FC = () => {
   const total = subtotal - discount;
 
   const generateAndPrintReceipt = useCallback((sale: Sale) => {
+    const receiptItems = sale.items?.map((item) => ({
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price,
+      total: item.total,
+    })) || [];
+    const subtotal = sale.subtotal || receiptItems.reduce((sum, item) => sum + item.total, 0);
+
     const data: ReceiptData = {
       storeName: preferences?.storeName || 'Bard',
       storeAddress: preferences?.storeAddress || '',
@@ -111,24 +109,27 @@ const Sales: React.FC = () => {
       receiptNo: `#${sale.id.slice(0, 8)}`,
       date: sale.date,
       cashier: sale.staffName || '',
-      customerName: customerName || 'عميل نقدي',
-      items: cart.map((item) => ({
-        name: item.product.name,
-        quantity: item.qty,
-        price: item.product.price,
-        total: item.total,
-      })),
-      subtotal: subtotal,
-      discount: discount,
-      tax: preferences?.taxRate || 0,
-      total: total,
-      paymentMethod: paymentMethod === 'cash' ? 'نقداً' : paymentMethod === 'card' ? 'بطاقة' : 'آجل',
+      customerName: sale.customerName || 'عميل نقدي',
+      items: receiptItems,
+      subtotal,
+      discount: sale.discount,
+      tax: sale.vat,
+      total: sale.total,
+      paymentMethod: sale.paymentMethod === 'cash' ? 'نقداً' : sale.paymentMethod === 'card' ? 'بطاقة' : 'آجل',
       barcode: sale.id.slice(0, 8),
       footer: 'شكراً لزيارتكم، نأمل أن نراكم مرة أخرى',
     };
     setReceiptData(data);
     setShowPrintReceipt(true);
-  }, [preferences, cart, subtotal, discount, total, paymentMethod, customerName]);
+  }, [preferences]);
+
+  // Auto-print after sale completion
+  useEffect(() => {
+    if (preferences?.autoPrint && lastSale) {
+      generateAndPrintReceipt(lastSale);
+      setLastSale(null);
+    }
+  }, [generateAndPrintReceipt, lastSale, preferences?.autoPrint]);
 
   const createSaleMutation = useMutation<Sale>({
     mutationFn: async () => {
@@ -196,7 +197,7 @@ const Sales: React.FC = () => {
 
   const confirmSale = useCallback(() => {
     createSaleMutation.mutate();
-  }, []);
+  }, [createSaleMutation]);
 
   return (
     <div className="h-full flex overflow-hidden animate-fade-in bg-brand-dark/5" data-testid="page-sales">

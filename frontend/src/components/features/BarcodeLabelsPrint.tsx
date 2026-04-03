@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { Tag, Printer, X, Minus, Plus, Package } from 'lucide-react';
 import { Product } from '@/types';

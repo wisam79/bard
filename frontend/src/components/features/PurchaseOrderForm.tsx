@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Search, Package } from 'lucide-react';
+import { Trash2, Search, Package } from 'lucide-react';
 import { usePurchaseOrderStore } from '@/store/purchaseOrderStore';
 import Button from '@/components/ui/Button';
 import type { PurchaseOrder, PurchaseOrderItem, Supplier, Product } from '@/types';

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/store';
 import { Expense } from '@/types';
-import { Search, Plus, Pencil, Trash2, Wallet, TrendingDown, TrendingUp, Calendar, Tag, FileText, PieChart } from 'lucide-react';
+import { Plus, Pencil, Trash2, Wallet, TrendingDown, TrendingUp, Calendar, Tag, PieChart } from 'lucide-react';
 import { wailsApp } from '@/lib/wails';
 
 const Finance: React.FC = () => {
@@ -216,7 +216,10 @@ const Finance: React.FC = () => {
                             <button onClick={() => handleOpenModal(expense)} className="p-2 rounded-xl bg-brand-dark/40 border border-brand-border/30 text-brand-accent/40 hover:text-white hover:border-primary-500/50 hover:bg-primary-500/10 transition-all">
                               <Pencil size={16} />
                             </button>
-                            <button onClick={() => { if (confirm('هل أنت متأكد من حذف هذا المصروف؟')) deleteMutation.mutate(expense.id); }} className="p-2 rounded-xl bg-brand-dark/40 border border-brand-border/30 text-brand-accent/40 hover:text-red-400 hover:border-red-400/50 hover:bg-red-400/10 transition-all">
+                            <button onClick={() => {
+                              // eslint-disable-next-line no-alert
+                              if (confirm('هل أنت متأكد من حذف هذا المصروف؟')) deleteMutation.mutate(expense.id);
+                            }} className="p-2 rounded-xl bg-brand-dark/40 border border-brand-border/30 text-brand-accent/40 hover:text-red-400 hover:border-red-400/50 hover:bg-red-400/10 transition-all">
                               <Trash2 size={16} />
                             </button>
                           </div>

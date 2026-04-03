@@ -213,7 +213,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
             {filtered.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-brand-accent/30 font-bold text-sm">
-                  لا توجد نتائج لـ "{query}"
+                  لا توجد نتائج لـ &quot;{query}&quot;
                 </p>
               </div>
             ) : (

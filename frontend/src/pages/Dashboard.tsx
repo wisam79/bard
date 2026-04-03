@@ -3,15 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { DashboardStats } from '@/types';
 import {
   ShoppingCart, Package, Users, AlertTriangle,
-  TrendingUp, Wallet, ArrowUpRight, ArrowDownRight,
+  TrendingUp, Wallet,
   Clock, Activity,
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from 'recharts';
-import Skeleton from '@/components/ui/Skeleton';
-import EmptyState from '@/components/ui/EmptyState';
 import { wailsApp } from '@/lib/wails';
 
 // ─── Mock weekly data ─────────────────────────────────────────────────────────

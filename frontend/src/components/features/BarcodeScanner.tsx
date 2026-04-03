@@ -21,12 +21,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   className = '',
   showScannerMode = true,
 }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchMode, setSearchMode] = useState<'manual' | 'scanner'>('scanner');
   const [isScanning, setIsScanning] = useState(false);
-  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [lastSearch, setLastSearch] = useState('');
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSearch = useCallback(async (query: string) => {
     if (!query.trim() || query.trim().length < 2) return;
@@ -56,7 +54,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       } else {
         onError?.('لم يتم العثور على المنتج');
       }
-    } catch (error) {
+    } catch {
       onError?.('خطأ في البحث عن المنتج');
     }
   }, [onProductFound, onError]);
@@ -65,8 +63,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
     const value = e.target.value;
     setSearchQuery(value);
 
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
     }
 
     if (searchMode === 'scanner' && value.length > 10) {
@@ -76,12 +74,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         handleSearch(value);
         setIsScanning(false);
       }, 200);
-      setDebounceTimeout(timeout);
+      debounceTimeoutRef.current = timeout;
     } else if (searchMode === 'manual') {
       const timeout = setTimeout(() => {
         handleSearch(value);
       }, 500);
-      setDebounceTimeout(timeout);
+      debounceTimeoutRef.current = timeout;
     }
   };
 
@@ -94,14 +92,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
   };
 
   useEffect(() => {
-    // Focus input on mount
-    if (autoFocus) {
-      document.getElementById('barcode-input')?.focus();
-    }
     return () => {
-      if (debounceTimeout) clearTimeout(debounceTimeout);
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
     };
-  }, [autoFocus, debounceTimeout]);
+  }, []);
 
   return (
     <div className={`w-full ${className}`}>

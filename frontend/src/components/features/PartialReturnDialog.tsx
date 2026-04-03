@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { RotateCcw, Minus, Plus, AlertTriangle, Package } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
-import type { Sale, SaleItem } from '@/types';
+import type { Sale } from '@/types';
 import { useActivityLog } from '@/store/activityLog';
 
 interface ReturnQty {

@@ -94,6 +94,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                 </button>
                 <button
                   onClick={() => {
+                    // eslint-disable-next-line no-alert
                     if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
                       onDeleteProduct(product);
                     }

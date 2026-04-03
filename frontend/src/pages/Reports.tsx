@@ -7,8 +7,8 @@ import {
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, BarChart, Bar,
-  PieChart as RechartsPie, Pie, Cell, Legend,
+  Tooltip, ResponsiveContainer,
+  PieChart as RechartsPie, Pie, Cell,
 } from 'recharts';
 import Skeleton from '@/components/ui/Skeleton';
 import EmptyState from '@/components/ui/EmptyState';

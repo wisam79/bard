@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppStore } from '@/store';
-import { Palette, Moon, Sun, Bell } from 'lucide-react';
+import { Palette, Moon, Bell } from 'lucide-react';
 import { AppPreferences } from '@/types';
 import Button from '@/components/ui/Button';
 

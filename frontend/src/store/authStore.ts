@@ -103,8 +103,7 @@ type AuthSetter = (
 
 const startSessionTimer = (
   set: AuthSetter,
-  get: () => AuthState,
-  logout: () => void
+  get: () => AuthState
 ) => {
   const state = get();
   
@@ -191,7 +190,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
             });
             
             // Start session timer
-            startSessionTimer(set, get, get().logout);
+            startSessionTimer(set, get);
             
             // Setup activity listeners
             if (cleanupActivityListeners) cleanupActivityListeners();
@@ -233,7 +232,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         set({ lastActivityAt: now });
         
         // Reset the warning timer
-        startSessionTimer(set, get, get().logout);
+        startSessionTimer(set, get);
       },
 
       checkSessionTimeout: () => {

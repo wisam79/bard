@@ -1,8 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/store';
 import { Product, PaginatedProducts } from '@/types';
-import { Boxes, Plus, Printer, Eye } from 'lucide-react';
+import { Boxes, Plus, Printer } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import BarcodeDisplay from '@/components/ui/BarcodeDisplay';

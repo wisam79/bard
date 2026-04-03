@@ -3,11 +3,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/store';
 import { Sale, PaginatedSales, AppPreferences } from '@/types';
 import { ReceiptData } from '@/types';
-import { Search, Eye, RotateCcw, FileText, Printer, Filter, Calendar, CreditCard, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Search, Eye, RotateCcw, FileText, Printer, Filter, Calendar, CreditCard, ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { PrintReceipt, BarcodeDisplay } from '@/components/ui';
 import { wailsApp } from '@/lib/wails';
+
+const paymentMethodLabels: Record<string, string> = {
+  cash: 'نقداً',
+  card: 'بطاقة',
+  credit: 'آجل',
+  installment: 'أقساط',
+};
 
 const Invoices: React.FC = () => {
   const { notify } = useAppStore();
@@ -44,13 +51,6 @@ const Invoices: React.FC = () => {
     pending: { label: 'معلقة', color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
     return: { label: 'مرتجعة', color: 'text-red-400', bg: 'bg-red-500/10' },
     cancelled: { label: 'ملغاة', color: 'text-gray-400', bg: 'bg-gray-500/10' },
-  };
-
-  const paymentMethodLabels: Record<string, string> = {
-    cash: 'نقداً',
-    card: 'بطاقة',
-    credit: 'آجل',
-    installment: 'أقساط',
   };
 
   const generateReceiptData = useCallback((sale: Sale): ReceiptData => {
@@ -235,6 +235,7 @@ const Invoices: React.FC = () => {
                         {sale.status === 'completed' && (
                           <button
                             onClick={() => {
+                              // eslint-disable-next-line no-alert
                               if (confirm('هل أنت متأكد من إرجاع هذه الفاتورة؟')) {
                                 returnMutation.mutate(sale.id);
                               }
@@ -298,6 +299,7 @@ const Invoices: React.FC = () => {
               <Button
                 variant="danger"
                 onClick={() => {
+                  // eslint-disable-next-line no-alert
                   if (confirm('هل أنت متأكد من إرجاع هذه الفاتورة بالكامل؟')) {
                     returnMutation.mutate(viewingSale.id);
                   }

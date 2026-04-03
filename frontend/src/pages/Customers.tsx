@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/store';
 import { Customer } from '@/types';
-import { Search, Plus, Pencil, Trash2, Users, Phone, Wallet, Eye, UserPlus, Star, Clock } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, Users, Wallet, Eye, UserPlus, Star, Clock } from 'lucide-react';
 import { wailsApp } from '@/lib/wails';
 
 const Customers: React.FC = () => {
@@ -209,6 +209,7 @@ const Customers: React.FC = () => {
                               notify('لا يمكن حذف عميل عليه ديون', 'error');
                               return;
                             }
+                            // eslint-disable-next-line no-alert
                             if (confirm('هل أنت متأكد من حذف هذا العميل؟')) deleteMutation.mutate(customer.id);
                           }}
                           className="p-2 rounded-xl bg-brand-dark/40 border border-brand-border/30 text-brand-accent/40 hover:text-red-400 hover:border-red-400/50 hover:bg-red-400/10 transition-all"

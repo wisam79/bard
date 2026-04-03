@@ -5,7 +5,6 @@ import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
 import Modal from '@/components/ui/Modal';
 import PurchaseOrderForm from '@/components/features/PurchaseOrderForm';
-import type { PurchaseOrder } from '@/types';
 
 type InventoryFilter = 'all' | 'pending' | 'received' | 'cancelled';
 
@@ -27,6 +26,7 @@ const Inventory: React.FC = () => {
   }, [fetchOrders, filter]);
 
   const handleReceive = async (id: string) => {
+    // eslint-disable-next-line no-alert
     if (window.confirm('هل أنت متأكد من استلام هذا الطلب؟ سيتم إضافة الكميات للمخزون وتحديث التكلفة.')) {
       await receiveOrder(id);
     }

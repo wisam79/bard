@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAppStore, useAuthStore } from '@/store';
+import { useAppStore } from '@/store';
 import { AppPreferences, Staff } from '@/types';
 import { Settings as SettingsIcon, Store, Palette, Shield, Database, Printer } from 'lucide-react';
 import Button from '@/components/ui/Button';
@@ -13,12 +13,11 @@ import DataSettings from '../components/features/settings/DataSettings';
 import { wailsApp } from '@/lib/wails';
 
 const Settings: React.FC = () => {
-  const { notify, theme, toggleTheme } = useAppStore();
-  const { currentUser } = useAuthStore();
+  const { notify } = useAppStore();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'store' | 'appearance' | 'print' | 'staff' | 'data'>('store');
   const [showStaffModal, setShowStaffModal] = useState(false);
-  const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
+  const [, setEditingStaff] = useState<Staff | null>(null);
   const [staffForm, setStaffForm] = useState({ username: '', name: '', password: '', role: 'cashier' as 'cashier' | 'manager' | 'admin', phone: '' });
   const [formData, setFormData] = useState<Partial<AppPreferences>>({});
   const [showPrintPreview, setShowPrintPreview] = useState(false);
@@ -55,15 +54,6 @@ const Settings: React.FC = () => {
       setStaffForm({ username: '', name: '', password: '', role: 'cashier', phone: '' });
     },
     onError: () => notify('فشل في إضافة الموظف', 'error'),
-  });
-
-  const deleteStaffMutation = useMutation({
-    mutationFn: (id: string) => wailsApp.DeleteStaff(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['staff'] });
-      notify('تم حذف الموظف', 'success');
-    },
-    onError: () => notify('فشل في حذف الموظف', 'error'),
   });
 
   const resetDbMutation = useMutation({
@@ -232,7 +222,9 @@ const Settings: React.FC = () => {
               onExport={handleExport}
               onImport={() => notify('الاستيراد قيد التطوير', 'info')}
               onClearData={() => {
+                // eslint-disable-next-line no-alert
                 if (confirm('هل أنت متأكد؟ سيتم مسح جميع البيانات!')) {
+                  // eslint-disable-next-line no-alert
                   if (confirm('تحذير أخير: هذا الإجراء لا يمكن التراجع عنه!')) resetDbMutation.mutate();
                 }
               }}

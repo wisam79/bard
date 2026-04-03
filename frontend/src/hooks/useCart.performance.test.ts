@@ -272,7 +272,7 @@ describe('useCart - Performance and Stress Tests', () => {
       act(() => {
         result.current.addToCart(createProduct('1', 100));
         // This might produce NaN in some calculations
-        result.current.setDiscount(NaN as any);
+        result.current.setDiscount(Number.NaN);
       });
 
       // Should not crash

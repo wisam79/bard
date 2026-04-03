@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { PurchaseOrder, PaginatedResponse } from '@/types';
+import type { PurchaseOrder } from '@/types';
 import { useActivityLog } from './activityLog';
 import { wailsApp } from '@/lib/wails';
 
