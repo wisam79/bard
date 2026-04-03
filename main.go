@@ -19,10 +19,11 @@ var assets embed.FS
 
 func main() {
 	appLogger := logger.New(logger.LevelInfo, true)
+	defer appLogger.Close()
 
 	db, err := sqlite.NewDatabase()
 	if err != nil {
-		appLogger.Fatal("Failed to initialize database", "error", err)
+		appLogger.Error("Failed to initialize database", "error", err)
 		return
 	}
 
@@ -86,6 +87,6 @@ func main() {
 	})
 
 	if err != nil {
-		appLogger.Fatal("Application error", "error", err)
+		appLogger.Error("Application error", "error", err)
 	}
 }

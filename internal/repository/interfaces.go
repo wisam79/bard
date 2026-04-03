@@ -108,6 +108,7 @@ type PurchaseOrderRepository interface {
 	GetAll(page, limit int, status string) ([]domain.PurchaseOrder, int64, error)
 	GetByID(id string) (*domain.PurchaseOrder, error)
 	Create(order *domain.PurchaseOrder) error
+	CreateWithStockUpdate(order *domain.PurchaseOrder) error
 	Update(order *domain.PurchaseOrder) error
 	Delete(id string) error
 	UpdateStatus(id string, status string) error

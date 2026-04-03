@@ -120,6 +120,7 @@ func (r *productRepository) GetLowStock(threshold int) ([]domain.Product, error)
 func (r *productRepository) Search(query string, limit int) ([]domain.Product, error) {
 	var products []domain.Product
 	err := r.db.Where("name LIKE ? OR barcode LIKE ?", "%"+query+"%", "%"+query+"%").
+		Order(gorm.Expr("CASE WHEN barcode = ? THEN 0 WHEN barcode LIKE ? THEN 1 ELSE 2 END, name ASC", query, query+"%")).
 		Limit(limit).Find(&products).Error
 	return products, err
 }

@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import { useAuthStore } from '@/store';
 import { Lock, User, LogIn, ShieldCheck, Activity } from 'lucide-react';
 
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return String(error);
+};
+
 export const LoginScreen: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -22,13 +29,16 @@ export const LoginScreen: React.FC = () => {
       if (!success) {
         setError('اسم المستخدم أو كلمة المرور غير صحيحة');
       }
-    } catch (err: any) {
-      setError(`خطأ: ${err.message || err.toString()}`);
+    } catch (error: unknown) {
+      setError(`خطأ: ${getErrorMessage(error)}`);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050b14] overflow-hidden font-arabic transition-colors duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#050b14] overflow-hidden font-arabic transition-colors duration-200"
+      data-testid="login-screen"
+    >
       {/* Background Mesh Gradients */}
       <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-primary-600/10 rounded-full blur-[160px] -translate-x-1/3 -translate-y-1/3 pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[140px] translate-x-1/2 translate-y-1/2 pointer-events-none" />
@@ -62,6 +72,8 @@ export const LoginScreen: React.FC = () => {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  aria-label="اسم المستخدم"
+                  data-testid="login-username"
                   className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-white font-bold placeholder:text-white/10 focus:bg-white/[0.08] focus:border-primary-500/30 focus:ring-0 transition-all outline-none"
                   placeholder="Username"
                   autoFocus
@@ -79,6 +91,8 @@ export const LoginScreen: React.FC = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  aria-label="كلمة المرور"
+                  data-testid="login-password"
                   className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl px-6 text-white font-bold placeholder:text-white/10 focus:bg-white/[0.08] focus:border-primary-500/30 focus:ring-0 transition-all outline-none"
                   placeholder="••••••••"
                 />
@@ -86,7 +100,10 @@ export const LoginScreen: React.FC = () => {
             </div>
 
             {error && (
-              <div className="flex items-center gap-3 text-xs font-black text-rose-400 bg-rose-500/5 p-5 rounded-2xl border border-rose-500/10 shadow-inner animate-fade-in">
+              <div
+                className="flex items-center gap-3 text-xs font-black text-rose-400 bg-rose-500/5 p-5 rounded-2xl border border-rose-500/10 shadow-inner animate-fade-in"
+                role="alert"
+              >
                 <ShieldCheck size={20} className="text-rose-500/50" />
                 <p>{error}</p>
               </div>
@@ -95,6 +112,7 @@ export const LoginScreen: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
+              data-testid="login-submit"
               className="relative w-full h-16 group overflow-hidden rounded-2xl bg-primary-500 text-white font-black text-lg transition-all active:scale-[0.98] shadow-[0_10px_40px_rgba(99,102,241,0.3)] disabled:opacity-50"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-400 opacity-0 group-hover:opacity-100 transition-opacity" />

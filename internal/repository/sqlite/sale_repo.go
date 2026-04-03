@@ -80,12 +80,17 @@ func (r *saleRepository) CreateSaleWithStockUpdate(sale *domain.Sale) error {
 				return err
 			}
 		} else if sale.PaymentMethod == "installment" && sale.CustomerID != "" {
-			if sale.InstallmentPlan != nil {
-				debtAmount := sale.InstallmentPlan.TotalAmount - sale.InstallmentPlan.DownPayment
-				if err := tx.Model(&domain.Customer{}).Where("id = ?", sale.CustomerID).
-					UpdateColumn("installment_debt", gorm.Expr("installment_debt + ?", debtAmount)).Error; err != nil {
-					return err
+			if sale.InstallmentPlan == nil {
+				return &domain.AppError{
+					Module:  domain.ModuleSales,
+					Code:    "MISSING_INSTALLMENT_PLAN",
+					Message: "Installment plan is required for installment sales",
 				}
+			}
+			debtAmount := sale.InstallmentPlan.TotalAmount - sale.InstallmentPlan.DownPayment
+			if err := tx.Model(&domain.Customer{}).Where("id = ?", sale.CustomerID).
+				UpdateColumn("installment_debt", gorm.Expr("installment_debt + ?", debtAmount)).Error; err != nil {
+				return err
 			}
 		} else if sale.PaymentMethod == "split" && sale.CustomerID != "" {
 			if creditAmount, ok := sale.SplitDetails["credit"]; ok && creditAmount > 0 {
@@ -96,20 +101,25 @@ func (r *saleRepository) CreateSaleWithStockUpdate(sale *domain.Sale) error {
 			}
 		}
 
-		// Update stock within transaction
+		// Update stock within transaction using atomic SQL decrement
 		for _, item := range sale.Items {
-			// Find existing product to calculate stock safely
 			var product domain.Product
 			if err := tx.First(&product, "id = ?", item.ProductID).Error; err != nil {
-				// Don't error out if product is deleted, just continue? 
-				// The old logic was logging this but returned success, let's keep it safe.
-				continue
+				return &domain.AppError{
+					Module:  domain.ModuleSales,
+					Code:    "PRODUCT_NOT_FOUND",
+					Message: "Product not found: " + item.ProductID,
+				}
 			}
-			newStock := product.Stock - item.Quantity
-			if newStock < 0 {
-				newStock = 0
+			if product.Stock < item.Quantity {
+				return &domain.AppError{
+					Module:  domain.ModuleSales,
+					Code:    "INSUFFICIENT_STOCK",
+					Message: "Insufficient stock for " + product.Name,
+				}
 			}
-			if err := tx.Model(&product).Update("stock", newStock).Error; err != nil {
+			if err := tx.Model(&domain.Product{}).Where("id = ?", item.ProductID).
+				UpdateColumn("stock", gorm.Expr("stock - ?", item.Quantity)).Error; err != nil {
 				return err
 			}
 		}

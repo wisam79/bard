@@ -2,7 +2,7 @@ import '@testing-library/jest-dom';
 
 // ─── Mock Wails runtime for all tests ─────────────────────────────────────────
 // Using a plain mutable object so tests can override individual methods via:
-//   (window as any).go.main.App.Login = vi.fn().mockResolvedValue(...)
+//   window.go.handler.App.Login = vi.fn().mockResolvedValue(...)
 
 const noop = () => {};
 const resolveNull = () => Promise.resolve(null);
@@ -54,7 +54,10 @@ const MockApp: Record<string, (...args: unknown[]) => unknown> = {
 };
 
 Object.defineProperty(window, 'go', {
-  value: { main: { App: MockApp } },
+  value: {
+    handler: { App: MockApp },
+    main: { App: MockApp },
+  },
   writable: true,
   configurable: true,
 });

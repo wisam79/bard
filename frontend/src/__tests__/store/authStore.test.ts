@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useAuthStore } from '@/store/authStore';
 import type { Staff } from '@/types';
 
+const mockApp = (
+  window as typeof window & {
+    go: { handler: { App: Record<string, unknown> } };
+  }
+).go.handler.App;
+
 const mockStaff: Staff = {
   id: 'staff-1',
   username: 'admin',
@@ -52,7 +58,7 @@ describe('authStore', () => {
   // ── Login via Wails API ────────────────────────────────────────────────────
   describe('login', () => {
     it('sets authenticated when API returns a staff object', async () => {
-      (window as any).go.main.App.Login = vi.fn().mockResolvedValue(mockStaff);
+      mockApp.Login = vi.fn().mockResolvedValue(mockStaff);
 
       const result = await useAuthStore.getState().login('admin', 'password');
 
@@ -64,7 +70,7 @@ describe('authStore', () => {
     });
 
     it('stays unauthenticated when API returns null', async () => {
-      (window as any).go.main.App.Login = vi.fn().mockResolvedValue(null);
+      mockApp.Login = vi.fn().mockResolvedValue(null);
 
       const result = await useAuthStore.getState().login('x', 'y');
 
@@ -73,7 +79,7 @@ describe('authStore', () => {
     });
 
     it('stays unauthenticated when API throws', async () => {
-      (window as any).go.main.App.Login = vi.fn().mockRejectedValue(new Error('net'));
+      mockApp.Login = vi.fn().mockRejectedValue(new Error('net'));
 
       const result = await useAuthStore.getState().login('x', 'y');
 

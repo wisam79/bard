@@ -17,7 +17,6 @@ const (
 	LevelInfo
 	LevelWarn
 	LevelError
-	LevelFatal
 )
 
 // Logger provides structured logging
@@ -39,7 +38,7 @@ func New(level Level, fileLogging bool) *Logger {
 	if fileLogging {
 		configDir, err := os.UserConfigDir()
 		if err == nil {
-			logDir := filepath.Join(configDir, "BeidarPOS", "logs")
+			logDir := filepath.Join(configDir, "BardPOS", "logs")
 			os.MkdirAll(logDir, 0755)
 			logPath := filepath.Join(logDir, fmt.Sprintf("app_%s.log", time.Now().Format("2006-01-02")))
 			f, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -93,11 +92,6 @@ func (l *Logger) Warn(msg string, args ...interface{}) {
 
 func (l *Logger) Error(msg string, args ...interface{}) {
 	l.log(LevelError, "ERROR", msg, args...)
-}
-
-func (l *Logger) Fatal(msg string, args ...interface{}) {
-	l.log(LevelFatal, "FATAL", msg, args...)
-	os.Exit(1)
 }
 
 func (l *Logger) Close() {

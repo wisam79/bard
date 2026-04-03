@@ -241,6 +241,7 @@ export namespace domain {
 	    discount: number;
 	    vat: number;
 	    total: number;
+	    totalCost: number;
 	    paymentMethod: string;
 	    status: string;
 	    itemsCount: number;
@@ -271,6 +272,7 @@ export namespace domain {
 	        this.discount = source["discount"];
 	        this.vat = source["vat"];
 	        this.total = source["total"];
+	        this.totalCost = source["totalCost"];
 	        this.paymentMethod = source["paymentMethod"];
 	        this.status = source["status"];
 	        this.itemsCount = source["itemsCount"];

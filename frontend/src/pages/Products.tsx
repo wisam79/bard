@@ -12,6 +12,7 @@ import ProductFilters from '../components/features/products/ProductFilters';
 import ProductTable from '../components/features/products/ProductTable';
 import ProductPagination from '../components/features/products/ProductPagination';
 import ProductFormModal from '../components/features/products/ProductFormModal';
+import { wailsApp } from '@/lib/wails';
 
 const Products: React.FC = () => {
   const { notify } = useAppStore();
@@ -38,16 +39,16 @@ const Products: React.FC = () => {
 
   const { data: productsData, isLoading } = useQuery<PaginatedProducts>({
     queryKey: ['products', page, 20, searchQuery, selectedCategory],
-    queryFn: () => window.go.main.App.GetProducts(page, 20, searchQuery, selectedCategory),
+    queryFn: () => wailsApp.GetProducts(page, 20, searchQuery, selectedCategory),
   });
 
   const { data: categories } = useQuery<string[]>({
     queryKey: ['categories'],
-    queryFn: () => window.go.main.App.GetCategories(),
+    queryFn: () => wailsApp.GetCategories(),
   });
 
   const createMutation = useMutation({
-    mutationFn: (product: Partial<Product>) => window.go.main.App.CreateProduct(product as Product),
+    mutationFn: (product: Partial<Product>) => wailsApp.CreateProduct(product as Product),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['categories'] });
@@ -58,7 +59,7 @@ const Products: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (product: Partial<Product>) => window.go.main.App.UpdateProduct(product as Product),
+    mutationFn: (product: Partial<Product>) => wailsApp.UpdateProduct(product as Product),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       notify('تم تحديث المنتج بنجاح', 'success');
@@ -68,7 +69,7 @@ const Products: React.FC = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => window.go.main.App.DeleteProduct(id),
+    mutationFn: (id: string) => wailsApp.DeleteProduct(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       notify('تم حذف المنتج', 'success');

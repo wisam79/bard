@@ -1,7 +1,7 @@
 linters:
   enable:
     - gofmt
-    - golint
+    - revive
     - gosimple
     - govet
     - errcheck
@@ -22,7 +22,7 @@ linters:
     - unconvert
 
 linters-settings:
-  golint:
+  revive:
     min-confidence: 0.8
   govet:
     check-shadowing: true

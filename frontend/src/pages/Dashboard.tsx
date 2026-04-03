@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import Skeleton from '@/components/ui/Skeleton';
 import EmptyState from '@/components/ui/EmptyState';
+import { wailsApp } from '@/lib/wails';
 
 // ─── Mock weekly data ─────────────────────────────────────────────────────────
 const generateMockData = () => {
@@ -53,7 +54,7 @@ const Dashboard: React.FC = () => {
 
   const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ['dashboardStats'],
-    queryFn: () => window.go.main.App.GetDashboardStats(),
+    queryFn: () => wailsApp.GetDashboardStats(),
   });
 
   const statCards = [
@@ -106,7 +107,7 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="p-8 h-full flex flex-col gap-8 relative overflow-hidden animate-fade-in">
+    <div className="p-8 h-full flex flex-col gap-8 relative overflow-hidden animate-fade-in" data-testid="page-dashboard">
       {/* Header - Compact */}
       <div className="flex items-center justify-between relative z-10">
         <div>

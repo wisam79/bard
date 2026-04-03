@@ -7,11 +7,20 @@ import Modal from '@/components/ui/Modal';
 import PurchaseOrderForm from '@/components/features/PurchaseOrderForm';
 import type { PurchaseOrder } from '@/types';
 
+type InventoryFilter = 'all' | 'pending' | 'received' | 'cancelled';
+
+const filters: Array<{ id: InventoryFilter; label: string }> = [
+  { id: 'all', label: 'الكل' },
+  { id: 'pending', label: 'قيد الانتظار' },
+  { id: 'received', label: 'مستلم' },
+  { id: 'cancelled', label: 'ملغى' },
+];
+
 const Inventory: React.FC = () => {
   const { orders, fetchOrders, loading, receiveOrder } = usePurchaseOrderStore();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'all' | 'pending' | 'received' | 'cancelled'>('all');
+  const [filter, setFilter] = useState<InventoryFilter>('all');
 
   useEffect(() => {
     fetchOrders(1, 100, filter === 'all' ? '' : filter);
@@ -56,15 +65,10 @@ const Inventory: React.FC = () => {
         </div>
         
         <div className="flex bg-brand-dark/30 rounded-lg p-1">
-          {[
-            { id: 'all', label: 'الكل' },
-            { id: 'pending', label: 'قيد الانتظار' },
-            { id: 'received', label: 'مستلم' },
-            { id: 'cancelled', label: 'ملغى' },
-          ].map((f) => (
+          {filters.map((f) => (
             <button
               key={f.id}
-              onClick={() => setFilter(f.id as any)}
+              onClick={() => setFilter(f.id)}
               className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${
                 filter === f.id
                   ? 'bg-brand-surface text-brand-accent shadow-sm'

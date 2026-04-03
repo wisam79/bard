@@ -7,6 +7,7 @@ import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import BarcodeDisplay from '@/components/ui/BarcodeDisplay';
 import Modal from '@/components/ui/Modal';
+import { wailsApp } from '@/lib/wails';
 
 interface BarcodeLabelsPrintProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ const BarcodeLabelsPrint: React.FC<BarcodeLabelsPrintProps> = ({ isOpen, onClose
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [searchError, setSearchError] = useState('');
   const [labelFormat, setLabelFormat] = useState<LabelFormat>('50x30');
   const [includePrice, setIncludePrice] = useState(true);
   const [includeStoreName, setIncludeStoreName] = useState(true);
@@ -32,13 +34,16 @@ const BarcodeLabelsPrint: React.FC<BarcodeLabelsPrintProps> = ({ isOpen, onClose
   const searchProducts = async (query: string) => {
     if (!query || query.length < 2) {
       setSearchResults([]);
+      setSearchError('');
       return;
     }
     try {
-      const results = await (window as any).go.main.App.SearchProducts(query, 10);
+      const results = await wailsApp.SearchProducts(query, 10);
       setSearchResults(results || []);
-    } catch (error) {
-      console.error('Search error:', error);
+      setSearchError('');
+    } catch (error: unknown) {
+      setSearchResults([]);
+      setSearchError(error instanceof Error ? error.message : 'تعذر البحث عن المنتجات.');
     }
   };
 
@@ -162,6 +167,11 @@ const BarcodeLabelsPrint: React.FC<BarcodeLabelsPrintProps> = ({ isOpen, onClose
               placeholder="ابحث عن منتج بالاسم أو الباركود..."
               icon={<Package size={18} />}
             />
+            {searchError && (
+              <p className="mt-2 text-xs font-bold text-rose-500" role="alert">
+                {searchError}
+              </p>
+            )}
             {searchResults.length > 0 && (
               <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                 {searchResults.map((product) => (

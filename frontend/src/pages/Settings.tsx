@@ -10,6 +10,7 @@ import PrintSettings from '../components/features/settings/PrintSettings';
 import AppearanceSettings from '../components/features/settings/AppearanceSettings';
 import StaffSettings from '../components/features/settings/StaffSettings';
 import DataSettings from '../components/features/settings/DataSettings';
+import { wailsApp } from '@/lib/wails';
 
 const Settings: React.FC = () => {
   const { notify, theme, toggleTheme } = useAppStore();
@@ -24,12 +25,12 @@ const Settings: React.FC = () => {
 
   const { data: prefs, isLoading } = useQuery<AppPreferences>({
     queryKey: ['preferences'],
-    queryFn: () => window.go.main.App.GetPreferences(),
+    queryFn: () => wailsApp.GetPreferences(),
   });
 
   const { data: staffList } = useQuery<Staff[]>({
     queryKey: ['staff'],
-    queryFn: () => window.go.main.App.GetStaff(),
+    queryFn: () => wailsApp.GetStaff(),
   });
 
   useEffect(() => {
@@ -37,7 +38,7 @@ const Settings: React.FC = () => {
   }, [prefs]);
 
   const updatePrefsMutation = useMutation({
-    mutationFn: (p: Partial<AppPreferences>) => window.go.main.App.UpdatePreferences(p as AppPreferences),
+    mutationFn: (p: Partial<AppPreferences>) => wailsApp.UpdatePreferences(p as AppPreferences),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['preferences'] });
       notify('تم حفظ الإعدادات بنجاح', 'success');
@@ -46,7 +47,7 @@ const Settings: React.FC = () => {
   });
 
   const createStaffMutation = useMutation({
-    mutationFn: (s: Partial<Staff>) => window.go.main.App.CreateStaff(s as Staff),
+    mutationFn: (s: Partial<Staff>) => wailsApp.CreateStaff(s as Staff),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
       notify('تم إضافة الموظف بنجاح', 'success');
@@ -57,7 +58,7 @@ const Settings: React.FC = () => {
   });
 
   const deleteStaffMutation = useMutation({
-    mutationFn: (id: string) => window.go.main.App.DeleteStaff(id),
+    mutationFn: (id: string) => wailsApp.DeleteStaff(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
       notify('تم حذف الموظف', 'success');
@@ -66,7 +67,7 @@ const Settings: React.FC = () => {
   });
 
   const resetDbMutation = useMutation({
-    mutationFn: () => window.go.main.App.ResetDatabase(),
+    mutationFn: () => wailsApp.ResetDatabase(),
     onSuccess: () => {
       queryClient.invalidateQueries();
       notify('تم إعادة تعيين قاعدة البيانات', 'success');
@@ -78,9 +79,17 @@ const Settings: React.FC = () => {
     updatePrefsMutation.mutate(formData);
   };
 
+  const handleCreateStaff = () => {
+    if (!staffForm.username || !staffForm.name || !staffForm.password) {
+      notify('يرجى ملء حقول الموظف المطلوبة', 'error');
+      return;
+    }
+    createStaffMutation.mutate(staffForm);
+  };
+
   const handleExport = async () => {
     try {
-      const data = await window.go.main.App.ExportDatabase();
+      const data = await wailsApp.ExportDatabase();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -244,13 +253,13 @@ const Settings: React.FC = () => {
         footer={
           <>
             <Button onClick={() => setShowStaffModal(false)} variant="secondary">إلغاء</Button>
-            <Button onClick={() => { const form = document.querySelector('form'); form?.requestSubmit(); }} loading={createStaffMutation.isPending}>
+            <Button onClick={handleCreateStaff} loading={createStaffMutation.isPending}>
               إضافة الموظف
             </Button>
           </>
         }
       >
-        <form onSubmit={(e) => { e.preventDefault(); createStaffMutation.mutate(staffForm); }} className="space-y-6">
+        <form onSubmit={(e) => { e.preventDefault(); handleCreateStaff(); }} className="space-y-6">
           <div className="space-y-2">
             <label className="text-xs font-black text-brand-accent/50 uppercase tracking-widest mr-1">اسم المستخدم *</label>
             <input type="text" value={staffForm.username} onChange={(e) => setStaffForm({ ...staffForm, username: e.target.value })} className="input py-3 font-mono" placeholder="username" required />

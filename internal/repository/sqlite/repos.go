@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"bard/internal/domain"
+	"bard/internal/errors"
 	"bard/internal/repository"
 	"bard/pkg/utils"
 
@@ -124,7 +125,7 @@ func (r *staffRepository) Authenticate(username, password string) (*domain.Staff
 	}
 	// Verify password using bcrypt
 	if !utils.CheckPassword(password, staff.Password) {
-		return nil, gorm.ErrRecordNotFound
+		return nil, errors.ErrInvalidCredentials
 	}
 	return &staff, nil
 }
@@ -237,7 +238,7 @@ func (r *settingsRepository) ResetDatabase() error {
 			&domain.ParkedSale{}, &domain.PurchaseOrder{}, &domain.PurchaseOrderItem{},
 		}
 		for _, table := range tables {
-			if err := tx.Where("1 = 1").Delete(table).Error; err != nil {
+			if err := tx.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(table).Error; err != nil {
 				return err
 			}
 		}
@@ -254,13 +255,27 @@ func (r *settingsRepository) ExportDatabase() (*domain.DatabaseExport, error) {
 	var staff []domain.Staff
 	var prefs domain.AppPreferences
 
-	r.db.Find(&products)
-	r.db.Preload("Items").Find(&sales)
-	r.db.Find(&customers)
-	r.db.Find(&suppliers)
-	r.db.Find(&expenses)
-	r.db.Find(&staff)
-	r.db.First(&prefs)
+	if err := r.db.Find(&products).Error; err != nil {
+		return nil, err
+	}
+	if err := r.db.Preload("Items").Find(&sales).Error; err != nil {
+		return nil, err
+	}
+	if err := r.db.Find(&customers).Error; err != nil {
+		return nil, err
+	}
+	if err := r.db.Find(&suppliers).Error; err != nil {
+		return nil, err
+	}
+	if err := r.db.Find(&expenses).Error; err != nil {
+		return nil, err
+	}
+	if err := r.db.Find(&staff).Error; err != nil {
+		return nil, err
+	}
+	if err := r.db.First(&prefs).Error; err != nil {
+		return nil, err
+	}
 
 	return &domain.DatabaseExport{
 		Products:    products,
@@ -284,6 +299,24 @@ func (r *settingsRepository) ImportDatabase(data *domain.DatabaseExport) error {
 			if err := tx.Save(&data.Customers[i]).Error; err != nil {
 				return err
 			}
+		}
+		for i := range data.Suppliers {
+			if err := tx.Save(&data.Suppliers[i]).Error; err != nil {
+				return err
+			}
+		}
+		for i := range data.Expenses {
+			if err := tx.Save(&data.Expenses[i]).Error; err != nil {
+				return err
+			}
+		}
+		for i := range data.Staff {
+			if err := tx.Save(&data.Staff[i]).Error; err != nil {
+				return err
+			}
+		}
+		if err := tx.Save(&data.Preferences).Error; err != nil {
+			return err
 		}
 		return nil
 	})

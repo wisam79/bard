@@ -23,31 +23,43 @@ func (r *statsRepository) GetDashboardStats() (*domain.DashboardStats, error) {
 	startOfMonth := time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.Now().Location()).Format("2006-01-02")
 
 	// Today stats
-	r.db.Model(&domain.Sale{}).Where("date = ? AND status != 'return'", today).
-		Select("COALESCE(SUM(total), 0), COUNT(*)").Row().Scan(&stats.TodaySales, &stats.TodayOrders)
+	if err := r.db.Model(&domain.Sale{}).Where("date = ? AND status != 'return'", today).
+		Select("COALESCE(SUM(total), 0), COUNT(*)").Row().Scan(&stats.TodaySales, &stats.TodayOrders); err != nil {
+		return nil, err
+	}
 
 	// Month stats
-	r.db.Model(&domain.Sale{}).Where("date >= ? AND status != 'return'", startOfMonth).
-		Select("COALESCE(SUM(total), 0), COUNT(*)").Row().Scan(&stats.MonthSales, &stats.MonthOrders)
+	if err := r.db.Model(&domain.Sale{}).Where("date >= ? AND status != 'return'", startOfMonth).
+		Select("COALESCE(SUM(total), 0), COUNT(*)").Row().Scan(&stats.MonthSales, &stats.MonthOrders); err != nil {
+		return nil, err
+	}
 
 	// Total products
 	var totalProducts int64
-	r.db.Model(&domain.Product{}).Count(&totalProducts)
+	if err := r.db.Model(&domain.Product{}).Count(&totalProducts).Error; err != nil {
+		return nil, err
+	}
 	stats.TotalProducts = int(totalProducts)
 
 	// Total customers
 	var totalCustomers int64
-	r.db.Model(&domain.Customer{}).Count(&totalCustomers)
+	if err := r.db.Model(&domain.Customer{}).Count(&totalCustomers).Error; err != nil {
+		return nil, err
+	}
 	stats.TotalCustomers = int(totalCustomers)
 
 	// Total debt
 	var totalDebt float64
-	r.db.Model(&domain.Customer{}).Select("COALESCE(SUM(debt + installment_debt), 0)").Row().Scan(&totalDebt)
+	if err := r.db.Model(&domain.Customer{}).Select("COALESCE(SUM(debt + installment_debt), 0)").Row().Scan(&totalDebt); err != nil {
+		return nil, err
+	}
 	stats.TotalDebt = totalDebt
 
 	// Low stock count
 	var lowStockCount int64
-	r.db.Model(&domain.Product{}).Where("stock <= 5").Count(&lowStockCount)
+	if err := r.db.Model(&domain.Product{}).Where("stock <= 5").Count(&lowStockCount).Error; err != nil {
+		return nil, err
+	}
 	stats.LowStockCount = int(lowStockCount)
 
 	return stats, nil

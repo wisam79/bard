@@ -7,6 +7,7 @@ import { Search, Eye, RotateCcw, FileText, Printer, Filter, Calendar, CreditCard
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import { PrintReceipt, BarcodeDisplay } from '@/components/ui';
+import { wailsApp } from '@/lib/wails';
 
 const Invoices: React.FC = () => {
   const { notify } = useAppStore();
@@ -20,16 +21,16 @@ const Invoices: React.FC = () => {
 
   const { data: preferences } = useQuery<AppPreferences>({
     queryKey: ['preferences'],
-    queryFn: () => window.go.main.App.GetPreferences(),
+    queryFn: () => wailsApp.GetPreferences(),
   });
 
   const { data: salesData, isLoading } = useQuery<PaginatedSales>({
     queryKey: ['sales', page, 20, searchQuery, statusFilter],
-    queryFn: () => window.go.main.App.GetSales(page, 20, searchQuery, statusFilter),
+    queryFn: () => wailsApp.GetSales(page, 20, searchQuery, statusFilter),
   });
 
   const returnMutation = useMutation({
-    mutationFn: (saleId: string) => window.go.main.App.ProcessReturn(saleId),
+    mutationFn: (saleId: string) => wailsApp.ProcessReturn(saleId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sales'] });
       notify('تم إرجاع الفاتورة بنجاح', 'success');

@@ -3,6 +3,7 @@ import { Plus, Trash2, Search, Package } from 'lucide-react';
 import { usePurchaseOrderStore } from '@/store/purchaseOrderStore';
 import Button from '@/components/ui/Button';
 import type { PurchaseOrder, PurchaseOrderItem, Supplier, Product } from '@/types';
+import { wailsApp } from '@/lib/wails';
 
 interface PurchaseOrderFormProps {
   onClose: () => void;
@@ -29,16 +30,13 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onClose, initialD
     const fetchData = async () => {
       try {
         const [sups, prods] = await Promise.all([
-          // In real app, we should use a supplierStore and productStore or direct API calls
-          // window.go.main.App.GetSuppliers(),
-          // window.go.main.App.GetProducts(1, 1000, '', '')
-          (window as any).go.main.App.GetSuppliers(),
-          (window as any).go.main.App.GetProducts(1, 1000, '', '')
+          wailsApp.GetSuppliers(),
+          wailsApp.GetProducts(1, 100, '', ''), // Start with first page
         ]);
         setSuppliers(sups || []);
         setProducts(prods?.data || []);
-      } catch (err) {
-        console.error("Failed to fetch initial data", err);
+      } catch (error: unknown) {
+        setError(error instanceof Error ? error.message : 'تعذر تحميل الموردين والمنتجات.');
       }
     };
     fetchData();
@@ -111,7 +109,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onClose, initialD
     }
   };
 
-  const filteredProducts = products.filter(p => p.name.includes(searchProduct) || p.barcode.includes(searchProduct));
+  const filteredProducts = products.filter(
+    (product) => product.name.includes(searchProduct) || product.barcode.includes(searchProduct),
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -170,7 +170,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onClose, initialD
                 </div>
             ) : (
                 items.map((item, idx) => (
-                <div key={idx} className="flex flex-wrap md:flex-nowrap items-center gap-3 bg-brand-surface p-3 rounded-xl border border-brand-border/10">
+                <div key={item.productId || `item-${idx}`} className="flex flex-wrap md:flex-nowrap items-center gap-3 bg-brand-surface p-3 rounded-xl border border-brand-border/10">
                     <div className="flex-1 min-w-[120px]">
                     <span className="text-sm font-bold text-brand-accent">{item.name}</span>
                     </div>

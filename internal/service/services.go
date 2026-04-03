@@ -6,6 +6,7 @@ import (
 	"bard/internal/logger"
 	"bard/internal/repository"
 	"bard/pkg/utils"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -54,6 +55,18 @@ func (s *ProductService) Create(product *domain.Product) error {
 }
 
 func (s *ProductService) Update(product *domain.Product) error {
+	if product.Name == "" {
+		return errors.NewValidationError(domain.ModuleProduct, "name", "Name is required")
+	}
+	if product.Barcode == "" {
+		return errors.NewValidationError(domain.ModuleProduct, "barcode", "Barcode is required")
+	}
+	if product.Price < 0 {
+		return errors.NewValidationError(domain.ModuleProduct, "price", "Price cannot be negative")
+	}
+	if product.Stock < 0 {
+		return errors.NewValidationError(domain.ModuleProduct, "stock", "Stock cannot be negative")
+	}
 	product.UpdatedAt = time.Now()
 	s.log.Info("Updating product", "id", product.ID)
 	return s.repo.Update(product)
@@ -108,6 +121,10 @@ func (s *CustomerService) GetByPhone(phone string) (*domain.Customer, error) {
 }
 
 func (s *CustomerService) Create(customer *domain.Customer) error {
+	customer.Name = strings.TrimSpace(customer.Name)
+	if customer.Name == "" {
+		return errors.NewValidationError(domain.ModuleCustomer, "name", "Customer name is required")
+	}
 	customer.ID = uuid.New().String()
 	customer.CreatedAt = time.Now()
 	customer.UpdatedAt = time.Now()
@@ -116,11 +133,33 @@ func (s *CustomerService) Create(customer *domain.Customer) error {
 }
 
 func (s *CustomerService) Update(customer *domain.Customer) error {
+	customer.Name = strings.TrimSpace(customer.Name)
+	if customer.Name == "" {
+		return errors.NewValidationError(domain.ModuleCustomer, "name", "Customer name is required")
+	}
+	
+	// Fetch existing customer to preserve critical financial fields
+	// This prevents accidental debt/installment_debt deletion on partial updates
+	existingCustomer, err := s.repo.GetByID(customer.ID)
+	if err == nil && existingCustomer != nil {
+		// Preserve debt fields if not explicitly provided in the update
+		if customer.Debt == 0 && existingCustomer.Debt != 0 {
+			customer.Debt = existingCustomer.Debt
+		}
+		if customer.InstallmentDebt == 0 && existingCustomer.InstallmentDebt != 0 {
+			customer.InstallmentDebt = existingCustomer.InstallmentDebt
+		}
+		if customer.TotalPurchases == 0 && existingCustomer.TotalPurchases != 0 {
+			customer.TotalPurchases = existingCustomer.TotalPurchases
+		}
+	}
+	
 	customer.UpdatedAt = time.Now()
 	return s.repo.Update(customer)
 }
 
 func (s *CustomerService) Delete(id string) error {
+	s.log.Info("Deleting customer", "id", id)
 	return s.repo.Delete(id)
 }
 
@@ -147,6 +186,17 @@ func (s *StaffService) GetByID(id string) (*domain.Staff, error) {
 }
 
 func (s *StaffService) Create(staff *domain.Staff) error {
+	staff.Username = strings.TrimSpace(staff.Username)
+	staff.Name = strings.TrimSpace(staff.Name)
+	if staff.Username == "" {
+		return errors.NewValidationError(domain.ModuleStaff, "username", "Username is required")
+	}
+	if staff.Name == "" {
+		return errors.NewValidationError(domain.ModuleStaff, "name", "Name is required")
+	}
+	if staff.Role == "" {
+		return errors.NewValidationError(domain.ModuleStaff, "role", "Role is required")
+	}
 	staff.ID = uuid.New().String()
 	staff.CreatedAt = time.Now()
 	staff.UpdatedAt = time.Now()
@@ -164,15 +214,26 @@ func (s *StaffService) Create(staff *domain.Staff) error {
 }
 
 func (s *StaffService) Update(staff *domain.Staff) error {
+	staff.Name = strings.TrimSpace(staff.Name)
+	if staff.Name == "" {
+		return errors.NewValidationError(domain.ModuleStaff, "name", "Name is required")
+	}
 	staff.UpdatedAt = time.Now()
 
-	// Hash password if not already hashed
+	// Only update password if a new non-empty password is provided
+	// This prevents accidental password deletion when updating other fields
 	if staff.Password != "" && !utils.IsHashed(staff.Password) {
 		hashedPassword, err := utils.HashPassword(staff.Password)
 		if err != nil {
 			return err
 		}
 		staff.Password = hashedPassword
+	} else if staff.Password == "" {
+		// If password is empty, fetch existing staff to preserve the password
+		existingStaff, err := s.repo.GetByID(staff.ID)
+		if err == nil && existingStaff != nil {
+			staff.Password = existingStaff.Password
+		}
 	}
 
 	return s.repo.Update(staff)

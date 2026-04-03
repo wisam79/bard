@@ -9,14 +9,14 @@ import (
 
 // App is the main Wails handler that exposes backend services to frontend
 type App struct {
-	ctx       context.Context
-	products  *service.ProductService
-	sales     *service.SaleService
-	customers *service.CustomerService
-	staff     *service.StaffService
-	finance   *service.FinanceService
-	settings  *service.SettingsService
-	stats     *service.StatsService
+	ctx            context.Context
+	products       *service.ProductService
+	sales          *service.SaleService
+	customers      *service.CustomerService
+	staff          *service.StaffService
+	finance        *service.FinanceService
+	settings       *service.SettingsService
+	stats          *service.StatsService
 	shifts         *service.ShiftService
 	suppliers      *service.SupplierService
 	purchaseOrders *service.PurchaseOrderService
@@ -38,12 +38,12 @@ func NewApp(
 	log *logger.Logger,
 ) *App {
 	return &App{
-		products:  products,
-		sales:     sales,
-		customers: customers,
-		staff:     staff,
-		finance:   finance,
-		settings:  settings,
+		products:       products,
+		sales:          sales,
+		customers:      customers,
+		staff:          staff,
+		finance:        finance,
+		settings:       settings,
 		stats:          stats,
 		shifts:         shifts,
 		suppliers:      suppliers,
@@ -203,30 +203,6 @@ func (a *App) GetPayments(saleID string) ([]domain.Payment, error) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 👤 Staff & Auth
-// ═══════════════════════════════════════════════════════════════════════════════
-
-func (a *App) Login(username, password string) (*domain.Staff, error) {
-	return a.staff.Authenticate(username, password)
-}
-
-func (a *App) GetStaff() ([]domain.Staff, error) {
-	return a.staff.GetAll()
-}
-
-func (a *App) CreateStaff(staff domain.Staff) error {
-	return a.staff.Create(&staff)
-}
-
-func (a *App) UpdateStaff(staff domain.Staff) error {
-	return a.staff.Update(&staff)
-}
-
-func (a *App) DeleteStaff(id string) error {
-	return a.staff.Delete(id)
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // ⚙️ Settings
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -251,27 +227,27 @@ func (a *App) ImportDatabase(data domain.DatabaseExport) error {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🖥️ Window Controls
+// 👤 Staff & Auth
 // ═══════════════════════════════════════════════════════════════════════════════
 
-func (a *App) Minimize() {
-	// Handled by Wails runtime in frontend
+func (a *App) Login(username, password string) (*domain.Staff, error) {
+	return a.staff.Authenticate(username, password)
 }
 
-func (a *App) Maximize() {
-	// Handled by Wails runtime in frontend
+func (a *App) GetStaff() ([]domain.Staff, error) {
+	return a.staff.GetAll()
 }
 
-func (a *App) Close() {
-	// Handled by Wails runtime in frontend
+func (a *App) CreateStaff(staff domain.Staff) error {
+	return a.staff.Create(&staff)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🔄 Shifts
-// ═══════════════════════════════════════════════════════════════════════════════
+func (a *App) UpdateStaff(staff domain.Staff) error {
+	return a.staff.Update(&staff)
+}
 
-func (a *App) GetShifts(page, limit int) ([]domain.Shift, int64, error) {
-	return a.shifts.GetShifts(page, limit)
+func (a *App) DeleteStaff(id string) error {
+	return a.staff.Delete(id)
 }
 
 func (a *App) GetActiveShift(staffID string) (*domain.Shift, error) {
@@ -344,12 +320,4 @@ func (a *App) DeletePurchaseOrder(id string) error {
 
 func (a *App) ReceivePurchaseOrder(id string) error {
 	return a.purchaseOrders.ReceiveOrder(id)
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🔧 Utility
-// ═══════════════════════════════════════════════════════════════════════════════
-
-func (a *App) Greet(name string) string {
-	return "Hello " + name + "!"
 }

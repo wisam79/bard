@@ -1,23 +1,24 @@
 import type { AppPreferences, DatabaseExport } from '@/types';
+import { wailsApp } from '@/lib/wails';
 
 export const settingsService = {
   async getPreferences(): Promise<AppPreferences> {
-    return window.go.main.App.GetPreferences();
+    return wailsApp.GetPreferences();
   },
 
   async updatePreferences(prefs: AppPreferences): Promise<void> {
-    return window.go.main.App.UpdatePreferences(prefs);
+    return wailsApp.UpdatePreferences(prefs);
   },
 
   async resetDatabase(): Promise<void> {
-    return window.go.main.App.ResetDatabase();
+    return wailsApp.ResetDatabase();
   },
 
   async exportDatabase(): Promise<DatabaseExport> {
-    return window.go.main.App.ExportDatabase();
+    return wailsApp.ExportDatabase();
   },
 
   async importDatabase(data: DatabaseExport): Promise<void> {
-    return window.go.main.App.ImportDatabase(data);
+    return wailsApp.ImportDatabase(data);
   },
 };

@@ -59,7 +59,11 @@ export const MainLayout: React.FC = () => {
         
         <Sidebar />
         
-        <main className="flex-1 overflow-hidden relative flex flex-col">
+        <main
+          className="flex-1 overflow-hidden relative flex flex-col"
+          data-testid="main-layout"
+          data-active-view={activeView}
+        >
           <div className="flex-1 overflow-hidden relative flex flex-col animate-fade-in">
             <Suspense fallback={<PageLoader />}>
               {renderPage()}

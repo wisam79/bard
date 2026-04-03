@@ -66,5 +66,11 @@ func ValidateSale(s *domain.Sale) error {
 		}
 		s.Items[i].Total = float64(item.Quantity) * item.Price
 	}
+	if s.Discount < 0 {
+		return errors.NewValidationError(domain.ModuleSales, "discount", "Discount cannot be negative")
+	}
+	if s.VAT < 0 {
+		return errors.NewValidationError(domain.ModuleSales, "vat", "VAT cannot be negative")
+	}
 	return nil
 }

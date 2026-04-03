@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"bard/internal/domain"
-	"bard/internal/errors"
 	"bard/internal/logger"
 	"bard/internal/repository"
 
@@ -60,25 +59,18 @@ func (s *SaleService) Create(sale *domain.Sale) error {
 	var subtotal, totalCost float64
 	for i := range sale.Items {
 		sale.Items[i].SaleID = sale.ID
-
-		
-		// Check stock availability (soft check before transaction)
-		product, err := s.productRepo.GetByID(sale.Items[i].ProductID)
-		if err == nil && product.Stock < float64(sale.Items[i].Quantity) {
-			return errors.NewInsufficientStockError(product.Name, product.Stock)
-		}
-
 		subtotal += sale.Items[i].Total
 		totalCost += sale.Items[i].Cost * sale.Items[i].Quantity
 	}
 
 	sale.Subtotal = subtotal
 	sale.Total = subtotal - sale.Discount + sale.VAT
+	sale.TotalCost = totalCost
 	sale.ItemsCount = float64(len(sale.Items))
 
 	s.log.Info("Creating sale", "id", sale.ID, "total", sale.Total)
 
-	// Use repository transaction for data consistency
+	// Use repository transaction for data consistency (stock check is inside transaction)
 	return s.saleRepo.CreateSaleWithStockUpdate(sale)
 }
 
@@ -116,7 +108,9 @@ func (s *SaleService) ProcessReturn(originalSaleID string) (*domain.Sale, error)
 	}
 
 	returnSale.Subtotal = -total
-	returnSale.Total = -total
+	returnSale.Discount = -original.Discount
+	returnSale.VAT = -original.VAT
+	returnSale.Total = -original.Total
 
 	// Use transaction for data consistency
 	var createdReturn *domain.Sale
@@ -134,16 +128,23 @@ func (s *SaleService) ProcessReturn(originalSaleID string) (*domain.Sale, error)
 			}
 		}
 
-		// Reverse debt
+		// Reverse debt using the actual total (after discount/VAT/down payment)
 		if original.PaymentMethod == "credit" && original.CustomerID != "" {
 			if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
-				UpdateColumn("debt", gorm.Expr("debt - ?", total)).Error; err != nil {
+				UpdateColumn("debt", gorm.Expr("debt - ?", original.Total)).Error; err != nil {
 				return err
 			}
 		} else if original.PaymentMethod == "installment" && original.CustomerID != "" {
 			if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
-				UpdateColumn("installment_debt", gorm.Expr("installment_debt - ?", total)).Error; err != nil {
+				UpdateColumn("installment_debt", gorm.Expr("installment_debt - ?", original.Total)).Error; err != nil {
 				return err
+			}
+		} else if original.PaymentMethod == "split" && original.CustomerID != "" {
+			if creditAmount, ok := original.SplitDetails["credit"]; ok && creditAmount > 0 {
+				if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
+					UpdateColumn("debt", gorm.Expr("debt - ?", creditAmount)).Error; err != nil {
+					return err
+				}
 			}
 		}
 
@@ -264,7 +265,7 @@ func (s *SaleService) ProcessPartialReturn(originalSaleID string, returnItems []
 				}
 			}
 
-			// 2. Update returnedQty on original item
+			// 2. Update returned_qty on original item
 			if err := tx.Model(&domain.SaleItem{}).
 				Where("sale_id = ? AND product_id = ?", originalSaleID, ri.ProductID).
 				UpdateColumn("returned_qty", gorm.Expr("returned_qty + ?", ri.Quantity)).Error; err != nil {
@@ -273,19 +274,32 @@ func (s *SaleService) ProcessPartialReturn(originalSaleID string, returnItems []
 		}
 
 		// 3. Adjust debt proportionally (if credit or installment sale)
-		if original.CustomerID != "" {
-			ratio := returnTotal / math.Abs(original.Total)
-			debtReduction := original.Total * ratio
-			switch original.PaymentMethod {
-			case "credit":
-				if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
-					UpdateColumn("debt", gorm.Expr("debt - ?", debtReduction)).Error; err != nil {
-					return err
-				}
-			case "installment":
-				if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
-					UpdateColumn("installment_debt", gorm.Expr("installment_debt - ?", debtReduction)).Error; err != nil {
-					return err
+		// Prevent division by zero if original.Total is 0
+		if original.CustomerID != "" && original.Total != 0 {
+			absTotal := math.Abs(original.Total)
+			if absTotal > 0.001 { // Use small epsilon for float comparison
+				ratio := returnTotal / absTotal
+				debtReduction := original.Total * ratio
+				switch original.PaymentMethod {
+				case "credit":
+					if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
+						UpdateColumn("debt", gorm.Expr("debt - ?", debtReduction)).Error; err != nil {
+						return err
+					}
+				case "installment":
+					if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
+						UpdateColumn("installment_debt", gorm.Expr("installment_debt - ?", debtReduction)).Error; err != nil {
+						return err
+					}
+				case "split":
+					// Handle split payment debt reversal
+					if creditAmount, ok := original.SplitDetails["credit"]; ok && creditAmount > 0 {
+						creditReduction := creditAmount * ratio
+						if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
+							UpdateColumn("debt", gorm.Expr("debt - ?", creditReduction)).Error; err != nil {
+							return err
+						}
+					}
 				}
 			}
 		}
@@ -303,7 +317,6 @@ func (s *SaleService) ProcessPartialReturn(originalSaleID string, returnItems []
 	}
 	return created, nil
 }
-
 
 func (s *SaleService) GetParkedSales() ([]domain.ParkedSale, error) {
 	return s.saleRepo.GetParkedSales()
@@ -328,6 +341,14 @@ func (s *SaleService) CalculateInstallmentPlan(total, downPayment float64, month
 			Module:  domain.ModuleSales,
 			Code:    "INVALID_PARAMS",
 			Message: "Invalid installment parameters",
+		}
+	}
+
+	if downPayment < 0 {
+		return nil, &domain.AppError{
+			Module:  domain.ModuleSales,
+			Code:    "INVALID_DOWN_PAYMENT",
+			Message: "Down payment cannot be negative",
 		}
 	}
 
@@ -413,10 +434,6 @@ func (s *FinanceService) CreateDiscount(discount *domain.Discount) error {
 func (s *FinanceService) CreatePayment(payment *domain.Payment) error {
 	payment.Timestamp = time.Now().Unix()
 	payment.CreatedAt = time.Now()
-
-	if payment.CustomerID != "" {
-		return s.repo.CreatePayment(payment)
-	}
 	return s.repo.CreatePayment(payment)
 }
 

@@ -10,10 +10,6 @@ export function CalculateInstallmentPlan(arg1, arg2, arg3) {
   return window['go']['handler']['App']['CalculateInstallmentPlan'](arg1, arg2, arg3);
 }
 
-export function Close() {
-  return window['go']['handler']['App']['Close']();
-}
-
 export function CloseShift(arg1, arg2) {
   return window['go']['handler']['App']['CloseShift'](arg1, arg2);
 }
@@ -158,10 +154,6 @@ export function GetSales(arg1, arg2, arg3, arg4) {
   return window['go']['handler']['App']['GetSales'](arg1, arg2, arg3, arg4);
 }
 
-export function GetShifts(arg1, arg2) {
-  return window['go']['handler']['App']['GetShifts'](arg1, arg2);
-}
-
 export function GetStaff() {
   return window['go']['handler']['App']['GetStaff']();
 }
@@ -174,24 +166,12 @@ export function GetSuppliers() {
   return window['go']['handler']['App']['GetSuppliers']();
 }
 
-export function Greet(arg1) {
-  return window['go']['handler']['App']['Greet'](arg1);
-}
-
 export function ImportDatabase(arg1) {
   return window['go']['handler']['App']['ImportDatabase'](arg1);
 }
 
 export function Login(arg1, arg2) {
   return window['go']['handler']['App']['Login'](arg1, arg2);
-}
-
-export function Maximize() {
-  return window['go']['handler']['App']['Maximize']();
-}
-
-export function Minimize() {
-  return window['go']['handler']['App']['Minimize']();
 }
 
 export function ParkSale(arg1) {

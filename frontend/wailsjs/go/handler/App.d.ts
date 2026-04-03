@@ -6,8 +6,6 @@ export function AddCashMovement(arg1:string,arg2:string,arg3:string,arg4:string,
 
 export function CalculateInstallmentPlan(arg1:number,arg2:number,arg3:number):Promise<domain.InstallmentPlan>;
 
-export function Close():Promise<void>;
-
 export function CloseShift(arg1:string,arg2:number):Promise<domain.Shift>;
 
 export function CreateCustomer(arg1:domain.Customer):Promise<void>;
@@ -80,23 +78,15 @@ export function GetSale(arg1:string):Promise<domain.Sale>;
 
 export function GetSales(arg1:number,arg2:number,arg3:string,arg4:string):Promise<domain.PaginatedSales>;
 
-export function GetShifts(arg1:number,arg2:number):Promise<Array<domain.Shift>>;
-
 export function GetStaff():Promise<Array<domain.Staff>>;
 
 export function GetSupplier(arg1:string):Promise<domain.Supplier>;
 
 export function GetSuppliers():Promise<Array<domain.Supplier>>;
 
-export function Greet(arg1:string):Promise<string>;
-
 export function ImportDatabase(arg1:domain.DatabaseExport):Promise<void>;
 
 export function Login(arg1:string,arg2:string):Promise<domain.Staff>;
-
-export function Maximize():Promise<void>;
-
-export function Minimize():Promise<void>;
 
 export function ParkSale(arg1:domain.ParkedSale):Promise<void>;
 

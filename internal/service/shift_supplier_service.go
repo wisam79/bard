@@ -21,7 +21,11 @@ func NewShiftService(repo repository.ShiftRepository, log *logger.Logger) *Shift
 
 func (s *ShiftService) StartShift(staffID, staffName string, startCash float64) (*domain.Shift, error) {
 	// Check if staff already has an active shift
-	existing, _ := s.repo.GetActive(staffID)
+	existing, err := s.repo.GetActive(staffID)
+	if err != nil {
+		s.log.Error("Failed to check active shift", "error", err)
+		return nil, err
+	}
 	if existing != nil {
 		return nil, &domain.AppError{
 			Module:  domain.ModuleStaff,
@@ -63,6 +67,8 @@ func (s *ShiftService) GetActiveShift(staffID string) (*domain.Shift, error) {
 }
 
 func (s *ShiftService) GetShifts(page, limit int) ([]domain.Shift, int64, error) {
+	// Validate pagination parameters to prevent SQL offset errors
+	page, limit = ValidatePagination(page, limit)
 	return s.repo.GetAll(page, limit)
 }
 
@@ -104,6 +110,13 @@ func (s *SupplierService) GetByID(id string) (*domain.Supplier, error) {
 }
 
 func (s *SupplierService) Create(supplier *domain.Supplier) error {
+	if supplier.Name == "" {
+		return &domain.AppError{
+			Module:  domain.ModuleProduct,
+			Code:    "VALIDATION_ERROR",
+			Message: "Supplier name is required",
+		}
+	}
 	supplier.ID = uuid.New().String()
 	supplier.CreatedAt = time.Now()
 	supplier.UpdatedAt = time.Now()
@@ -113,6 +126,13 @@ func (s *SupplierService) Create(supplier *domain.Supplier) error {
 }
 
 func (s *SupplierService) Update(supplier *domain.Supplier) error {
+	if supplier.Name == "" {
+		return &domain.AppError{
+			Module:  domain.ModuleProduct,
+			Code:    "VALIDATION_ERROR",
+			Message: "Supplier name is required",
+		}
+	}
 	supplier.UpdatedAt = time.Now()
 
 	s.log.Info("Updating supplier", "id", supplier.ID)

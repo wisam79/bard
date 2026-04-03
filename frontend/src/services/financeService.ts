@@ -1,4 +1,5 @@
 import type { Expense, Payment } from '@/types';
+import { wailsApp } from '@/lib/wails';
 
 export const financeService = {
   async getExpenses(
@@ -6,7 +7,7 @@ export const financeService = {
     limit = 20,
     category = ''
   ): Promise<[Expense[], number]> {
-    return window.go.main.App.GetExpenses(page, limit, category);
+    return wailsApp.GetExpenses(page, limit, category);
   },
 
   async createExpense(expense: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>): Promise<void> {
@@ -16,15 +17,15 @@ export const financeService = {
       createdAt: '',
       updatedAt: '',
     };
-    return window.go.main.App.CreateExpense(newExpense);
+    return wailsApp.CreateExpense(newExpense);
   },
 
   async updateExpense(expense: Expense): Promise<void> {
-    return window.go.main.App.UpdateExpense(expense);
+    return wailsApp.UpdateExpense(expense);
   },
 
   async deleteExpense(id: string): Promise<void> {
-    return window.go.main.App.DeleteExpense(id);
+    return wailsApp.DeleteExpense(id);
   },
 
   async createPayment(payment: Omit<Payment, 'id' | 'createdAt'>): Promise<void> {
@@ -33,10 +34,10 @@ export const financeService = {
       id: 0,
       createdAt: '',
     };
-    return window.go.main.App.CreatePayment(newPayment);
+    return wailsApp.CreatePayment(newPayment);
   },
 
   async getPayments(saleID: string): Promise<Payment[]> {
-    return window.go.main.App.GetPayments(saleID);
+    return wailsApp.GetPayments(saleID);
   },
 };

@@ -25,6 +25,7 @@ const CartList: React.FC<CartListProps> = ({ cart, updateQty, removeFromCart }) 
         cart.map((item: CartItem) => (
           <div
             key={item.product.id}
+            data-testid={`cart-item-${item.product.id}`}
             className="bg-brand-surface/40 dark:bg-brand-dark/40 border border-brand-border/20 rounded-2xl p-4 group hover:border-primary-500/30 transition-all duration-150 shadow-sm animate-fade-in"
           >
             <div className="flex items-start justify-between mb-3">
@@ -41,6 +42,7 @@ const CartList: React.FC<CartListProps> = ({ cart, updateQty, removeFromCart }) 
               </div>
               <button
                 onClick={() => removeFromCart(item.product.id)}
+                aria-label={`حذف ${item.product.name}`}
                 className="p-1.5 text-brand-accent/20 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -51,6 +53,7 @@ const CartList: React.FC<CartListProps> = ({ cart, updateQty, removeFromCart }) 
               <div className="flex items-center gap-1 bg-brand-dark/10 p-0.5 rounded-lg border border-brand-border/10">
                 <button
                   onClick={() => updateQty(item.product.id, item.qty - 1)}
+                  aria-label={`تقليل كمية ${item.product.name}`}
                   className="w-7 h-7 rounded-md hover:bg-brand-border/20 text-brand-accent flex items-center justify-center transition-all active:scale-90"
                 >
                   <Minus className="w-3 h-3" />
@@ -58,6 +61,7 @@ const CartList: React.FC<CartListProps> = ({ cart, updateQty, removeFromCart }) 
                 <span className="text-brand-accent font-black w-8 text-center text-xs">{item.qty}</span>
                 <button
                   onClick={() => updateQty(item.product.id, item.qty + 1)}
+                  aria-label={`زيادة كمية ${item.product.name}`}
                   className="w-7 h-7 rounded-md hover:bg-brand-border/20 text-brand-accent flex items-center justify-center transition-all active:scale-90"
                 >
                   <Plus className="w-3 h-3" />

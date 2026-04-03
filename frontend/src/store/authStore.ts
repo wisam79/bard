@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import type { Staff } from '@/types';
+import { wailsApp } from '@/lib/wails';
 
 // ─── Session Configuration ─────────────────────────────────────────────────────
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
@@ -95,8 +95,14 @@ interface AuthState {
 }
 
 // ─── Session Timer Helpers ──────────────────────────────────────────────────
+type AuthSetter = (
+  partial:
+    | Partial<AuthState>
+    | ((state: AuthState) => Partial<AuthState>)
+) => void;
+
 const startSessionTimer = (
-  set: any,
+  set: AuthSetter,
   get: () => AuthState,
   logout: () => void
 ) => {
@@ -123,7 +129,7 @@ const startSessionTimer = (
   set({ sessionTimerId, warningTimerId });
 };
 
-const stopSessionTimer = (set: any, get: () => AuthState) => {
+const stopSessionTimer = (set: AuthSetter, get: () => AuthState) => {
   const state = get();
   
   if (state.sessionTimerId) {
@@ -141,6 +147,8 @@ const stopSessionTimer = (set: any, get: () => AuthState) => {
 };
 
 // ─── Activity Event Handlers ───────────────────────────────────────────────
+let cleanupActivityListeners: (() => void) | null = null;
+
 const setupActivityListeners = (
   resetTimer: () => void
 ) => {
@@ -158,9 +166,7 @@ const setupActivityListeners = (
 };
 
 // ─── Store ───────────────────────────────────────────────────────────────────
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
+export const useAuthStore = create<AuthState>()((set, get) => ({
       currentUser: null,
       isAuthenticated: false,
       isLoading: false,
@@ -173,7 +179,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (username: string, password: string) => {
         set({ isLoading: true });
         try {
-          const staff = await window.go.main.App.Login(username, password);
+          const staff = await wailsApp.Login(username, password);
           if (staff) {
             const now = Date.now();
             set({
@@ -188,15 +194,15 @@ export const useAuthStore = create<AuthState>()(
             startSessionTimer(set, get, get().logout);
             
             // Setup activity listeners
-            setupActivityListeners(get().resetSessionTimer);
+            if (cleanupActivityListeners) cleanupActivityListeners();
+            cleanupActivityListeners = setupActivityListeners(get().resetSessionTimer);
             
             return true;
           }
           set({ isLoading: false });
           return false;
-        } catch (error: any) {
+        } catch {
           set({ isLoading: false });
-          // Return false instead of throwing to handle API errors gracefully
           return false;
         }
       },
@@ -204,6 +210,12 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         // Stop session timer
         stopSessionTimer(set, get);
+        
+        // Cleanup activity listeners
+        if (cleanupActivityListeners) {
+          cleanupActivityListeners();
+          cleanupActivityListeners = null;
+        }
         
         set({
           currentUser: null,
@@ -226,10 +238,10 @@ export const useAuthStore = create<AuthState>()(
 
       checkSessionTimeout: () => {
         const state = get();
-        if (!state.isAuthenticated || !state.sessionStartedAt) return;
+        if (!state.isAuthenticated || !state.sessionStartedAt || !state.lastActivityAt) return;
 
         const now = Date.now();
-        const elapsed = now - state.lastActivityAt;
+        const elapsed = now - (state.lastActivityAt ?? now);
 
         if (elapsed >= SESSION_TIMEOUT_MS) {
           // Auto logout due to inactivity
@@ -261,15 +273,4 @@ export const useAuthStore = create<AuthState>()(
         const role = get().currentUser?.role;
         return role === 'admin' || role === 'manager';
       },
-    }),
-    {
-      name: 'beidar-auth',
-      // Only persist user identity, not loading state
-      partialize: (state) => ({
-        currentUser: state.currentUser,
-        isAuthenticated: state.isAuthenticated,
-        sessionStartedAt: state.sessionStartedAt,
-      }),
-    },
-  ),
-);
+    }));

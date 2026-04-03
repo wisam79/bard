@@ -15,6 +15,7 @@ type Sale struct {
 	Discount        float64            `json:"discount"`
 	VAT             float64            `json:"vat"`
 	Total           float64            `json:"total"`
+	TotalCost       float64            `json:"totalCost"`
 	PaymentMethod   string             `json:"paymentMethod"`
 	Status          string             `gorm:"index" json:"status"`
 	ItemsCount      float64            `json:"itemsCount"`

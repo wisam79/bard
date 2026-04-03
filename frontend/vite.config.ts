@@ -25,10 +25,13 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
+    maxWorkers: 1,
+    minWorkers: 1,
+    fileParallelism: false,
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/tests/e2e/**'],
   },
 })
-
 

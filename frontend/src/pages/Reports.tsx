@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import Skeleton from '@/components/ui/Skeleton';
 import EmptyState from '@/components/ui/EmptyState';
+import { wailsApp } from '@/lib/wails';
 
 // ─── Colour palette for pie chart ─────────────────────────────────────────────
 const PIE_COLORS = ['#f59e0b', '#3b82f6', '#22c55e', '#a855f7', '#ef4444'];
@@ -57,19 +58,21 @@ const Reports: React.FC = () => {
 
   const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ['dashboardStats'],
-    queryFn: () => window.go.main.App.GetDashboardStats(),
+    queryFn: () => wailsApp.GetDashboardStats(),
   });
 
   const { data: recentSales, isLoading: salesLoading } = useQuery<Sale[]>({
     queryKey: ['recentSales', 10],
-    queryFn: () => window.go.main.App.GetRecentSales(10),
+    queryFn: () => wailsApp.GetRecentSales(10),
   });
 
-  // Build pie data from topProducts
-  const pieData = (stats?.topProducts || []).map((p: TopProduct) => ({
-    name: p.name,
-    value: p.totalAmount,
-  }));
+  // Build pie data from topProducts with null safety
+  const pieData = stats?.topProducts 
+    ? stats.topProducts.map((p: TopProduct) => ({
+        name: p.name,
+        value: p.totalAmount,
+      }))
+    : [];
 
   return (
     <div className="p-6 h-full flex flex-col gap-6 relative bg-brand-dark/20 overflow-auto custom-scrollbar" dir="rtl">
@@ -311,7 +314,7 @@ const Reports: React.FC = () => {
 
               {/* List */}
               <div className="space-y-3">
-                {stats.topProducts.map((product: TopProduct, index: number) => (
+                {(stats?.topProducts || []).map((product: TopProduct, index: number) => (
                   <div
                     key={product.productId}
                     className="group flex items-center justify-between p-3 bg-brand-dark/20 rounded-2xl border border-brand-border/20 hover:border-primary-500/30 transition-all"

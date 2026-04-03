@@ -24,6 +24,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, addToCart }) => {
             key={product.id}
             onClick={() => !outOfStock && addToCart(product)}
             disabled={outOfStock}
+            aria-label={`إضافة ${product.name}`}
+            data-testid={`product-card-${product.id}`}
             className={`group relative aspect-square bg-brand-surface/20 dark:bg-brand-dark/20 backdrop-blur-md rounded-2xl p-4 border border-brand-border/20 flex flex-col items-center justify-between text-center transition-all duration-200 hover:shadow-xl hover:border-primary-500/30 hover:-translate-y-1 active:scale-95 ${
               outOfStock ? 'opacity-40 grayscale cursor-not-allowed' : ''
             }`}

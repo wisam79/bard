@@ -31,25 +31,25 @@ interface ActivityLogState {
   entries: ActivityEntry[];
   maxEntries: number;
 
-  log: (action: ActivityAction, label: string, detail?: string) => void;
+  log: (action: ActivityAction, label: string, detail?: string, staffName?: string) => void;
   clear: () => void;
   getRecent: (count?: number) => ActivityEntry[];
 }
 
-let counter = 0;
+let activityCounter = 0;
 
 // ─── Store ───────────────────────────────────────────────────────────────────
 export const useActivityLog = create<ActivityLogState>((set, get) => ({
   entries: [],
   maxEntries: 200,
 
-  log: (action, label, detail) => {
+  log: (action, label, detail, staffName = '') => {
     const entry: ActivityEntry = {
-      id: `act-${Date.now()}-${++counter}`,
+      id: `act-${Date.now()}-${++activityCounter}`,
       action,
       label,
       detail,
-      staffName: 'المستخدم الحالي', // Will be overridden by components
+      staffName,
       timestamp: Date.now(),
     };
 

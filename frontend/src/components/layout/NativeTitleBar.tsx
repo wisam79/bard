@@ -1,5 +1,6 @@
 import React from 'react';
 import { Minus, Square, X } from 'lucide-react';
+import { wailsWindow } from '@/lib/wails';
 
 export const NativeTitleBar: React.FC = () => {
   return (
@@ -12,19 +13,19 @@ export const NativeTitleBar: React.FC = () => {
       </div>
       <div className="flex no-drag h-full">
         <button
-          onClick={() => window.runtime?.WindowMinimise()}
+          onClick={wailsWindow.minimise}
           className="w-12 h-full flex items-center justify-center hover:bg-brand-border/50 text-brand-accent/40 hover:dark:text-white text-gray-900 transition-all"
         >
           <Minus size={16} />
         </button>
         <button
-          onClick={() => window.runtime?.WindowMaximise()}
+          onClick={wailsWindow.toggleMaximise}
           className="w-12 h-full flex items-center justify-center hover:bg-brand-border/50 text-brand-accent/40 hover:dark:text-white text-gray-900 transition-all"
         >
           <Square size={12} />
         </button>
         <button
-          onClick={() => window.runtime?.Quit()}
+          onClick={wailsWindow.quit}
           className="w-12 h-full flex items-center justify-center hover:bg-red-500 text-brand-accent/40 hover:text-white transition-all"
         >
           <X size={18} />

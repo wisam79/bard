@@ -10,6 +10,7 @@ import CategoryBar from '../components/features/sales/CategoryBar';
 import ProductGrid from '../components/features/sales/ProductGrid';
 import CartList from '../components/features/sales/CartList';
 import PaymentModal from '../components/features/sales/PaymentModal';
+import { wailsApp } from '@/lib/wails';
 
 const Sales: React.FC = () => {
   const { notify } = useAppStore();
@@ -27,17 +28,17 @@ const Sales: React.FC = () => {
 
   const { data: preferences } = useQuery<AppPreferences>({
     queryKey: ['preferences'],
-    queryFn: () => window.go.main.App.GetPreferences(),
+    queryFn: () => wailsApp.GetPreferences(),
   });
 
   const { data: productsData } = useQuery({
     queryKey: ['products', 1, 100, searchQuery, selectedCategory],
-    queryFn: () => window.go.main.App.GetProducts(1, 100, searchQuery, selectedCategory),
+    queryFn: () => wailsApp.GetProducts(1, 100, searchQuery, selectedCategory),
   });
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
-    queryFn: () => window.go.main.App.GetCategories(),
+    queryFn: () => wailsApp.GetCategories(),
   });
 
   // Auto-print after sale completion
@@ -129,7 +130,7 @@ const Sales: React.FC = () => {
     setShowPrintReceipt(true);
   }, [preferences, cart, subtotal, discount, total, paymentMethod, customerName]);
 
-  const createSaleMutation = useMutation({
+  const createSaleMutation = useMutation<Sale>({
     mutationFn: async () => {
       const saleData = {
         items: cart.map((item) => ({
@@ -159,8 +160,13 @@ const Sales: React.FC = () => {
         createdAt: '',
         updatedAt: '',
       };
-      await window.go.main.App.CreateSale(saleData as any);
-      return saleData as any;
+      await wailsApp.CreateSale(saleData as Sale);
+      const recentSales = await wailsApp.GetRecentSales(1);
+      return recentSales[0] ?? {
+        ...(saleData as Sale),
+        id: `pending-${Date.now()}`,
+        date: new Date().toISOString().split('T')[0],
+      };
     },
     onSuccess: (sale) => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -172,7 +178,7 @@ const Sales: React.FC = () => {
       setLastSale(sale);
       
       if (!preferences?.autoPrint) {
-        generateAndPrintReceipt(sale as any);
+        generateAndPrintReceipt(sale);
       }
     },
     onError: () => {
@@ -193,7 +199,7 @@ const Sales: React.FC = () => {
   }, []);
 
   return (
-    <div className="h-full flex overflow-hidden animate-fade-in bg-brand-dark/5">
+    <div className="h-full flex overflow-hidden animate-fade-in bg-brand-dark/5" data-testid="page-sales">
       {/* Print Receipt Component */}
       {receiptData && showPrintReceipt && (
         <PrintReceipt
@@ -298,6 +304,7 @@ const Sales: React.FC = () => {
           <button
             onClick={handleCheckout}
             disabled={cart.length === 0}
+            data-testid="checkout-button"
             className="w-full h-15 bg-primary-500 hover:bg-primary-600 disabled:opacity-40 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-primary-500/20 active:scale-[0.98] transition-all py-4"
           >
             <CreditCard size={18} />

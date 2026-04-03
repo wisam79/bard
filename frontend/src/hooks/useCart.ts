@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { CartItem, Product } from '@/types';
 
 interface UseCartOptions {
@@ -6,6 +6,7 @@ interface UseCartOptions {
 }
 
 export function useCart(options?: UseCartOptions) {
+  void options;
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [selectedCustomerName, setSelectedCustomerName] = useState('');
@@ -14,6 +15,7 @@ export function useCart(options?: UseCartOptions) {
   const [paymentMethod, setPaymentMethod] = useState<string>('cash');
   const [isZenMode, setIsZenMode] = useState(false);
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
+  const justAddedTimerRef = useRef<number | null>(null);
 
   const subtotal = cart.reduce((sum, item) => sum + item.total, 0);
   const total = subtotal - discount;
@@ -33,7 +35,21 @@ export function useCart(options?: UseCartOptions) {
       return [...prev, { product, qty: 1, discount: 0, total: product.price }];
     });
     setJustAddedId(product.id);
-    setTimeout(() => setJustAddedId(null), 300);
+    if (justAddedTimerRef.current !== null) {
+      clearTimeout(justAddedTimerRef.current);
+    }
+    justAddedTimerRef.current = window.setTimeout(() => {
+      setJustAddedId(null);
+      justAddedTimerRef.current = null;
+    }, 300);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (justAddedTimerRef.current !== null) {
+        clearTimeout(justAddedTimerRef.current);
+      }
+    };
   }, []);
 
   const updateQty = useCallback((productId: string, qty: number) => {

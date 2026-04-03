@@ -1,8 +1,3 @@
-// NOTE: Component tests that render JSX require vite v5+ to resolve
-// the @react-refresh virtual module in jsdom environment.
-// To enable these tests: upgrade vite from v3 to v5.
-// Business logic is covered by store/hook tests which work fine.
-
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import Button from '@/components/ui/Button';
@@ -20,9 +15,40 @@ describe('Button', () => {
     expect(fn).toHaveBeenCalled();
   });
 
-  it.todo('does not call onClick when disabled');
-  it.todo('shows spinner when loading');
-  it.todo('applies fullWidth class');
-  it.todo('renders with danger variant');
-  it.todo('renders with small size');
+  it('does not call onClick when disabled', () => {
+    const fn = vi.fn();
+    render(
+      <Button onClick={fn} disabled>
+        Disabled
+      </Button>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Disabled' }));
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  it('shows spinner when loading', () => {
+    render(<Button loading>Saving</Button>);
+
+    const button = screen.getByRole('button', { name: 'Saving' });
+    expect(button.querySelector('svg')).not.toBeNull();
+  });
+
+  it('applies fullWidth class', () => {
+    render(<Button fullWidth>Wide</Button>);
+
+    expect(screen.getByRole('button', { name: 'Wide' })).toHaveClass('w-full');
+  });
+
+  it('renders with danger variant', () => {
+    render(<Button variant="danger">Delete</Button>);
+
+    expect(screen.getByRole('button', { name: 'Delete' })).toHaveClass('bg-rose-600');
+  });
+
+  it('renders with small size', () => {
+    render(<Button size="sm">Small</Button>);
+
+    expect(screen.getByRole('button', { name: 'Small' })).toHaveClass('px-3', 'py-1.5', 'text-sm');
+  });
 });

@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"bard/internal/domain"
+	"bard/internal/repository"
 	"errors"
 
 	"gorm.io/gorm"
@@ -11,7 +12,7 @@ type PurchaseOrderRepository struct {
 	db *gorm.DB
 }
 
-func NewPurchaseOrderRepository(db *gorm.DB) *PurchaseOrderRepository {
+func NewPurchaseOrderRepository(db *gorm.DB) repository.PurchaseOrderRepository {
 	return &PurchaseOrderRepository{db: db}
 }
 
@@ -55,6 +56,50 @@ func (r *PurchaseOrderRepository) GetByID(id string) (*domain.PurchaseOrder, err
 func (r *PurchaseOrderRepository) Create(order *domain.PurchaseOrder) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		return tx.Create(order).Error
+	})
+}
+
+func (r *PurchaseOrderRepository) CreateWithStockUpdate(order *domain.PurchaseOrder) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		// Create the order first
+		if err := tx.Create(order).Error; err != nil {
+			return err
+		}
+
+		// Update stock and cost for each item
+		for _, item := range order.Items {
+			var product domain.Product
+			if err := tx.First(&product, "id = ?", item.ProductID).Error; err != nil {
+				return &domain.AppError{
+					Module:  domain.ModuleProduct,
+					Code:    "PRODUCT_NOT_FOUND",
+					Message: "Product not found: " + item.ProductID,
+				}
+			}
+
+			newTotalCost := (product.Stock * product.Cost) + (item.Qty * item.Cost)
+			newTotalStock := product.Stock + item.Qty
+
+			var newCost float64
+			if newTotalStock > 0 {
+				newCost = newTotalCost / newTotalStock
+			} else {
+				newCost = item.Cost
+			}
+
+			if err := tx.Model(&domain.Product{}).Where("id = ?", item.ProductID).Updates(map[string]interface{}{
+				"stock": newTotalStock,
+				"cost":  newCost,
+			}).Error; err != nil {
+				return &domain.AppError{
+					Module:  domain.ModuleProduct,
+					Code:    "STOCK_UPDATE_FAILED",
+					Message: "Failed to update product stock and cost: " + item.ProductID,
+				}
+			}
+		}
+
+		return nil
 	})
 }
 

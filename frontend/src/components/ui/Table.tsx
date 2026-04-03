@@ -1,13 +1,13 @@
 import React from 'react';
 
-interface Column<T> {
-  key: string;
+interface Column<T extends Record<string, unknown>> {
+  key: Extract<keyof T, string>;
   title: string;
   render?: (item: T) => React.ReactNode;
   className?: string;
 }
 
-interface TableProps<T> {
+interface TableProps<T extends Record<string, unknown>> {
   columns: Column<T>[];
   data: T[];
   renderRow?: (item: T) => React.ReactNode;
@@ -16,7 +16,21 @@ interface TableProps<T> {
   loading?: boolean;
 }
 
-function Table<T>({
+const renderCellValue = <T extends Record<string, unknown>>(
+  item: T,
+  key: Extract<keyof T, string>,
+) => {
+  const value = item[key];
+  if (value == null) {
+    return '';
+  }
+  if (React.isValidElement(value)) {
+    return value;
+  }
+  return String(value);
+};
+
+function Table<T extends Record<string, unknown>>({
   columns,
   data,
   emptyMessage = 'لا توجد بيانات',
@@ -71,7 +85,7 @@ function Table<T>({
                   key={col.key}
                   className={`px-4 py-3 text-sm ${col.className || ''}`}
                 >
-                  {col.render ? col.render(item) : (item as any)[col.key]}
+                  {col.render ? col.render(item) : renderCellValue(item, col.key)}
                 </td>
               ))}
             </tr>

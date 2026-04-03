@@ -2,6 +2,7 @@ import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { Search, Barcode as BarcodeIcon, X, Zap, ZapOff } from 'lucide-react';
 import Input from '@/components/ui/Input';
 import { Product } from '@/types';
+import { wailsApp } from '@/lib/wails';
 
 interface BarcodeScannerProps {
   onProductFound: (product: Product) => void;
@@ -34,21 +35,20 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
       // First try exact barcode lookup
       if (/^\d+$/.test(query.trim())) {
         try {
-          const product = await window.go.main.App.GetProductByBarcode(query.trim());
+          const product = await wailsApp.GetProductByBarcode(query.trim());
           if (product && product.id) {
-            onProductFound(product);
             onProductFound(product);
             setSearchQuery('');
             document.getElementById('barcode-input')?.focus();
-            return;
+            return; // Return immediately to prevent duplicate call
           }
         } catch {
           // Fall back to search
         }
       }
 
-      // Fallback to search
-      const results = await window.go.main.App.SearchProducts(query.trim(), 1);
+      // Fallback to search only if exact barcode lookup didn't find anything
+      const results = await wailsApp.SearchProducts(query.trim(), 1);
       if (results && results.length > 0) {
         onProductFound(results[0]);
         setSearchQuery('');

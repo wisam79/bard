@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/store';
 import { Customer } from '@/types';
 import { Search, Plus, Pencil, Trash2, Users, Phone, Wallet, Eye, UserPlus, Star, Clock } from 'lucide-react';
+import { wailsApp } from '@/lib/wails';
 
 const Customers: React.FC = () => {
   const { notify } = useAppStore();
@@ -20,7 +21,7 @@ const Customers: React.FC = () => {
 
   const { data: customersData, isLoading } = useQuery<{ 0: Customer[]; 1: number }>({
     queryKey: ['customers', page, 20, searchQuery],
-    queryFn: () => window.go.main.App.GetCustomers(page, 20, searchQuery),
+    queryFn: () => wailsApp.GetCustomers(page, 20, searchQuery),
   });
 
   const customers = customersData?.[0] || [];
@@ -30,7 +31,7 @@ const Customers: React.FC = () => {
   const totalDebt = customers.reduce((sum: number, c: Customer) => sum + c.debt + c.installmentDebt, 0);
 
   const createMutation = useMutation({
-    mutationFn: (customer: Partial<Customer>) => window.go.main.App.CreateCustomer(customer as Customer),
+    mutationFn: (customer: Partial<Customer>) => wailsApp.CreateCustomer(customer as Customer),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       notify('تم إضافة العميل بنجاح', 'success');
@@ -40,7 +41,7 @@ const Customers: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (customer: Partial<Customer>) => window.go.main.App.UpdateCustomer(customer as Customer),
+    mutationFn: (customer: Partial<Customer>) => wailsApp.UpdateCustomer(customer as Customer),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       notify('تم تحديث العميل بنجاح', 'success');
@@ -50,7 +51,7 @@ const Customers: React.FC = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => window.go.main.App.DeleteCustomer(id),
+    mutationFn: (id: string) => wailsApp.DeleteCustomer(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       notify('تم حذف العميل', 'success');

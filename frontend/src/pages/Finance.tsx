@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/store';
 import { Expense } from '@/types';
 import { Search, Plus, Pencil, Trash2, Wallet, TrendingDown, TrendingUp, Calendar, Tag, FileText, PieChart } from 'lucide-react';
+import { wailsApp } from '@/lib/wails';
 
 const Finance: React.FC = () => {
   const { notify } = useAppStore();
@@ -22,7 +23,7 @@ const Finance: React.FC = () => {
 
   const { data: expensesData, isLoading } = useQuery<{ 0: Expense[]; 1: number }>({
     queryKey: ['expenses', page, 20, selectedCategory],
-    queryFn: () => window.go.main.App.GetExpenses(page, 20, selectedCategory),
+    queryFn: () => wailsApp.GetExpenses(page, 20, selectedCategory),
   });
 
   const expenses = expensesData?.[0] || [];
@@ -32,7 +33,7 @@ const Finance: React.FC = () => {
   const totalAmount = expenses.reduce((sum: number, e: Expense) => sum + e.amount, 0);
 
   const createMutation = useMutation({
-    mutationFn: (expense: Partial<Expense>) => window.go.main.App.CreateExpense(expense as Expense),
+    mutationFn: (expense: Partial<Expense>) => wailsApp.CreateExpense(expense as Expense),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       notify('تم إضافة المصروف بنجاح', 'success');
@@ -42,7 +43,7 @@ const Finance: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (expense: Partial<Expense>) => window.go.main.App.UpdateExpense(expense as Expense),
+    mutationFn: (expense: Partial<Expense>) => wailsApp.UpdateExpense(expense as Expense),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       notify('تم تحديث المصروف بنجاح', 'success');
@@ -52,7 +53,7 @@ const Finance: React.FC = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => window.go.main.App.DeleteExpense(id),
+    mutationFn: (id: string) => wailsApp.DeleteExpense(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       notify('تم حذف المصروف', 'success');

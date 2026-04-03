@@ -45,3 +45,17 @@ Thumbs.db
 coverage/
 test-results/
 playwright-report/
+*.tsbuildinfo
+
+# Local tooling
+.gocache/
+.qwen/
+ADDITIONAL_TESTS.md
+FINAL_TEST_SUMMARY.md
+TEST_SUMMARY.md
+
+# Wails
+wailsjs/
+
+# Build artifacts
+build/bin/

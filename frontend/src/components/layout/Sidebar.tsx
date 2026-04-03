@@ -51,6 +51,8 @@ export const Sidebar: React.FC = () => {
               key={item.view}
               onClick={() => setActiveView(item.view)}
               title={item.label}
+              aria-label={item.label}
+              data-testid={`nav-${item.view}`}
               className={`w-14 h-14 flex items-center justify-center rounded-2xl transition-all duration-150 ${
                 isActive
                   ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30'
@@ -78,6 +80,8 @@ export const Sidebar: React.FC = () => {
         <button
           onClick={toggleTheme}
           title="تبديل المظهر"
+          aria-label="تبديل المظهر"
+          data-testid="theme-toggle"
           className="w-12 h-12 rounded-2xl bg-brand-surface/50 dark:bg-brand-dark/50 border border-brand-border/30 flex items-center justify-center text-brand-accent/60 hover:text-brand-accent transition-colors duration-150"
         >
           {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
@@ -87,6 +91,8 @@ export const Sidebar: React.FC = () => {
         <button
           onClick={logout}
           title="تسجيل الخروج"
+          aria-label="تسجيل الخروج"
+          data-testid="logout-button"
           className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/10 flex items-center justify-center text-red-500/60 hover:text-red-500 hover:bg-red-500/20 transition-colors duration-150"
         >
           <LogOut size={20} />

@@ -1,19 +1,7 @@
 import { create } from 'zustand';
 import type { PurchaseOrder, PaginatedResponse } from '@/types';
 import { useActivityLog } from './activityLog';
-
-// We use the same PaginatedResponse structure as other domains
-// Define an interface for the Go functions we expect from Wails
-interface AppAPI {
-  GetPurchaseOrders(page: number, limit: number, status: string): Promise<PaginatedResponse<PurchaseOrder>>;
-  GetPurchaseOrder(id: string): Promise<PurchaseOrder>;
-  CreatePurchaseOrder(order: PurchaseOrder): Promise<void>;
-  UpdatePurchaseOrder(order: PurchaseOrder): Promise<void>;
-  DeletePurchaseOrder(id: string): Promise<void>;
-  ReceivePurchaseOrder(id: string): Promise<void>;
-}
-
-
+import { wailsApp } from '@/lib/wails';
 
 interface PurchaseOrderState {
   orders: PurchaseOrder[];
@@ -41,7 +29,7 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
   fetchOrders: async (page, limit, status = '') => {
     set({ loading: true, error: null });
     try {
-      const res = await (window as any).go.main.App.GetPurchaseOrders(page, limit, status);
+      const res = await wailsApp.GetPurchaseOrders(page, limit, status);
       set({
         orders: res.data || [],
         total: res.total || 0,
@@ -58,7 +46,7 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       if (!order.items) order.items = [];
-      await (window as any).go.main.App.CreatePurchaseOrder(order as PurchaseOrder);
+      await wailsApp.CreatePurchaseOrder(order as PurchaseOrder);
       useActivityLog.getState().log('expense:create', `إنشاء أمر شراء لمورد`, `${order.supplierName} - ${order.total} د.ع`);
       await get().fetchOrders(1, 20); // Refresh list
     } catch (err) {
@@ -71,7 +59,7 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
   updateOrder: async (order) => {
     set({ loading: true, error: null });
     try {
-      await (window as any).go.main.App.UpdatePurchaseOrder(order);
+      await wailsApp.UpdatePurchaseOrder(order);
       useActivityLog.getState().log('expense:create', `تحديث أمر شراء`, `${order.id.slice(0, 8)} - ${order.total} د.ع`);
       await get().fetchOrders(get().currentPage, 20);
     } catch (err) {
@@ -84,7 +72,7 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
   deleteOrder: async (id) => {
     set({ loading: true, error: null });
     try {
-      await (window as any).go.main.App.DeletePurchaseOrder(id);
+      await wailsApp.DeletePurchaseOrder(id);
       useActivityLog.getState().log('expense:create', `حذف أمر شراء`, `معرف ${id.slice(0, 8)}`);
       await get().fetchOrders(get().currentPage, 20);
     } catch (err) {
@@ -97,7 +85,7 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
   receiveOrder: async (id) => {
     set({ loading: true, error: null });
     try {
-      await (window as any).go.main.App.ReceivePurchaseOrder(id);
+      await wailsApp.ReceivePurchaseOrder(id);
       useActivityLog.getState().log('product:create', `استلام أمر شراء`, `معرف ${id.slice(0, 8)}`);
       await get().fetchOrders(get().currentPage, 20);
     } catch (err) {

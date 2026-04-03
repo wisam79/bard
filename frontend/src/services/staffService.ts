@@ -1,12 +1,13 @@
 import type { Staff } from '@/types';
+import { wailsApp } from '@/lib/wails';
 
 export const staffService = {
   async login(username: string, password: string): Promise<Staff | null> {
-    return window.go.main.App.Login(username, password);
+    return wailsApp.Login(username, password);
   },
 
   async getAll(): Promise<Staff[]> {
-    return window.go.main.App.GetStaff();
+    return wailsApp.GetStaff();
   },
 
   async create(staff: Omit<Staff, 'id' | 'createdAt' | 'updatedAt'>): Promise<void> {
@@ -16,14 +17,14 @@ export const staffService = {
       createdAt: '',
       updatedAt: '',
     };
-    return window.go.main.App.CreateStaff(newStaff);
+    return wailsApp.CreateStaff(newStaff);
   },
 
   async update(staff: Staff): Promise<void> {
-    return window.go.main.App.UpdateStaff(staff);
+    return wailsApp.UpdateStaff(staff);
   },
 
   async delete(id: string): Promise<void> {
-    return window.go.main.App.DeleteStaff(id);
+    return wailsApp.DeleteStaff(id);
   },
 };

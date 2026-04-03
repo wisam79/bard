@@ -1,7 +1,7 @@
-# Beidar POS - System Architecture
+# Bard POS - System Architecture
 
 ## Overview
-Beidar POS is a robust, modern Point of Sale (POS) and Inventory Management system built to be offline-first and fast. It addresses the needs of small to medium businesses by providing a comprehensive suite of tools for sales, inventory, customers, suppliers, expenses, and comprehensive reporting.
+Bard POS is a robust, modern Point of Sale (POS) and Inventory Management system built to be offline-first and fast. It addresses the needs of small to medium businesses by providing a comprehensive suite of tools for sales, inventory, customers, suppliers, expenses, and comprehensive reporting.
 
 ## Technology Stack
 

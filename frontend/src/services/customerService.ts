@@ -1,12 +1,13 @@
 import type { Customer } from '@/types';
+import { wailsApp } from '@/lib/wails';
 
 export const customerService = {
   async getAll(page = 1, limit = 20, search = ''): Promise<[Customer[], number]> {
-    return window.go.main.App.GetCustomers(page, limit, search);
+    return wailsApp.GetCustomers(page, limit, search);
   },
 
   async getById(id: string): Promise<Customer> {
-    return window.go.main.App.GetCustomer(id);
+    return wailsApp.GetCustomer(id);
   },
 
   async create(customer: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>): Promise<void> {
@@ -16,20 +17,20 @@ export const customerService = {
       createdAt: '',
       updatedAt: '',
     };
-    return window.go.main.App.CreateCustomer(newCustomer);
+    return wailsApp.CreateCustomer(newCustomer);
   },
 
   async update(customer: Customer): Promise<void> {
-    return window.go.main.App.UpdateCustomer(customer);
+    return wailsApp.UpdateCustomer(customer);
   },
 
   async delete(id: string): Promise<void> {
-    return window.go.main.App.DeleteCustomer(id);
+    return wailsApp.DeleteCustomer(id);
   },
 
   async searchByPhone(phone: string): Promise<Customer | null> {
     try {
-      return await window.go.main.App.SearchCustomerByPhone(phone);
+      return await wailsApp.SearchCustomerByPhone(phone);
     } catch {
       return null;
     }

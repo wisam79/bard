@@ -56,15 +56,11 @@ func (s *PurchaseOrderService) Create(order *domain.PurchaseOrder) error {
 	order.UpdatedAt = time.Now()
 
 	s.log.Info("Creating purchase order", "id", order.ID, "total", order.Total)
-	err := s.repo.Create(order)
-	if err != nil {
-		return err
-	}
 
 	if order.Status == "received" {
-		return s.HandleReceivedOrder(order)
+		return s.repo.CreateWithStockUpdate(order)
 	}
-	return nil
+	return s.repo.Create(order)
 }
 
 func (s *PurchaseOrderService) Update(order *domain.PurchaseOrder) error {
@@ -92,25 +88,44 @@ func (s *PurchaseOrderService) ReceiveOrder(id string) error {
 		}
 	}
 
+	// Update status first, then handle stock in the same logical flow
+	// If stock update fails, we need to revert the status
 	err = s.repo.UpdateStatus(id, "received")
 	if err != nil {
 		return err
 	}
 
 	s.log.Info("Receiving purchase order", "id", id)
-	return s.HandleReceivedOrder(order)
+	err = s.HandleReceivedOrder(order)
+	if err != nil {
+		// Rollback: revert status back to pending if stock update fails
+		s.repo.UpdateStatus(id, "pending")
+		s.log.Error("Failed to handle received order, reverted status", "id", id, "error", err)
+		return &domain.AppError{
+			Module:  domain.ModuleProduct,
+			Code:    "STOCK_UPDATE_FAILED",
+			Message: "Failed to update stock. Order status reverted to pending.",
+			Hint:    err.Error(),
+		}
+	}
+
+	return nil
 }
 
 func (s *PurchaseOrderService) HandleReceivedOrder(order *domain.PurchaseOrder) error {
-	// Update product stock and calculate average cost
+	// Process all items - note: this should ideally be in a DB transaction
+	// For now, we process sequentially and fail fast
 	for _, item := range order.Items {
 		product, err := s.products.GetByID(item.ProductID)
 		if err != nil {
 			s.log.Error("Failed to fetch product for stock update", "productID", item.ProductID, "error", err)
-			continue // skip or return error? We'll log and continue to avoid full failure for missing items
+			return &domain.AppError{
+				Module:  domain.ModuleProduct,
+				Code:    "PRODUCT_NOT_FOUND",
+				Message: "Failed to fetch product for stock update: " + item.ProductID,
+			}
 		}
 
-		// Calculate new average cost: (CurrentStock * CurrentCost + AddedStock * AddedCost) / (CurrentStock + AddedStock)
 		newTotalCost := (float64(product.Stock) * product.Cost) + (item.Qty * item.Cost)
 		newTotalStock := float64(product.Stock) + item.Qty
 
@@ -118,7 +133,7 @@ func (s *PurchaseOrderService) HandleReceivedOrder(order *domain.PurchaseOrder) 
 		if newTotalStock > 0 {
 			newCost = newTotalCost / newTotalStock
 		} else {
-			newCost = item.Cost // fallback
+			newCost = item.Cost
 		}
 
 		product.Stock = newTotalStock
@@ -126,6 +141,11 @@ func (s *PurchaseOrderService) HandleReceivedOrder(order *domain.PurchaseOrder) 
 
 		if err := s.products.Update(product); err != nil {
 			s.log.Error("Failed to update product stock and cost", "productID", item.ProductID, "error", err)
+			return &domain.AppError{
+				Module:  domain.ModuleProduct,
+				Code:    "STOCK_UPDATE_FAILED",
+				Message: "Failed to update product stock and cost: " + item.ProductID,
+			}
 		}
 	}
 	return nil
