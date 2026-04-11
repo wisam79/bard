@@ -12,6 +12,7 @@ export async function mockWails(page: Page) {
       };
 
     const now = new Date().toISOString();
+    const sessionToken = 'mock-session-token-' + Math.random().toString(36).slice(2);
 
     const products = [
       {
@@ -124,6 +125,10 @@ export async function mockWails(page: Page) {
       };
     };
 
+    const checkToken = (token: string) => token === sessionToken;
+
+    const staffList: Array<Record<string, unknown>> = [];
+
     const app = {
       Login: async (username: string, password: string) => {
         if (username === 'admin' && password === 'admin') {
@@ -133,12 +138,14 @@ export async function mockWails(page: Page) {
             name: 'المدير',
             role: 'admin',
             isActive: true,
+            token: sessionToken,
             createdAt: now,
             updatedAt: now,
           };
         }
         return null;
       },
+      Logout: async (_token: string) => undefined,
       GetDashboardStats: async () => ({
         todaySales: 5000,
         todayOrders: 1,
@@ -152,7 +159,10 @@ export async function mockWails(page: Page) {
         recentSales,
       }),
       GetPreferences: async () => preferences,
-      UpdatePreferences: async () => undefined,
+      UpdatePreferences: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
       GetProducts: async (_page: number, limit: number, search: string, category: string) => {
         const filtered = products.filter((product) => {
           const matchesSearch =
@@ -171,21 +181,40 @@ export async function mockWails(page: Page) {
           stats: buildProductStats(filtered),
         };
       },
+      GetProduct: async (id: string) => products.find(p => p.id === id) || null,
+      GetProductByBarcode: async (barcode: string) => products.find(p => p.barcode === barcode) || null,
       GetCategories: async () => categories,
+      GetProductStats: async () => buildProductStats(products),
       SearchProducts: async (query: string, limit: number) =>
         products
           .filter((product) => product.name.includes(query) || product.barcode.includes(query))
           .slice(0, limit),
+      CreateProduct: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
+      UpdateProduct: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
+      DeleteProduct: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
       GetCustomers: async () => [customers, customers.length],
-      GetStaff: async () => [],
-      GetSuppliers: async () => [],
-      GetPurchaseOrders: async () => ({
-        data: [],
-        total: 0,
+      GetCustomer: async (id: string) => customers.find(c => c.id === id) || null,
+      SearchCustomerByPhone: async (phone: string) => customers.find(c => c.phone === phone) || null,
+      CreateCustomer: async () => undefined,
+      UpdateCustomer: async () => undefined,
+      DeleteCustomer: async () => undefined,
+      GetSales: async (_page: number, _limit: number, _search: string, _status: string) => ({
+        data: recentSales,
+        total: recentSales.length,
         totalPages: 1,
         page: 1,
+        stats: { count: recentSales.length, total: recentSales.reduce((s, sale) => s + sale.total, 0), pending: 0, returns: 0 },
       }),
-      GetRecentSales: async (limit: number) => recentSales.slice(0, limit),
+      GetSale: async (id: string) => recentSales.find(s => s.id === id) || null,
       CreateSale: async (sale: Record<string, unknown>) => {
         const createdSale = {
           ...recentSales[0],
@@ -198,14 +227,104 @@ export async function mockWails(page: Page) {
         };
         recentSales = [createdSale, ...recentSales];
       },
-      CreateProduct: async () => undefined,
-      UpdateProduct: async () => undefined,
-      DeleteProduct: async () => undefined,
-      CreateCustomer: async () => undefined,
-      UpdateCustomer: async () => undefined,
-      DeleteCustomer: async () => undefined,
-      ResetDatabase: async () => undefined,
-      ExportDatabase: async () => ({ preferences, products, customers }),
+      ProcessReturn: async (token: string, saleId: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        const sale = recentSales.find(s => s.id === saleId);
+        if (sale) sale.status = 'return';
+        return sale;
+      },
+      GetRecentSales: async (limit: number) => recentSales.slice(0, limit),
+      CalculateInstallmentPlan: async (total: number, downPayment: number, months: number) => {
+        const remaining = total - downPayment;
+        const monthlyAmount = Math.round((remaining / months) * 100) / 100;
+        const schedule = [];
+        let balance = remaining;
+        for (let i = 1; i <= months; i++) {
+          const amount = i === months ? Math.round(balance * 100) / 100 : monthlyAmount;
+          balance -= amount;
+          schedule.push({ month: i, amount, dueDate: `2026-${String(i + 4).padStart(2, '0')}-03`, paid: false });
+        }
+        return { totalAmount: total, downPayment, remaining, monthlyAmount, schedule };
+      },
+      GetParkedSales: async () => [],
+      ParkSale: async () => undefined,
+      DeleteParkedSale: async () => undefined,
+      GetStaff: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return staffList;
+      },
+      CreateStaff: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
+      UpdateStaff: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
+      DeleteStaff: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
+      GetExpenses: async () => [[], 0],
+      CreateExpense: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
+      UpdateExpense: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
+      DeleteExpense: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
+      CreatePayment: async () => undefined,
+      GetPayments: async () => [],
+      GetSuppliers: async () => [],
+      GetSupplier: async () => null,
+      CreateSupplier: async () => undefined,
+      UpdateSupplier: async () => undefined,
+      DeleteSupplier: async () => undefined,
+      GetPurchaseOrders: async () => ({
+        data: [],
+        total: 0,
+        totalPages: 1,
+        page: 1,
+      }),
+      GetPurchaseOrder: async () => null,
+      CreatePurchaseOrder: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
+      UpdatePurchaseOrder: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
+      DeletePurchaseOrder: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
+      ReceivePurchaseOrder: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
+      GetActiveShift: async () => null,
+      StartShift: async () => null,
+      CloseShift: async () => null,
+      AddCashMovement: async () => undefined,
+      GetCashMovements: async () => [],
+      ResetDatabase: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
+      ExportDatabase: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return { preferences, products, customers };
+      },
+      ImportDatabase: async (token: string) => {
+        if (!checkToken(token)) throw new Error('Not authenticated');
+        return undefined;
+      },
     };
 
     windowWithWails.go = {

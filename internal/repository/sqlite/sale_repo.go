@@ -7,6 +7,7 @@ import (
 	"bard/internal/domain"
 	"bard/internal/repository"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -35,7 +36,7 @@ func (r *saleRepository) GetAll(page, limit int, search, status string) (*domain
 	query.Count(&total)
 
 	offset := (page - 1) * limit
-	if err := query.Preload("Items").Offset(offset).Limit(limit).
+	if err := query.Offset(offset).Limit(limit).
 		Order("timestamp DESC").Find(&sales).Error; err != nil {
 		return nil, err
 	}
@@ -62,7 +63,7 @@ func (r *saleRepository) GetAll(page, limit int, search, status string) (*domain
 func (r *saleRepository) GetByID(id string) (*domain.Sale, error) {
 	var sale domain.Sale
 	if err := r.db.Preload("Items").First(&sale, "id = ?", id).Error; err != nil {
-		return nil, err
+		return nil, handleDBError(err, domain.ModuleSales, "sale")
 	}
 	return &sale, nil
 }
@@ -141,7 +142,7 @@ func (r *saleRepository) GetByCustomerID(customerID string, page, limit int) (*d
 	query.Count(&total)
 
 	offset := (page - 1) * limit
-	if err := query.Preload("Items").Offset(offset).Limit(limit).
+	if err := query.Offset(offset).Limit(limit).
 		Order("timestamp DESC").Find(&sales).Error; err != nil {
 		return nil, err
 	}
@@ -165,7 +166,7 @@ func (r *saleRepository) GetByDateRange(startDate, endDate string) ([]domain.Sal
 
 func (r *saleRepository) GetRecent(limit int) ([]domain.Sale, error) {
 	var sales []domain.Sale
-	err := r.db.Preload("Items").Order("timestamp DESC").Limit(limit).Find(&sales).Error
+	err := r.db.Order("timestamp DESC").Limit(limit).Find(&sales).Error
 	return sales, err
 }
 
@@ -254,4 +255,199 @@ func (r *saleRepository) GetMonthStats() (float64, int, error) {
 		Row().Scan(&total, &count)
 
 	return total, int(count), err
+}
+
+func (r *saleRepository) ProcessReturnWithStockUpdate(originalSaleID string) (*domain.Sale, error) {
+	original, err := r.GetByID(originalSaleID)
+	if err != nil {
+		return nil, err
+	}
+
+	returnSale := &domain.Sale{
+		ID:            uuid.New().String(),
+		CustomerID:    original.CustomerID,
+		CustomerName:  original.CustomerName,
+		StaffID:       original.StaffID,
+		StaffName:     original.StaffName,
+		Date:          time.Now().Format("2006-01-02"),
+		Timestamp:     time.Now().Unix(),
+		Status:        "return",
+		PaymentMethod: original.PaymentMethod,
+		Note:          "إرجاع - " + original.ID,
+	}
+
+	var total float64
+	for _, item := range original.Items {
+		returnItem := domain.SaleItem{
+			ProductID: item.ProductID,
+			Name:      item.Name,
+			Price:     item.Price,
+			Quantity:  item.Quantity,
+			Total:     -item.Total,
+			Cost:      item.Cost,
+		}
+		returnSale.Items = append(returnSale.Items, returnItem)
+		total += item.Total
+	}
+
+	returnSale.Subtotal = -total
+	returnSale.Discount = -original.Discount
+	returnSale.VAT = -original.VAT
+	returnSale.Total = -original.Total
+
+	var createdReturn *domain.Sale
+	err = r.db.Transaction(func(tx *gorm.DB) error {
+		for _, item := range original.Items {
+			var product domain.Product
+			if err := tx.First(&product, "id = ?", item.ProductID).Error; err != nil {
+				return &domain.AppError{
+					Module:  domain.ModuleProduct,
+					Code:    "PRODUCT_NOT_FOUND",
+					Message: "المنتج غير موجود لاستعادة المخزون: " + item.ProductID,
+				}
+			}
+			newStock := product.Stock + item.Quantity
+			if err := tx.Model(&product).Update("stock", newStock).Error; err != nil {
+				return err
+			}
+		}
+
+		if original.PaymentMethod == "credit" && original.CustomerID != "" {
+			if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
+				UpdateColumn("debt", gorm.Expr("debt - ?", original.Total)).Error; err != nil {
+				return err
+			}
+		} else if original.PaymentMethod == "installment" && original.CustomerID != "" {
+			if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
+				UpdateColumn("installment_debt", gorm.Expr("installment_debt - ?", original.Total)).Error; err != nil {
+				return err
+			}
+		} else if original.PaymentMethod == "split" && original.CustomerID != "" {
+			if creditAmount, ok := original.SplitDetails["credit"]; ok && creditAmount > 0 {
+				if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
+					UpdateColumn("debt", gorm.Expr("debt - ?", creditAmount)).Error; err != nil {
+					return err
+				}
+			}
+		}
+
+		if err := tx.Create(returnSale).Error; err != nil {
+			return err
+		}
+		createdReturn = returnSale
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return createdReturn, nil
+}
+
+func (r *saleRepository) ProcessPartialReturnWithStockUpdate(originalSaleID string, returnItems []repository.PartialReturnItem) (*domain.Sale, error) {
+	original, err := r.GetByID(originalSaleID)
+	if err != nil {
+		return nil, err
+	}
+
+	originalByProduct := make(map[string]*domain.SaleItem, len(original.Items))
+	for i := range original.Items {
+		originalByProduct[original.Items[i].ProductID] = &original.Items[i]
+	}
+
+	returnSale := &domain.Sale{
+		ID:            uuid.New().String(),
+		CustomerID:    original.CustomerID,
+		CustomerName:  original.CustomerName,
+		StaffID:       original.StaffID,
+		StaffName:     original.StaffName,
+		Date:          time.Now().Format("2006-01-02"),
+		Timestamp:     time.Now().Unix(),
+		Status:        "return",
+		PaymentMethod: original.PaymentMethod,
+		Note:          "إرجاع جزئي - " + original.ID,
+	}
+
+	var returnTotal float64
+	for _, ri := range returnItems {
+		orig := originalByProduct[ri.ProductID]
+		unitPrice := orig.Total / orig.Quantity
+		returnItem := domain.SaleItem{
+			SaleID:    returnSale.ID,
+			ProductID: orig.ProductID,
+			Name:      orig.Name,
+			Price:     orig.Price,
+			Quantity:  ri.Qty,
+			Total:     -(unitPrice * ri.Qty),
+			Cost:      orig.Cost,
+		}
+		returnSale.Items = append(returnSale.Items, returnItem)
+		returnTotal += unitPrice * ri.Qty
+	}
+
+	returnSale.Subtotal = -returnTotal
+	returnSale.Total = -returnTotal
+
+	var created *domain.Sale
+	err = r.db.Transaction(func(tx *gorm.DB) error {
+		for _, ri := range returnItems {
+			var product domain.Product
+			if err := tx.First(&product, "id = ?", ri.ProductID).Error; err != nil {
+				return &domain.AppError{
+					Module:  domain.ModuleProduct,
+					Code:    "PRODUCT_NOT_FOUND",
+					Message: "المنتج غير موجود لاستعادة المخزون: " + ri.ProductID,
+				}
+			}
+			newStock := product.Stock + ri.Qty
+			if err := tx.Model(&product).Update("stock", newStock).Error; err != nil {
+				return err
+			}
+
+			if err := tx.Model(&domain.SaleItem{}).
+				Where("sale_id = ? AND product_id = ?", originalSaleID, ri.ProductID).
+				UpdateColumn("returned_qty", gorm.Expr("returned_qty + ?", ri.Qty)).Error; err != nil {
+				return err
+			}
+		}
+
+		if original.CustomerID != "" && original.Total != 0 {
+			absTotal := math.Abs(original.Total)
+			if absTotal > 0.001 {
+				ratio := returnTotal / absTotal
+				debtReduction := original.Total * ratio
+				switch original.PaymentMethod {
+				case "credit":
+					if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
+						UpdateColumn("debt", gorm.Expr("debt - ?", debtReduction)).Error; err != nil {
+						return err
+					}
+				case "installment":
+					if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
+						UpdateColumn("installment_debt", gorm.Expr("installment_debt - ?", debtReduction)).Error; err != nil {
+						return err
+					}
+				case "split":
+					if creditAmount, ok := original.SplitDetails["credit"]; ok && creditAmount > 0 {
+						creditReduction := creditAmount * ratio
+						if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
+							UpdateColumn("debt", gorm.Expr("debt - ?", creditReduction)).Error; err != nil {
+							return err
+						}
+					}
+				}
+			}
+		}
+
+		if err := tx.Create(returnSale).Error; err != nil {
+			return err
+		}
+		created = returnSale
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return created, nil
 }

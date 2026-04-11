@@ -1,13 +1,15 @@
 package handler
 
 import (
+	"bard/internal/audit"
 	"bard/internal/domain"
 	"bard/internal/logger"
+	"bard/internal/middleware"
 	"bard/internal/service"
 	"context"
+	"fmt"
 )
 
-// App is the main Wails handler that exposes backend services to frontend
 type App struct {
 	ctx            context.Context
 	products       *service.ProductService
@@ -20,10 +22,12 @@ type App struct {
 	shifts         *service.ShiftService
 	suppliers      *service.SupplierService
 	purchaseOrders *service.PurchaseOrderService
+	authMiddleware *middleware.AuthMiddleware
+	rateLimiter    *middleware.RateLimiter
+	audit          *audit.AuditService
 	log            *logger.Logger
 }
 
-// NewApp creates a new App handler
 func NewApp(
 	products *service.ProductService,
 	sales *service.SaleService,
@@ -35,6 +39,9 @@ func NewApp(
 	shifts *service.ShiftService,
 	suppliers *service.SupplierService,
 	purchaseOrders *service.PurchaseOrderService,
+	authMiddleware *middleware.AuthMiddleware,
+	rateLimiter *middleware.RateLimiter,
+	audit *audit.AuditService,
 	log *logger.Logger,
 ) *App {
 	return &App{
@@ -48,27 +55,59 @@ func NewApp(
 		shifts:         shifts,
 		suppliers:      suppliers,
 		purchaseOrders: purchaseOrders,
+		authMiddleware: authMiddleware,
+		rateLimiter:    rateLimiter,
+		audit:          audit,
 		log:            log,
 	}
 }
 
-// Startup is called when the application starts
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 	a.log.Info("Application started")
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 📊 Dashboard & Stats
-// ═══════════════════════════════════════════════════════════════════════════════
+func (a *App) checkPermission(token, permission string) error {
+	staff, ok := a.authMiddleware.GetStaff(token)
+	if !ok {
+		return &domain.AppError{
+			Module:  domain.ModuleStaff,
+			Code:    "UNAUTHORIZED",
+			Message: "لم يتم تسجيل الدخول",
+		}
+	}
+	if !middleware.RequirePermission(staff, permission) {
+		return &domain.AppError{
+			Module:  domain.ModuleStaff,
+			Code:    "FORBIDDEN",
+			Message: fmt.Sprintf("صلاحية مطلوبة: %s", permission),
+		}
+	}
+	return nil
+}
+
+func (a *App) requireAdmin(token string) error {
+	staff, ok := a.authMiddleware.GetStaff(token)
+	if !ok {
+		return &domain.AppError{
+			Module:  domain.ModuleStaff,
+			Code:    "UNAUTHORIZED",
+			Message: "لم يتم تسجيل الدخول",
+		}
+	}
+	if staff.Role != "admin" {
+		return &domain.AppError{
+			Module:  domain.ModuleStaff,
+			Code:    "FORBIDDEN",
+			Message: "هذه العملية تتطلب صلاحيات المدير",
+		}
+	}
+	return nil
+}
 
 func (a *App) GetDashboardStats() (*domain.DashboardStats, error) {
 	return a.stats.GetDashboardStats()
 }
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 📦 Products
-// ═══════════════════════════════════════════════════════════════════════════════
 
 func (a *App) GetProducts(page, limit int, search, category string) (*domain.PaginatedProducts, error) {
 	return a.products.GetAll(page, limit, search, category)
@@ -82,15 +121,25 @@ func (a *App) GetProductByBarcode(barcode string) (*domain.Product, error) {
 	return a.products.GetByBarcode(barcode)
 }
 
-func (a *App) CreateProduct(product domain.Product) error {
+func (a *App) CreateProduct(token string, product domain.Product) error {
+	if err := a.checkPermission(token, middleware.PermCreateProduct); err != nil {
+		return err
+	}
 	return a.products.Create(&product)
 }
 
-func (a *App) UpdateProduct(product domain.Product) error {
+func (a *App) UpdateProduct(token string, product domain.Product) error {
+	if err := a.checkPermission(token, middleware.PermEditProduct); err != nil {
+		return err
+	}
 	return a.products.Update(&product)
 }
 
-func (a *App) DeleteProduct(id string) error {
+func (a *App) DeleteProduct(token string, id string) error {
+	if err := a.checkPermission(token, middleware.PermDeleteProduct); err != nil {
+		return err
+	}
+	a.log.Info("Product deleted", "id", id)
 	return a.products.Delete(id)
 }
 
@@ -106,10 +155,6 @@ func (a *App) SearchProducts(query string, limit int) ([]domain.Product, error) 
 	return a.products.Search(query, limit)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🛒 Sales
-// ═══════════════════════════════════════════════════════════════════════════════
-
 func (a *App) GetSales(page, limit int, search, status string) (*domain.PaginatedSales, error) {
 	return a.sales.GetAll(page, limit, search, status)
 }
@@ -122,7 +167,10 @@ func (a *App) CreateSale(sale domain.Sale) error {
 	return a.sales.Create(&sale)
 }
 
-func (a *App) ProcessReturn(saleID string) (*domain.Sale, error) {
+func (a *App) ProcessReturn(token string, saleID string) (*domain.Sale, error) {
+	if err := a.checkPermission(token, middleware.PermDeleteSale); err != nil {
+		return nil, err
+	}
 	return a.sales.ProcessReturn(saleID)
 }
 
@@ -145,10 +193,6 @@ func (a *App) GetRecentSales(limit int) ([]domain.Sale, error) {
 func (a *App) CalculateInstallmentPlan(total, downPayment float64, months int) (*domain.InstallmentPlan, error) {
 	return a.sales.CalculateInstallmentPlan(total, downPayment, months)
 }
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 👥 Customers
-// ═══════════════════════════════════════════════════════════════════════════════
 
 func (a *App) GetCustomers(page, limit int, search string) ([]domain.Customer, int64, error) {
 	return a.customers.GetAll(page, limit, search)
@@ -174,23 +218,28 @@ func (a *App) SearchCustomerByPhone(phone string) (*domain.Customer, error) {
 	return a.customers.GetByPhone(phone)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 💰 Finance
-// ═══════════════════════════════════════════════════════════════════════════════
-
 func (a *App) GetExpenses(page, limit int, category string) ([]domain.Expense, int64, error) {
 	return a.finance.GetExpenses(page, limit, category)
 }
 
-func (a *App) CreateExpense(expense domain.Expense) error {
+func (a *App) CreateExpense(token string, expense domain.Expense) error {
+	if err := a.checkPermission(token, middleware.PermViewFinance); err != nil {
+		return err
+	}
 	return a.finance.CreateExpense(&expense)
 }
 
-func (a *App) UpdateExpense(expense domain.Expense) error {
+func (a *App) UpdateExpense(token string, expense domain.Expense) error {
+	if err := a.checkPermission(token, middleware.PermViewFinance); err != nil {
+		return err
+	}
 	return a.finance.UpdateExpense(&expense)
 }
 
-func (a *App) DeleteExpense(id string) error {
+func (a *App) DeleteExpense(token string, id string) error {
+	if err := a.checkPermission(token, middleware.PermViewFinance); err != nil {
+		return err
+	}
 	return a.finance.DeleteExpense(id)
 }
 
@@ -202,51 +251,99 @@ func (a *App) GetPayments(saleID string) ([]domain.Payment, error) {
 	return a.finance.GetPayments(saleID)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ⚙️ Settings
-// ═══════════════════════════════════════════════════════════════════════════════
-
 func (a *App) GetPreferences() (*domain.AppPreferences, error) {
 	return a.settings.GetPreferences()
 }
 
-func (a *App) UpdatePreferences(prefs domain.AppPreferences) error {
+func (a *App) UpdatePreferences(token string, prefs domain.AppPreferences) error {
+	if err := a.checkPermission(token, middleware.PermEditSettings); err != nil {
+		return err
+	}
 	return a.settings.UpdatePreferences(&prefs)
 }
 
-func (a *App) ResetDatabase() error {
-	return a.settings.ResetDatabase()
+func (a *App) ResetDatabase(token string) error {
+	if err := a.requireAdmin(token); err != nil {
+		return err
+	}
+	if staff, ok := a.authMiddleware.GetStaff(token); ok {
+		a.audit.LogSensitiveAction(a.ctx, audit.ActionBackup, audit.EntitySettings, "reset", staff.ID, staff.Name, "Database reset")
+	}
+	a.log.Warn("Database reset by admin")
+	err := a.settings.ResetDatabase()
+	if err == nil {
+		// Invalidate all caches
+	}
+	return err
 }
 
-func (a *App) ExportDatabase() (*domain.DatabaseExport, error) {
+func (a *App) ExportDatabase(token string) (*domain.DatabaseExport, error) {
+	if err := a.checkPermission(token, middleware.PermExportReports); err != nil {
+		return nil, err
+	}
 	return a.settings.ExportDatabase()
 }
 
-func (a *App) ImportDatabase(data domain.DatabaseExport) error {
+func (a *App) ImportDatabase(token string, data domain.DatabaseExport) error {
+	if err := a.requireAdmin(token); err != nil {
+		return err
+	}
+	a.log.Warn("Database import by admin")
 	return a.settings.ImportDatabase(&data)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 👤 Staff & Auth
-// ═══════════════════════════════════════════════════════════════════════════════
-
 func (a *App) Login(username, password string) (*domain.Staff, error) {
-	return a.staff.Authenticate(username, password)
+	allowed, retryAfter := a.rateLimiter.Allow(username)
+	if !allowed {
+		return nil, &domain.AppError{
+			Module:  domain.ModuleStaff,
+			Code:    "TOO_MANY_ATTEMPTS",
+			Message: fmt.Sprintf("محاولات كثيرة جداً. حاول بعد %.0f دقيقة", retryAfter.Minutes()),
+		}
+	}
+
+	staff, err := a.staff.Authenticate(username, password)
+	if err != nil {
+		a.rateLimiter.Record(username)
+		return nil, err
+	}
+
+	a.rateLimiter.Reset(username)
+	token := a.authMiddleware.CreateSession(staff)
+	staff.Token = token
+	return staff, nil
 }
 
-func (a *App) GetStaff() ([]domain.Staff, error) {
+func (a *App) Logout(token string) error {
+	a.authMiddleware.DestroySession(token)
+	return nil
+}
+
+func (a *App) GetStaff(token string) ([]domain.Staff, error) {
+	if err := a.checkPermission(token, middleware.PermManageStaff); err != nil {
+		return nil, err
+	}
 	return a.staff.GetAll()
 }
 
-func (a *App) CreateStaff(staff domain.Staff) error {
+func (a *App) CreateStaff(token string, staff domain.Staff) error {
+	if err := a.checkPermission(token, middleware.PermManageStaff); err != nil {
+		return err
+	}
 	return a.staff.Create(&staff)
 }
 
-func (a *App) UpdateStaff(staff domain.Staff) error {
+func (a *App) UpdateStaff(token string, staff domain.Staff) error {
+	if err := a.checkPermission(token, middleware.PermManageStaff); err != nil {
+		return err
+	}
 	return a.staff.Update(&staff)
 }
 
-func (a *App) DeleteStaff(id string) error {
+func (a *App) DeleteStaff(token string, id string) error {
+	if err := a.checkPermission(token, middleware.PermManageStaff); err != nil {
+		return err
+	}
 	return a.staff.Delete(id)
 }
 
@@ -270,10 +367,6 @@ func (a *App) GetCashMovements(shiftID string) ([]domain.CashMovement, error) {
 	return a.shifts.GetCashMovements(shiftID)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🏭 Suppliers
-// ═══════════════════════════════════════════════════════════════════════════════
-
 func (a *App) GetSuppliers() ([]domain.Supplier, error) {
 	return a.suppliers.GetAll()
 }
@@ -282,21 +375,26 @@ func (a *App) GetSupplier(id string) (*domain.Supplier, error) {
 	return a.suppliers.GetByID(id)
 }
 
-func (a *App) CreateSupplier(supplier domain.Supplier) error {
+func (a *App) CreateSupplier(token string, supplier domain.Supplier) error {
+	if err := a.checkPermission(token, middleware.PermCreateProduct); err != nil {
+		return err
+	}
 	return a.suppliers.Create(&supplier)
 }
 
-func (a *App) UpdateSupplier(supplier domain.Supplier) error {
+func (a *App) UpdateSupplier(token string, supplier domain.Supplier) error {
+	if err := a.checkPermission(token, middleware.PermEditProduct); err != nil {
+		return err
+	}
 	return a.suppliers.Update(&supplier)
 }
 
-func (a *App) DeleteSupplier(id string) error {
+func (a *App) DeleteSupplier(token string, id string) error {
+	if err := a.checkPermission(token, middleware.PermDeleteProduct); err != nil {
+		return err
+	}
 	return a.suppliers.Delete(id)
 }
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 📦 Purchase Orders
-// ═══════════════════════════════════════════════════════════════════════════════
 
 func (a *App) GetPurchaseOrders(page, limit int, status string) (*domain.PaginatedResponse[domain.PurchaseOrder], error) {
 	return a.purchaseOrders.GetAll(page, limit, status)
@@ -306,18 +404,44 @@ func (a *App) GetPurchaseOrder(id string) (*domain.PurchaseOrder, error) {
 	return a.purchaseOrders.GetByID(id)
 }
 
-func (a *App) CreatePurchaseOrder(order domain.PurchaseOrder) error {
+func (a *App) CreatePurchaseOrder(token string, order domain.PurchaseOrder) error {
+	if err := a.checkPermission(token, middleware.PermCreateProduct); err != nil {
+		return err
+	}
 	return a.purchaseOrders.Create(&order)
 }
 
-func (a *App) UpdatePurchaseOrder(order domain.PurchaseOrder) error {
+func (a *App) UpdatePurchaseOrder(token string, order domain.PurchaseOrder) error {
+	if err := a.checkPermission(token, middleware.PermEditProduct); err != nil {
+		return err
+	}
 	return a.purchaseOrders.Update(&order)
 }
 
-func (a *App) DeletePurchaseOrder(id string) error {
+func (a *App) DeletePurchaseOrder(token string, id string) error {
+	if err := a.checkPermission(token, middleware.PermDeleteProduct); err != nil {
+		return err
+	}
 	return a.purchaseOrders.Delete(id)
 }
 
-func (a *App) ReceivePurchaseOrder(id string) error {
+func (a *App) ReceivePurchaseOrder(token string, id string) error {
+	if err := a.checkPermission(token, middleware.PermReceiveOrder); err != nil {
+		return err
+	}
 	return a.purchaseOrders.ReceiveOrder(id)
+}
+
+func (a *App) ChangePassword(token, oldPassword, newPassword string) error {
+	staff, ok := a.authMiddleware.GetStaff(token)
+	if !ok {
+		return &domain.AppError{
+			Module:  domain.ModuleStaff,
+			Code:    "UNAUTHORIZED",
+			Message: "لم يتم تسجيل الدخول",
+		}
+	}
+
+	a.audit.LogStaffAction(a.ctx, audit.ActionPasswordChange, staff.ID, staff.ID, staff.Name, "Password changed")
+	return a.staff.UpdatePassword(staff.ID, oldPassword, newPassword)
 }

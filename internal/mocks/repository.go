@@ -194,6 +194,11 @@ func (m *MockCustomerRepository) Update(customer *domain.Customer) error {
 	return args.Error(0)
 }
 
+func (m *MockCustomerRepository) UpdateFields(id string, fields map[string]interface{}) error {
+	args := m.Called(id, fields)
+	return args.Error(0)
+}
+
 func (m *MockCustomerRepository) Delete(id string) error {
 	args := m.Called(id)
 	return args.Error(0)
@@ -493,6 +498,11 @@ func (m *MockPurchaseOrderRepository) UpdateStatus(id string, status string) err
 
 func (m *MockPurchaseOrderRepository) CreateWithStockUpdate(order *domain.PurchaseOrder) error {
 	args := m.Called(order)
+	return args.Error(0)
+}
+
+func (m *MockPurchaseOrderRepository) ReceiveWithStockUpdate(id string) error {
+	args := m.Called(id)
 	return args.Error(0)
 }
 

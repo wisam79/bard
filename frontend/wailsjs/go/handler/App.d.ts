@@ -6,39 +6,41 @@ export function AddCashMovement(arg1:string,arg2:string,arg3:string,arg4:string,
 
 export function CalculateInstallmentPlan(arg1:number,arg2:number,arg3:number):Promise<domain.InstallmentPlan>;
 
+export function ChangePassword(arg1:string,arg2:string,arg3:string):Promise<void>;
+
 export function CloseShift(arg1:string,arg2:number):Promise<domain.Shift>;
 
 export function CreateCustomer(arg1:domain.Customer):Promise<void>;
 
-export function CreateExpense(arg1:domain.Expense):Promise<void>;
+export function CreateExpense(arg1:string,arg2:domain.Expense):Promise<void>;
 
 export function CreatePayment(arg1:domain.Payment):Promise<void>;
 
-export function CreateProduct(arg1:domain.Product):Promise<void>;
+export function CreateProduct(arg1:string,arg2:domain.Product):Promise<void>;
 
-export function CreatePurchaseOrder(arg1:domain.PurchaseOrder):Promise<void>;
+export function CreatePurchaseOrder(arg1:string,arg2:domain.PurchaseOrder):Promise<void>;
 
 export function CreateSale(arg1:domain.Sale):Promise<void>;
 
-export function CreateStaff(arg1:domain.Staff):Promise<void>;
+export function CreateStaff(arg1:string,arg2:domain.Staff):Promise<void>;
 
-export function CreateSupplier(arg1:domain.Supplier):Promise<void>;
+export function CreateSupplier(arg1:string,arg2:domain.Supplier):Promise<void>;
 
 export function DeleteCustomer(arg1:string):Promise<void>;
 
-export function DeleteExpense(arg1:string):Promise<void>;
+export function DeleteExpense(arg1:string,arg2:string):Promise<void>;
 
 export function DeleteParkedSale(arg1:number):Promise<void>;
 
-export function DeleteProduct(arg1:string):Promise<void>;
+export function DeleteProduct(arg1:string,arg2:string):Promise<void>;
 
-export function DeletePurchaseOrder(arg1:string):Promise<void>;
+export function DeletePurchaseOrder(arg1:string,arg2:string):Promise<void>;
 
-export function DeleteStaff(arg1:string):Promise<void>;
+export function DeleteStaff(arg1:string,arg2:string):Promise<void>;
 
-export function DeleteSupplier(arg1:string):Promise<void>;
+export function DeleteSupplier(arg1:string,arg2:string):Promise<void>;
 
-export function ExportDatabase():Promise<domain.DatabaseExport>;
+export function ExportDatabase(arg1:string):Promise<domain.DatabaseExport>;
 
 export function GetActiveShift(arg1:string):Promise<domain.Shift>;
 
@@ -78,23 +80,25 @@ export function GetSale(arg1:string):Promise<domain.Sale>;
 
 export function GetSales(arg1:number,arg2:number,arg3:string,arg4:string):Promise<domain.PaginatedSales>;
 
-export function GetStaff():Promise<Array<domain.Staff>>;
+export function GetStaff(arg1:string):Promise<Array<domain.Staff>>;
 
 export function GetSupplier(arg1:string):Promise<domain.Supplier>;
 
 export function GetSuppliers():Promise<Array<domain.Supplier>>;
 
-export function ImportDatabase(arg1:domain.DatabaseExport):Promise<void>;
+export function ImportDatabase(arg1:string,arg2:domain.DatabaseExport):Promise<void>;
 
 export function Login(arg1:string,arg2:string):Promise<domain.Staff>;
 
+export function Logout(arg1:string):Promise<void>;
+
 export function ParkSale(arg1:domain.ParkedSale):Promise<void>;
 
-export function ProcessReturn(arg1:string):Promise<domain.Sale>;
+export function ProcessReturn(arg1:string,arg2:string):Promise<domain.Sale>;
 
-export function ReceivePurchaseOrder(arg1:string):Promise<void>;
+export function ReceivePurchaseOrder(arg1:string,arg2:string):Promise<void>;
 
-export function ResetDatabase():Promise<void>;
+export function ResetDatabase(arg1:string):Promise<void>;
 
 export function SearchCustomerByPhone(arg1:string):Promise<domain.Customer>;
 
@@ -104,14 +108,14 @@ export function StartShift(arg1:string,arg2:string,arg3:number):Promise<domain.S
 
 export function UpdateCustomer(arg1:domain.Customer):Promise<void>;
 
-export function UpdateExpense(arg1:domain.Expense):Promise<void>;
+export function UpdateExpense(arg1:string,arg2:domain.Expense):Promise<void>;
 
-export function UpdatePreferences(arg1:domain.AppPreferences):Promise<void>;
+export function UpdatePreferences(arg1:string,arg2:domain.AppPreferences):Promise<void>;
 
-export function UpdateProduct(arg1:domain.Product):Promise<void>;
+export function UpdateProduct(arg1:string,arg2:domain.Product):Promise<void>;
 
-export function UpdatePurchaseOrder(arg1:domain.PurchaseOrder):Promise<void>;
+export function UpdatePurchaseOrder(arg1:string,arg2:domain.PurchaseOrder):Promise<void>;
 
-export function UpdateStaff(arg1:domain.Staff):Promise<void>;
+export function UpdateStaff(arg1:string,arg2:domain.Staff):Promise<void>;
 
-export function UpdateSupplier(arg1:domain.Supplier):Promise<void>;
+export function UpdateSupplier(arg1:string,arg2:domain.Supplier):Promise<void>;

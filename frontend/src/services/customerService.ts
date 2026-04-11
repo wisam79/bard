@@ -1,5 +1,6 @@
 import type { Customer } from '@/types';
 import { wailsApp } from '@/lib/wails';
+import { useAuthStore } from '@/store/authStore';
 
 export const customerService = {
   async getAll(page = 1, limit = 20, search = ''): Promise<[Customer[], number]> {

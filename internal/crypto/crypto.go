@@ -4,6 +4,8 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"io"
 )
@@ -64,12 +66,8 @@ func GenerateKey() ([]byte, error) {
 	return key, nil
 }
 
-// HashKey hashes the key for storage (not reversible)
+// HashKey hashes the key for storage verification using SHA-256
 func HashKey(key []byte) string {
-	// Simple hash for key verification
-	hash := 0
-	for _, b := range key {
-		hash = hash*31 + int(b)
-	}
-	return string(rune(hash % 1000000))
+	hash := sha256.Sum256(key)
+	return hex.EncodeToString(hash[:])
 }

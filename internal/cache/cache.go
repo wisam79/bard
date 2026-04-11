@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"sync"
 	"time"
 )
@@ -139,12 +140,12 @@ const (
 )
 
 func (c *ProductCache) GetProductList(page, limit int, search, category string) (interface{}, bool) {
-	key := "products:list:" + string(rune(page)) + ":" + string(rune(limit)) + ":" + search + ":" + category
+	key := fmt.Sprintf("products:list:%d:%d:%s:%s", page, limit, search, category)
 	return c.Get(key)
 }
 
 func (c *ProductCache) SetProductList(page, limit int, search, category string, data interface{}) {
-	key := "products:list:" + string(rune(page)) + ":" + string(rune(limit)) + ":" + search + ":" + category
+	key := fmt.Sprintf("products:list:%d:%d:%s:%s", page, limit, search, category)
 	c.Set(key, data, ProductListTTL)
 }
 
@@ -192,11 +193,11 @@ const (
 )
 
 func (c *SaleCache) GetSaleList(page, limit int, search, status string) (interface{}, bool) {
-	return c.Get("sales:list:" + string(rune(page)) + ":" + search + ":" + status)
+	return c.Get(fmt.Sprintf("sales:list:%d:%s:%s", page, search, status))
 }
 
 func (c *SaleCache) SetSaleList(page, limit int, search, status string, data interface{}) {
-	c.Set("sales:list:"+string(rune(page))+":"+search+":"+status, data, SaleListTTL)
+	c.Set(fmt.Sprintf("sales:list:%d:%s:%s", page, search, status), data, SaleListTTL)
 }
 
 func (c *SaleCache) GetSale(id string) (interface{}, bool) {
@@ -208,11 +209,11 @@ func (c *SaleCache) SetSale(id string, sale interface{}) {
 }
 
 func (c *SaleCache) GetRecentSales(limit int) (interface{}, bool) {
-	return c.Get("sales:recent:" + string(rune(limit)))
+	return c.Get(fmt.Sprintf("sales:recent:%d", limit))
 }
 
 func (c *SaleCache) SetRecentSales(limit int, sales interface{}) {
-	c.Set("sales:recent:"+string(rune(limit)), sales, RecentSaleTTL)
+	c.Set(fmt.Sprintf("sales:recent:%d", limit), sales, RecentSaleTTL)
 }
 
 func (c *SaleCache) InvalidateSale(id string) {
@@ -241,11 +242,11 @@ const (
 )
 
 func (c *CustomerCache) GetCustomerList(page, limit int, search string) (interface{}, bool) {
-	return c.Get("customers:list:" + string(rune(page)) + ":" + search)
+	return c.Get(fmt.Sprintf("customers:list:%d:%s", page, search))
 }
 
 func (c *CustomerCache) SetCustomerList(page, limit int, search string, data interface{}) {
-	c.Set("customers:list:"+string(rune(page))+":"+search, data, CustomerListTTL)
+	c.Set(fmt.Sprintf("customers:list:%d:%s", page, search), data, CustomerListTTL)
 }
 
 func (c *CustomerCache) GetCustomer(id string) (interface{}, bool) {

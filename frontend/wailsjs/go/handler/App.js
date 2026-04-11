@@ -10,6 +10,10 @@ export function CalculateInstallmentPlan(arg1, arg2, arg3) {
   return window['go']['handler']['App']['CalculateInstallmentPlan'](arg1, arg2, arg3);
 }
 
+export function ChangePassword(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['ChangePassword'](arg1, arg2, arg3);
+}
+
 export function CloseShift(arg1, arg2) {
   return window['go']['handler']['App']['CloseShift'](arg1, arg2);
 }
@@ -18,64 +22,64 @@ export function CreateCustomer(arg1) {
   return window['go']['handler']['App']['CreateCustomer'](arg1);
 }
 
-export function CreateExpense(arg1) {
-  return window['go']['handler']['App']['CreateExpense'](arg1);
+export function CreateExpense(arg1, arg2) {
+  return window['go']['handler']['App']['CreateExpense'](arg1, arg2);
 }
 
 export function CreatePayment(arg1) {
   return window['go']['handler']['App']['CreatePayment'](arg1);
 }
 
-export function CreateProduct(arg1) {
-  return window['go']['handler']['App']['CreateProduct'](arg1);
+export function CreateProduct(arg1, arg2) {
+  return window['go']['handler']['App']['CreateProduct'](arg1, arg2);
 }
 
-export function CreatePurchaseOrder(arg1) {
-  return window['go']['handler']['App']['CreatePurchaseOrder'](arg1);
+export function CreatePurchaseOrder(arg1, arg2) {
+  return window['go']['handler']['App']['CreatePurchaseOrder'](arg1, arg2);
 }
 
 export function CreateSale(arg1) {
   return window['go']['handler']['App']['CreateSale'](arg1);
 }
 
-export function CreateStaff(arg1) {
-  return window['go']['handler']['App']['CreateStaff'](arg1);
+export function CreateStaff(arg1, arg2) {
+  return window['go']['handler']['App']['CreateStaff'](arg1, arg2);
 }
 
-export function CreateSupplier(arg1) {
-  return window['go']['handler']['App']['CreateSupplier'](arg1);
+export function CreateSupplier(arg1, arg2) {
+  return window['go']['handler']['App']['CreateSupplier'](arg1, arg2);
 }
 
 export function DeleteCustomer(arg1) {
   return window['go']['handler']['App']['DeleteCustomer'](arg1);
 }
 
-export function DeleteExpense(arg1) {
-  return window['go']['handler']['App']['DeleteExpense'](arg1);
+export function DeleteExpense(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteExpense'](arg1, arg2);
 }
 
 export function DeleteParkedSale(arg1) {
   return window['go']['handler']['App']['DeleteParkedSale'](arg1);
 }
 
-export function DeleteProduct(arg1) {
-  return window['go']['handler']['App']['DeleteProduct'](arg1);
+export function DeleteProduct(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteProduct'](arg1, arg2);
 }
 
-export function DeletePurchaseOrder(arg1) {
-  return window['go']['handler']['App']['DeletePurchaseOrder'](arg1);
+export function DeletePurchaseOrder(arg1, arg2) {
+  return window['go']['handler']['App']['DeletePurchaseOrder'](arg1, arg2);
 }
 
-export function DeleteStaff(arg1) {
-  return window['go']['handler']['App']['DeleteStaff'](arg1);
+export function DeleteStaff(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteStaff'](arg1, arg2);
 }
 
-export function DeleteSupplier(arg1) {
-  return window['go']['handler']['App']['DeleteSupplier'](arg1);
+export function DeleteSupplier(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteSupplier'](arg1, arg2);
 }
 
-export function ExportDatabase() {
-  return window['go']['handler']['App']['ExportDatabase']();
+export function ExportDatabase(arg1) {
+  return window['go']['handler']['App']['ExportDatabase'](arg1);
 }
 
 export function GetActiveShift(arg1) {
@@ -154,8 +158,8 @@ export function GetSales(arg1, arg2, arg3, arg4) {
   return window['go']['handler']['App']['GetSales'](arg1, arg2, arg3, arg4);
 }
 
-export function GetStaff() {
-  return window['go']['handler']['App']['GetStaff']();
+export function GetStaff(arg1) {
+  return window['go']['handler']['App']['GetStaff'](arg1);
 }
 
 export function GetSupplier(arg1) {
@@ -166,28 +170,32 @@ export function GetSuppliers() {
   return window['go']['handler']['App']['GetSuppliers']();
 }
 
-export function ImportDatabase(arg1) {
-  return window['go']['handler']['App']['ImportDatabase'](arg1);
+export function ImportDatabase(arg1, arg2) {
+  return window['go']['handler']['App']['ImportDatabase'](arg1, arg2);
 }
 
 export function Login(arg1, arg2) {
   return window['go']['handler']['App']['Login'](arg1, arg2);
 }
 
+export function Logout(arg1) {
+  return window['go']['handler']['App']['Logout'](arg1);
+}
+
 export function ParkSale(arg1) {
   return window['go']['handler']['App']['ParkSale'](arg1);
 }
 
-export function ProcessReturn(arg1) {
-  return window['go']['handler']['App']['ProcessReturn'](arg1);
+export function ProcessReturn(arg1, arg2) {
+  return window['go']['handler']['App']['ProcessReturn'](arg1, arg2);
 }
 
-export function ReceivePurchaseOrder(arg1) {
-  return window['go']['handler']['App']['ReceivePurchaseOrder'](arg1);
+export function ReceivePurchaseOrder(arg1, arg2) {
+  return window['go']['handler']['App']['ReceivePurchaseOrder'](arg1, arg2);
 }
 
-export function ResetDatabase() {
-  return window['go']['handler']['App']['ResetDatabase']();
+export function ResetDatabase(arg1) {
+  return window['go']['handler']['App']['ResetDatabase'](arg1);
 }
 
 export function SearchCustomerByPhone(arg1) {
@@ -206,26 +214,26 @@ export function UpdateCustomer(arg1) {
   return window['go']['handler']['App']['UpdateCustomer'](arg1);
 }
 
-export function UpdateExpense(arg1) {
-  return window['go']['handler']['App']['UpdateExpense'](arg1);
+export function UpdateExpense(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateExpense'](arg1, arg2);
 }
 
-export function UpdatePreferences(arg1) {
-  return window['go']['handler']['App']['UpdatePreferences'](arg1);
+export function UpdatePreferences(arg1, arg2) {
+  return window['go']['handler']['App']['UpdatePreferences'](arg1, arg2);
 }
 
-export function UpdateProduct(arg1) {
-  return window['go']['handler']['App']['UpdateProduct'](arg1);
+export function UpdateProduct(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateProduct'](arg1, arg2);
 }
 
-export function UpdatePurchaseOrder(arg1) {
-  return window['go']['handler']['App']['UpdatePurchaseOrder'](arg1);
+export function UpdatePurchaseOrder(arg1, arg2) {
+  return window['go']['handler']['App']['UpdatePurchaseOrder'](arg1, arg2);
 }
 
-export function UpdateStaff(arg1) {
-  return window['go']['handler']['App']['UpdateStaff'](arg1);
+export function UpdateStaff(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateStaff'](arg1, arg2);
 }
 
-export function UpdateSupplier(arg1) {
-  return window['go']['handler']['App']['UpdateSupplier'](arg1);
+export function UpdateSupplier(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateSupplier'](arg1, arg2);
 }

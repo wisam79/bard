@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/store';
+import { useAuthStore } from '@/store/authStore';
 import { AppPreferences, Staff } from '@/types';
 import { Settings as SettingsIcon, Store, Palette, Shield, Database, Printer } from 'lucide-react';
 import Button from '@/components/ui/Button';
@@ -14,6 +15,7 @@ import { wailsApp } from '@/lib/wails';
 
 const Settings: React.FC = () => {
   const { notify } = useAppStore();
+  const getToken = useAuthStore.getState().getToken;
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'store' | 'appearance' | 'print' | 'staff' | 'data'>('store');
   const [showStaffModal, setShowStaffModal] = useState(false);
@@ -29,7 +31,11 @@ const Settings: React.FC = () => {
 
   const { data: staffList } = useQuery<Staff[]>({
     queryKey: ['staff'],
-    queryFn: () => wailsApp.GetStaff(),
+    queryFn: () => {
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+      return wailsApp.GetStaff(token);
+    },
   });
 
   useEffect(() => {
@@ -37,7 +43,11 @@ const Settings: React.FC = () => {
   }, [prefs]);
 
   const updatePrefsMutation = useMutation({
-    mutationFn: (p: Partial<AppPreferences>) => wailsApp.UpdatePreferences(p as AppPreferences),
+    mutationFn: (p: Partial<AppPreferences>) => {
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+      return wailsApp.UpdatePreferences(token, p as AppPreferences);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['preferences'] });
       notify('تم حفظ الإعدادات بنجاح', 'success');
@@ -46,7 +56,11 @@ const Settings: React.FC = () => {
   });
 
   const createStaffMutation = useMutation({
-    mutationFn: (s: Partial<Staff>) => wailsApp.CreateStaff(s as Staff),
+    mutationFn: (s: Partial<Staff>) => {
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+      return wailsApp.CreateStaff(token, s as Staff);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
       notify('تم إضافة الموظف بنجاح', 'success');
@@ -57,7 +71,11 @@ const Settings: React.FC = () => {
   });
 
   const resetDbMutation = useMutation({
-    mutationFn: () => wailsApp.ResetDatabase(),
+    mutationFn: () => {
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+      return wailsApp.ResetDatabase(token);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries();
       notify('تم إعادة تعيين قاعدة البيانات', 'success');
@@ -79,7 +97,9 @@ const Settings: React.FC = () => {
 
   const handleExport = async () => {
     try {
-      const data = await wailsApp.ExportDatabase();
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+      const data = await wailsApp.ExportDatabase(token);
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -222,9 +242,7 @@ const Settings: React.FC = () => {
               onExport={handleExport}
               onImport={() => notify('الاستيراد قيد التطوير', 'info')}
               onClearData={() => {
-                // eslint-disable-next-line no-alert
                 if (confirm('هل أنت متأكد؟ سيتم مسح جميع البيانات!')) {
-                  // eslint-disable-next-line no-alert
                   if (confirm('تحذير أخير: هذا الإجراء لا يمكن التراجع عنه!')) resetDbMutation.mutate();
                 }
               }}

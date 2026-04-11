@@ -2,14 +2,20 @@ package main
 
 import (
 	"embed"
+	"os"
+	"time"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 
+	"bard/internal/audit"
+	"bard/internal/cache"
+	"bard/internal/crypto"
 	"bard/internal/handler"
 	"bard/internal/logger"
+	"bard/internal/middleware"
 	"bard/internal/repository/sqlite"
 	"bard/internal/service"
 )
@@ -24,8 +30,37 @@ func main() {
 	db, err := sqlite.NewDatabase()
 	if err != nil {
 		appLogger.Error("Failed to initialize database", "error", err)
-		return
+		os.Exit(1)
 	}
+
+	// Initialize cache instances
+	dashboardCache := cache.NewDashboardCache()
+	productCache := cache.NewProductCache()
+	saleCache := cache.NewSaleCache()
+	customerCache := cache.NewCustomerCache()
+
+	// Use cache instances (suppress unused error for now)
+	_ = dashboardCache
+
+	// Initialize audit service
+	auditSvc := audit.NewAuditService(appLogger)
+
+	// Initialize crypto key manager
+	keyManager, err := crypto.NewKeyManager()
+	if err != nil {
+		appLogger.Warn("Failed to initialize key manager, crypto disabled", "error", err)
+	}
+	encryptor := &crypto.Encryptor{}
+	if keyManager != nil {
+		key, err := keyManager.GetOrCreateKey()
+		if err == nil {
+			encryptor, err = crypto.NewEncryptor(key)
+			if err != nil {
+				appLogger.Warn("Failed to create encryptor", "error", err)
+			}
+		}
+	}
+	_ = encryptor
 
 	productRepo := sqlite.NewProductRepository(db)
 	saleRepo := sqlite.NewSaleRepository(db)
@@ -39,9 +74,12 @@ func main() {
 	supplierRepo := sqlite.NewSupplierRepository(db)
 	poRepo := sqlite.NewPurchaseOrderRepository(db)
 
-	productSvc := service.NewProductService(productRepo, appLogger)
-	saleSvc := service.NewSaleService(db, saleRepo, productRepo, customerRepo, appLogger)
-	customerSvc := service.NewCustomerService(customerRepo, appLogger)
+	rateLimiter := middleware.NewRateLimiter(5, 15*time.Minute, 30*time.Minute)
+	authMiddleware := middleware.NewAuthMiddleware(appLogger, rateLimiter)
+
+	productSvc := service.NewProductService(productRepo, productCache, appLogger)
+	saleSvc := service.NewSaleService(saleRepo, productRepo, customerRepo, saleCache, appLogger)
+	customerSvc := service.NewCustomerService(customerRepo, customerCache, appLogger)
 	staffSvc := service.NewStaffService(staffRepo, appLogger)
 	financeSvc := service.NewFinanceService(financeRepo, appLogger)
 	settingsSvc := service.NewSettingsService(settingsRepo, appLogger)
@@ -61,6 +99,9 @@ func main() {
 		shiftSvc,
 		supplierSvc,
 		poSvc,
+		authMiddleware,
+		rateLimiter,
+		auditSvc,
 		appLogger,
 	)
 

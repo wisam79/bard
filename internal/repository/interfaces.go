@@ -2,6 +2,12 @@ package repository
 
 import "bard/internal/domain"
 
+// PartialReturnItem specifies which item and how much to return
+type PartialReturnItem struct {
+	ProductID string
+	Qty       float64
+}
+
 // ProductRepository defines the interface for product data operations
 type ProductRepository interface {
 	GetAll(page, limit int, search, category string) (*domain.PaginatedProducts, error)
@@ -32,6 +38,8 @@ type SaleRepository interface {
 	GetParkedSales() ([]domain.ParkedSale, error)
 	DeleteParkedSale(id uint) error
 	GetTopProducts(limit int, startDate, endDate string) ([]domain.TopProduct, error)
+	ProcessReturnWithStockUpdate(originalSaleID string) (*domain.Sale, error)
+	ProcessPartialReturnWithStockUpdate(originalSaleID string, returnItems []PartialReturnItem) (*domain.Sale, error)
 }
 
 // CustomerRepository defines the interface for customer data operations
@@ -41,6 +49,7 @@ type CustomerRepository interface {
 	GetByPhone(phone string) (*domain.Customer, error)
 	Create(customer *domain.Customer) error
 	Update(customer *domain.Customer) error
+	UpdateFields(id string, fields map[string]interface{}) error
 	Delete(id string) error
 	UpdateDebt(id string, amount float64) error
 	UpdateInstallmentDebt(id string, amount float64) error
@@ -57,6 +66,7 @@ type StaffRepository interface {
 	Delete(id string) error
 	Authenticate(username, password string) (*domain.Staff, error)
 	UpdatePassword(id, hashedPassword string) error
+	UpdateFields(id string, fields map[string]interface{}) error
 }
 
 // FinanceRepository defines the interface for finance data operations
@@ -112,6 +122,7 @@ type PurchaseOrderRepository interface {
 	Update(order *domain.PurchaseOrder) error
 	Delete(id string) error
 	UpdateStatus(id string, status string) error
+	ReceiveWithStockUpdate(id string) error
 }
 
 // StatsRepository defines the interface for statistics operations

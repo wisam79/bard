@@ -47,14 +47,12 @@ func TestProductService_Create_WithWhitespace(t *testing.T) {
 		Price:   100,
 	}
 
-	// Note: ProductService doesn't trim whitespace, it just validates non-empty
-	// This test documents the current behavior
-	mockRepo.On("Create", product).Return(nil)
+	mockRepo.On("Create", mock.AnythingOfType("*domain.Product")).Return(nil)
 
 	err := svc.Create(product)
 	assert.NoError(t, err)
-	// Whitespace is preserved (not trimmed by service layer)
-	assert.Equal(t, "  Trimmed Name  ", product.Name)
+	assert.Equal(t, "Trimmed Name", product.Name, "Whitespace should be trimmed")
+	assert.Equal(t, "TRIM001", product.Barcode, "Barcode whitespace should be trimmed")
 	mockRepo.AssertExpectations(t)
 }
 

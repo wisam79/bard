@@ -12,12 +12,17 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: false,
+    sourcemap: true,
     minify: 'esbuild',
-    chunkSizeWarningLimit: 2000,
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
-        manualChunks: undefined
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['lucide-react', '@phosphor-icons/react', 'framer-motion'],
+          charts: ['recharts'],
+          pdf: ['jspdf', '@react-pdf/renderer'],
+        }
       }
     }
   },
@@ -34,4 +39,3 @@ export default defineConfig({
     exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/tests/e2e/**'],
   },
 })
-

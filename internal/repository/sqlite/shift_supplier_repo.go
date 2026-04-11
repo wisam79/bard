@@ -69,7 +69,7 @@ func (r *supplierRepository) GetAll() ([]domain.Supplier, error) {
 func (r *supplierRepository) GetByID(id string) (*domain.Supplier, error) {
 	var supplier domain.Supplier
 	if err := r.db.First(&supplier, "id = ?", id).Error; err != nil {
-		return nil, err
+		return nil, handleDBError(err, domain.ModuleProduct, "supplier")
 	}
 	return &supplier, nil
 }

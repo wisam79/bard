@@ -4,38 +4,41 @@ import "time"
 
 // Staff represents a system user
 type Staff struct {
-	ID        string    `gorm:"primaryKey" json:"id"`
-	Username  string    `gorm:"uniqueIndex" json:"username"`
-	Password  string    `json:"-"`
-	Name      string    `json:"name"`
-	Role      string    `json:"role"` // admin, cashier, manager
-	Phone     string    `json:"phone,omitempty"`
-	IsActive  bool      `json:"isActive" gorm:"default:true"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	ID                 string    `gorm:"primaryKey" json:"id"`
+	Username           string    `gorm:"uniqueIndex" json:"username"`
+	Password           string    `json:"-"`
+	Name               string    `json:"name"`
+	Role               string    `json:"role"` // admin, cashier, manager
+	Phone              string    `json:"phone,omitempty"`
+	IsActive           bool      `json:"isActive" gorm:"default:true"`
+	MustChangePassword bool      `json:"mustChangePassword" gorm:"default:false"`
+	Token              string    `gorm:"-" json:"token,omitempty"` // Transient session token
+	CreatedAt          time.Time `json:"createdAt"`
+	UpdatedAt          time.Time `json:"updatedAt"`
 }
 
 // AppPreferences holds application settings
 type AppPreferences struct {
-	ID               uint    `gorm:"primaryKey" json:"-"`
-	StoreName        string  `json:"storeName"`
-	StoreAddress     string  `json:"storeAddress"`
-	StorePhone       string  `json:"storePhone"`
-	Currency         string  `json:"currency"`
-	TaxRate          float64 `json:"taxRate"`
-	Theme            string  `json:"theme"`
-	AccentColor      string  `json:"accentColor"`
-	EnableSound      bool    `json:"enableSound"`
-	Language         string  `json:"language"`
-	LowStockTrigger  int     `json:"lowStockTrigger"`
-	AdminPin         string  `json:"adminPin"`
-	FontSize         string  `json:"fontSize"`
-	AutoLockTime     int     `json:"autoLockTime"`
-	QuickSell        bool    `json:"quickSell"`
-	AutoPrint        bool    `json:"autoPrint"`
-	AutoPrintFormat  string  `json:"autoPrintFormat"`
-	ThermalPaperSize string  `json:"thermalPaperSize"`
-	RequireShift     bool    `json:"requireShift" gorm:"default:false"`
+	ID                    uint    `gorm:"primaryKey" json:"-"`
+	StoreName             string  `json:"storeName"`
+	StoreAddress          string  `json:"storeAddress"`
+	StorePhone            string  `json:"storePhone"`
+	Currency              string  `json:"currency"`
+	TaxRate               float64 `json:"taxRate"`
+	Theme                 string  `json:"theme"`
+	AccentColor           string  `json:"accentColor"`
+	EnableSound           bool    `json:"enableSound"`
+	Language              string  `json:"language"`
+	LowStockTrigger       int     `json:"lowStockTrigger"`
+	AdminPin              string  `json:"adminPin"`
+	FontSize              string  `json:"fontSize"`
+	AutoLockTime          int     `json:"autoLockTime"`
+	SessionTimeoutMinutes int     `json:"sessionTimeoutMinutes" gorm:"default:30"`
+	QuickSell             bool    `json:"quickSell"`
+	AutoPrint             bool    `json:"autoPrint"`
+	AutoPrintFormat       string  `json:"autoPrintFormat"`
+	ThermalPaperSize      string  `json:"thermalPaperSize"`
+	RequireShift          bool    `json:"requireShift" gorm:"default:false"`
 }
 
 // ActivityLog tracks system activities

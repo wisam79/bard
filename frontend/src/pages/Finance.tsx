@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/store';
+import { useAuthStore } from '@/store/authStore';
 import { Expense } from '@/types';
 import { Plus, Pencil, Trash2, Wallet, TrendingDown, TrendingUp, Calendar, Tag, PieChart } from 'lucide-react';
 import { wailsApp } from '@/lib/wails';
 
 const Finance: React.FC = () => {
   const { notify } = useAppStore();
+  const getToken = useAuthStore.getState().getToken;
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -33,7 +35,11 @@ const Finance: React.FC = () => {
   const totalAmount = expenses.reduce((sum: number, e: Expense) => sum + e.amount, 0);
 
   const createMutation = useMutation({
-    mutationFn: (expense: Partial<Expense>) => wailsApp.CreateExpense(expense as Expense),
+    mutationFn: (expense: Partial<Expense>) => {
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+      return wailsApp.CreateExpense(token, expense as Expense);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       notify('تم إضافة المصروف بنجاح', 'success');
@@ -43,7 +49,11 @@ const Finance: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (expense: Partial<Expense>) => wailsApp.UpdateExpense(expense as Expense),
+    mutationFn: (expense: Partial<Expense>) => {
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+      return wailsApp.UpdateExpense(token, expense as Expense);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       notify('تم تحديث المصروف بنجاح', 'success');
@@ -53,7 +63,11 @@ const Finance: React.FC = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => wailsApp.DeleteExpense(id),
+    mutationFn: (id: string) => {
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+      return wailsApp.DeleteExpense(token, id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       notify('تم حذف المصروف', 'success');
@@ -217,7 +231,6 @@ const Finance: React.FC = () => {
                               <Pencil size={16} />
                             </button>
                             <button onClick={() => {
-                              // eslint-disable-next-line no-alert
                               if (confirm('هل أنت متأكد من حذف هذا المصروف؟')) deleteMutation.mutate(expense.id);
                             }} className="p-2 rounded-xl bg-brand-dark/40 border border-brand-border/30 text-brand-accent/40 hover:text-red-400 hover:border-red-400/50 hover:bg-red-400/10 transition-all">
                               <Trash2 size={16} />

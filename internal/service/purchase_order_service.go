@@ -88,33 +88,20 @@ func (s *PurchaseOrderService) ReceiveOrder(id string) error {
 		}
 	}
 
-	// Update status first, then handle stock in the same logical flow
-	// If stock update fails, we need to revert the status
-	err = s.repo.UpdateStatus(id, "received")
-	if err != nil {
-		return err
-	}
-
-	s.log.Info("Receiving purchase order", "id", id)
-	err = s.HandleReceivedOrder(order)
-	if err != nil {
-		// Rollback: revert status back to pending if stock update fails
-		s.repo.UpdateStatus(id, "pending")
-		s.log.Error("Failed to handle received order, reverted status", "id", id, "error", err)
+	if len(order.Items) == 0 {
 		return &domain.AppError{
 			Module:  domain.ModuleProduct,
-			Code:    "STOCK_UPDATE_FAILED",
-			Message: "Failed to update stock. Order status reverted to pending.",
-			Hint:    err.Error(),
+			Code:    "EMPTY_ORDER",
+			Message: "Cannot receive an order with no items",
 		}
 	}
 
-	return nil
+	s.log.Info("Receiving purchase order", "id", id, "items", len(order.Items))
+
+	return s.repo.ReceiveWithStockUpdate(id)
 }
 
 func (s *PurchaseOrderService) HandleReceivedOrder(order *domain.PurchaseOrder) error {
-	// Process all items - note: this should ideally be in a DB transaction
-	// For now, we process sequentially and fail fast
 	for _, item := range order.Items {
 		product, err := s.products.GetByID(item.ProductID)
 		if err != nil {

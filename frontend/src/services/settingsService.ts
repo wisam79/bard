@@ -1,5 +1,6 @@
 import type { AppPreferences, DatabaseExport } from '@/types';
 import { wailsApp } from '@/lib/wails';
+import { useAuthStore } from '@/store/authStore';
 
 export const settingsService = {
   async getPreferences(): Promise<AppPreferences> {
@@ -7,18 +8,26 @@ export const settingsService = {
   },
 
   async updatePreferences(prefs: AppPreferences): Promise<void> {
-    return wailsApp.UpdatePreferences(prefs);
+    const token = useAuthStore.getState().getToken();
+    if (!token) throw new Error('Not authenticated');
+    return wailsApp.UpdatePreferences(token, prefs);
   },
 
   async resetDatabase(): Promise<void> {
-    return wailsApp.ResetDatabase();
+    const token = useAuthStore.getState().getToken();
+    if (!token) throw new Error('Not authenticated');
+    return wailsApp.ResetDatabase(token);
   },
 
   async exportDatabase(): Promise<DatabaseExport> {
-    return wailsApp.ExportDatabase();
+    const token = useAuthStore.getState().getToken();
+    if (!token) throw new Error('Not authenticated');
+    return wailsApp.ExportDatabase(token);
   },
 
   async importDatabase(data: DatabaseExport): Promise<void> {
-    return wailsApp.ImportDatabase(data);
+    const token = useAuthStore.getState().getToken();
+    if (!token) throw new Error('Not authenticated');
+    return wailsApp.ImportDatabase(token, data);
   },
 };

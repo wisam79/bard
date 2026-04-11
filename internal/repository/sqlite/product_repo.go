@@ -60,7 +60,7 @@ func (r *productRepository) GetAll(page, limit int, search, category string) (*d
 func (r *productRepository) GetByID(id string) (*domain.Product, error) {
 	var product domain.Product
 	if err := r.db.First(&product, "id = ?", id).Error; err != nil {
-		return nil, err
+		return nil, handleDBError(err, domain.ModuleProduct, "product")
 	}
 	return &product, nil
 }
@@ -68,7 +68,7 @@ func (r *productRepository) GetByID(id string) (*domain.Product, error) {
 func (r *productRepository) GetByBarcode(barcode string) (*domain.Product, error) {
 	var product domain.Product
 	if err := r.db.First(&product, "barcode = ?", barcode).Error; err != nil {
-		return nil, err
+		return nil, handleDBError(err, domain.ModuleProduct, "product")
 	}
 	return &product, nil
 }

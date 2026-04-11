@@ -125,3 +125,58 @@ func (r *PurchaseOrderRepository) Delete(id string) error {
 func (r *PurchaseOrderRepository) UpdateStatus(id string, status string) error {
 	return r.db.Model(&domain.PurchaseOrder{}).Where("id = ?", id).Update("status", status).Error
 }
+
+func (r *PurchaseOrderRepository) ReceiveWithStockUpdate(id string) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		var order domain.PurchaseOrder
+		if err := tx.Preload("Items").First(&order, "id = ?", id).Error; err != nil {
+			return err
+		}
+
+		if order.Status == "received" {
+			return &domain.AppError{
+				Module:  domain.ModuleProduct,
+				Code:    "ALREADY_RECEIVED",
+				Message: "Order is already received",
+			}
+		}
+
+		if err := tx.Model(&domain.PurchaseOrder{}).Where("id = ?", id).Update("status", "received").Error; err != nil {
+			return err
+		}
+
+		for _, item := range order.Items {
+			var product domain.Product
+			if err := tx.First(&product, "id = ?", item.ProductID).Error; err != nil {
+				return &domain.AppError{
+					Module:  domain.ModuleProduct,
+					Code:    "PRODUCT_NOT_FOUND",
+					Message: "Product not found: " + item.ProductID,
+				}
+			}
+
+			newTotalCost := (product.Stock * product.Cost) + (item.Qty * item.Cost)
+			newTotalStock := product.Stock + item.Qty
+
+			var newCost float64
+			if newTotalStock > 0 {
+				newCost = newTotalCost / newTotalStock
+			} else {
+				newCost = item.Cost
+			}
+
+			if err := tx.Model(&domain.Product{}).Where("id = ?", item.ProductID).Updates(map[string]interface{}{
+				"stock": newTotalStock,
+				"cost":  newCost,
+			}).Error; err != nil {
+				return &domain.AppError{
+					Module:  domain.ModuleProduct,
+					Code:    "STOCK_UPDATE_FAILED",
+					Message: "Failed to update product stock and cost: " + item.ProductID,
+				}
+			}
+		}
+
+		return nil
+	})
+}

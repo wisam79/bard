@@ -1,5 +1,6 @@
 import type { Sale, PaginatedSales, ParkedSale, InstallmentPlan } from '@/types';
 import { wailsApp } from '@/lib/wails';
+import { useAuthStore } from '@/store/authStore';
 
 export const salesService = {
   async getAll(page = 1, limit = 20, search = '', status = ''): Promise<PaginatedSales> {
@@ -15,7 +16,9 @@ export const salesService = {
   },
 
   async processReturn(saleID: string): Promise<Sale> {
-    return wailsApp.ProcessReturn(saleID);
+    const token = useAuthStore.getState().getToken();
+    if (!token) throw new Error('Not authenticated');
+    return wailsApp.ProcessReturn(token, saleID);
   },
 
   async getRecent(limit = 10): Promise<Sale[]> {

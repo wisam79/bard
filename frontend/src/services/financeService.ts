@@ -1,5 +1,6 @@
 import type { Expense, Payment } from '@/types';
 import { wailsApp } from '@/lib/wails';
+import { useAuthStore } from '@/store/authStore';
 
 export const financeService = {
   async getExpenses(
@@ -11,21 +12,27 @@ export const financeService = {
   },
 
   async createExpense(expense: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>): Promise<void> {
+    const token = useAuthStore.getState().getToken();
+    if (!token) throw new Error('Not authenticated');
     const newExpense: Expense = {
       ...expense,
       id: '',
       createdAt: '',
       updatedAt: '',
     };
-    return wailsApp.CreateExpense(newExpense);
+    return wailsApp.CreateExpense(token, newExpense);
   },
 
   async updateExpense(expense: Expense): Promise<void> {
-    return wailsApp.UpdateExpense(expense);
+    const token = useAuthStore.getState().getToken();
+    if (!token) throw new Error('Not authenticated');
+    return wailsApp.UpdateExpense(token, expense);
   },
 
   async deleteExpense(id: string): Promise<void> {
-    return wailsApp.DeleteExpense(id);
+    const token = useAuthStore.getState().getToken();
+    if (!token) throw new Error('Not authenticated');
+    return wailsApp.DeleteExpense(token, id);
   },
 
   async createPayment(payment: Omit<Payment, 'id' | 'createdAt'>): Promise<void> {

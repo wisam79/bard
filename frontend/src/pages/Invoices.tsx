@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/store';
+import { useAuthStore } from '@/store/authStore';
 import { Sale, PaginatedSales, AppPreferences } from '@/types';
 import { ReceiptData } from '@/types';
 import { Search, Eye, RotateCcw, FileText, Printer, Filter, Calendar, CreditCard, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -18,6 +19,7 @@ const paymentMethodLabels: Record<string, string> = {
 
 const Invoices: React.FC = () => {
   const { notify } = useAppStore();
+  const getToken = useAuthStore.getState().getToken;
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,7 +39,11 @@ const Invoices: React.FC = () => {
   });
 
   const returnMutation = useMutation({
-    mutationFn: (saleId: string) => wailsApp.ProcessReturn(saleId),
+    mutationFn: (saleId: string) => {
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+      return wailsApp.ProcessReturn(token, saleId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sales'] });
       notify('تم إرجاع الفاتورة بنجاح', 'success');

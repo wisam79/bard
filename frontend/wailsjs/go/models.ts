@@ -14,6 +14,7 @@ export namespace domain {
 	    adminPin: string;
 	    fontSize: string;
 	    autoLockTime: number;
+	    sessionTimeoutMinutes: number;
 	    quickSell: boolean;
 	    autoPrint: boolean;
 	    autoPrintFormat: string;
@@ -39,6 +40,7 @@ export namespace domain {
 	        this.adminPin = source["adminPin"];
 	        this.fontSize = source["fontSize"];
 	        this.autoLockTime = source["autoLockTime"];
+	        this.sessionTimeoutMinutes = source["sessionTimeoutMinutes"];
 	        this.quickSell = source["quickSell"];
 	        this.autoPrint = source["autoPrint"];
 	        this.autoPrintFormat = source["autoPrintFormat"];
@@ -376,6 +378,8 @@ export namespace domain {
 	    role: string;
 	    phone?: string;
 	    isActive: boolean;
+	    mustChangePassword: boolean;
+	    token?: string;
 	    // Go type: time
 	    createdAt: any;
 	    // Go type: time
@@ -393,6 +397,8 @@ export namespace domain {
 	        this.role = source["role"];
 	        this.phone = source["phone"];
 	        this.isActive = source["isActive"];
+	        this.mustChangePassword = source["mustChangePassword"];
+	        this.token = source["token"];
 	        this.createdAt = this.convertValues(source["createdAt"], null);
 	        this.updatedAt = this.convertValues(source["updatedAt"], null);
 	    }

@@ -22,7 +22,7 @@ func NewDatabase() (*gorm.DB, error) {
 	}
 
 	appDir := filepath.Join(configDir, "BardPOS")
-	if err := os.MkdirAll(appDir, 0755); err != nil {
+	if err := os.MkdirAll(appDir, 0700); err != nil {
 		return nil, err
 	}
 
@@ -71,6 +71,20 @@ func NewDatabase() (*gorm.DB, error) {
 		return nil, err
 	}
 
+	// Add composite indexes for performance
+	if sqlDB != nil {
+		indexes := []string{
+			"CREATE INDEX IF NOT EXISTS idx_sale_items_sale_product ON sale_items(sale_id, product_id)",
+			"CREATE INDEX IF NOT EXISTS idx_sales_date_status ON sales(date, status)",
+			"CREATE INDEX IF NOT EXISTS idx_products_category_name ON products(category, name)",
+			"CREATE INDEX IF NOT EXISTS idx_sales_customer_status ON sales(customer_id, status)",
+			"CREATE INDEX IF NOT EXISTS idx_payments_customer_id ON payments(customer_id)",
+		}
+		for _, idx := range indexes {
+			sqlDB.Exec(idx)
+		}
+	}
+
 	// Seed default preferences
 	var prefs domain.AppPreferences
 	if result := db.First(&prefs); result.Error != nil {
@@ -86,7 +100,9 @@ func NewDatabase() (*gorm.DB, error) {
 			AutoPrintFormat:  "thermal",
 			ThermalPaperSize: "80mm",
 		}
-		db.Create(&defaultPrefs)
+		if err := db.Create(&defaultPrefs).Error; err != nil {
+			return nil, err
+		}
 	}
 
 	// Seed default admin user
@@ -98,16 +114,19 @@ func NewDatabase() (*gorm.DB, error) {
 			return nil, err
 		}
 		defaultAdmin := domain.Staff{
-			ID:        uuid.New().String(),
-			Username:  "admin",
-			Password:  hashedPassword,
-			Name:      "المدير",
-			Role:      "admin",
-			IsActive:  true,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
+			ID:                 uuid.New().String(),
+			Username:           "admin",
+			Password:           hashedPassword,
+			Name:               "المدير",
+			Role:               "admin",
+			IsActive:           true,
+			MustChangePassword: true,
+			CreatedAt:          time.Now(),
+			UpdatedAt:          time.Now(),
 		}
-		db.Create(&defaultAdmin)
+		if err := db.Create(&defaultAdmin).Error; err != nil {
+			return nil, err
+		}
 	}
 
 	// Seed demo products (only if no products exist)

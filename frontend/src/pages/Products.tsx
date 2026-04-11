@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/store';
+import { useAuthStore } from '@/store/authStore';
 import { Product, PaginatedProducts } from '@/types';
 import { Boxes, Plus, Printer } from 'lucide-react';
 import Button from '@/components/ui/Button';
@@ -16,6 +17,7 @@ import { wailsApp } from '@/lib/wails';
 
 const Products: React.FC = () => {
   const { notify } = useAppStore();
+  const getToken = useAuthStore.getState().getToken;
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,7 +50,11 @@ const Products: React.FC = () => {
   });
 
   const createMutation = useMutation({
-    mutationFn: (product: Partial<Product>) => wailsApp.CreateProduct(product as Product),
+    mutationFn: (product: Partial<Product>) => {
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+      return wailsApp.CreateProduct(token, product as Product);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['categories'] });
@@ -59,7 +65,11 @@ const Products: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (product: Partial<Product>) => wailsApp.UpdateProduct(product as Product),
+    mutationFn: (product: Partial<Product>) => {
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+      return wailsApp.UpdateProduct(token, product as Product);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       notify('تم تحديث المنتج بنجاح', 'success');
@@ -69,7 +79,11 @@ const Products: React.FC = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => wailsApp.DeleteProduct(id),
+    mutationFn: (id: string) => {
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+      return wailsApp.DeleteProduct(token, id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       notify('تم حذف المنتج', 'success');
@@ -116,10 +130,8 @@ const Products: React.FC = () => {
 
   return (
     <div className="p-6 h-full flex flex-col gap-6 relative overflow-hidden bg-brand-dark/20">
-      {/* Barcode Labels Print Modal */}
       <BarcodeLabelsPrint isOpen={showBarcodeLabels} onClose={() => setShowBarcodeLabels(false)} />
 
-      {/* Barcode Preview Modal */}
       <Modal
         isOpen={showBarcodeModal}
         onClose={() => { setShowBarcodeModal(false); setBarcodeProduct(null); }}
@@ -174,7 +186,6 @@ const Products: React.FC = () => {
         )}
       </Modal>
 
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black dark:text-white text-gray-900 tracking-tight flex items-center gap-3">
@@ -197,12 +208,9 @@ const Products: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats */}
       <ProductStats productsData={productsData} />
 
-      {/* Table */}
       <div className="bg-brand-surface border border-brand-border/30 rounded-3xl flex-1 flex flex-col overflow-hidden shadow-2xl">
-        {/* Filters */}
         <ProductFilters
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -212,7 +220,6 @@ const Products: React.FC = () => {
           onFilterChange={() => setPage(1)}
         />
 
-        {/* Products Table */}
         <div className="flex-1 overflow-auto">
           <ProductTable
             productsData={productsData}
@@ -223,7 +230,6 @@ const Products: React.FC = () => {
           />
         </div>
 
-        {/* Pagination */}
         <ProductPagination
           page={page}
           setPage={setPage}
@@ -231,7 +237,6 @@ const Products: React.FC = () => {
         />
       </div>
 
-      {/* Product Form Modal */}
       <ProductFormModal
         showModal={showModal}
         handleCloseModal={handleCloseModal}

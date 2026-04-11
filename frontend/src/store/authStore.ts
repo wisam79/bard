@@ -70,6 +70,7 @@ interface AuthState {
   currentUser: Staff | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  token: string | null;
   sessionStartedAt: number | null;
   lastActivityAt: number | null;
   showSessionWarning: boolean;
@@ -78,10 +79,11 @@ interface AuthState {
 
   // Actions
   login: (username: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   resetSessionTimer: () => void;
   checkSessionTimeout: () => void;
   dismissSessionWarning: () => void;
+  getToken: () => string | null;
 
   // Permission helpers
   can: (permission: string) => boolean;
@@ -169,6 +171,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       currentUser: null,
       isAuthenticated: false,
       isLoading: false,
+      token: null,
       sessionStartedAt: null,
       lastActivityAt: null,
       showSessionWarning: false,
@@ -179,10 +182,11 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         set({ isLoading: true });
         try {
           const staff = await wailsApp.Login(username, password);
-          if (staff) {
+          if (staff && staff.token) {
             const now = Date.now();
             set({
               currentUser: staff,
+              token: staff.token,
               isAuthenticated: true,
               isLoading: false,
               sessionStartedAt: now,
@@ -206,7 +210,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         }
       },
 
-      logout: () => {
+      logout: async () => {
         // Stop session timer
         stopSessionTimer(set, get);
         
@@ -215,15 +219,28 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
           cleanupActivityListeners();
           cleanupActivityListeners = null;
         }
+
+        // Notify backend to destroy session
+        const token = get().token;
+        if (token) {
+          try {
+            await wailsApp.Logout(token);
+          } catch {
+            // Ignore logout errors
+          }
+        }
         
         set({
           currentUser: null,
+          token: null,
           isAuthenticated: false,
           sessionStartedAt: null,
           lastActivityAt: null,
           showSessionWarning: false,
         });
       },
+
+      getToken: () => get().token,
 
       resetSessionTimer: () => {
         if (!get().isAuthenticated) return;

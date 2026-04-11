@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bard/internal/cache"
 	"bard/internal/domain"
 	"bard/internal/errors"
 	"bard/internal/logger"
@@ -14,16 +15,41 @@ import (
 
 // ProductService handles product business logic
 type ProductService struct {
-	repo repository.ProductRepository
-	log  *logger.Logger
+	repo  repository.ProductRepository
+	cache *cache.ProductCache
+	log   *logger.Logger
 }
 
-func NewProductService(repo repository.ProductRepository, log *logger.Logger) *ProductService {
-	return &ProductService{repo: repo, log: log}
+func NewProductService(repo repository.ProductRepository, cache *cache.ProductCache, log *logger.Logger) *ProductService {
+	return &ProductService{repo: repo, cache: cache, log: log}
+}
+
+func sanitizeSearch(s string) string {
+	s = strings.TrimSpace(s)
+	s = strings.ReplaceAll(s, "%", "")
+	s = strings.ReplaceAll(s, "_", "")
+	s = strings.ReplaceAll(s, "\\", "")
+	if len(s) > 100 {
+		s = s[:100]
+	}
+	return s
 }
 
 func (s *ProductService) GetAll(page, limit int, search, category string) (*domain.PaginatedProducts, error) {
-	return s.repo.GetAll(page, limit, search, category)
+	search = sanitizeSearch(search)
+	category = sanitizeSearch(category)
+
+	if cached, ok := s.cache.GetProductList(page, limit, search, category); ok {
+		return cached.(*domain.PaginatedProducts), nil
+	}
+
+	result, err := s.repo.GetAll(page, limit, search, category)
+	if err != nil {
+		return nil, err
+	}
+
+	s.cache.SetProductList(page, limit, search, category, result)
+	return result, nil
 }
 
 func (s *ProductService) GetByID(id string) (*domain.Product, error) {
@@ -35,17 +61,8 @@ func (s *ProductService) GetByBarcode(barcode string) (*domain.Product, error) {
 }
 
 func (s *ProductService) Create(product *domain.Product) error {
-	if product.Name == "" {
-		return errors.NewValidationError(domain.ModuleProduct, "name", "Name is required")
-	}
-	if product.Barcode == "" {
-		return errors.NewValidationError(domain.ModuleProduct, "barcode", "Barcode is required")
-	}
-	if product.Price < 0 {
-		return errors.NewValidationError(domain.ModuleProduct, "price", "Price cannot be negative")
-	}
-	if product.Stock < 0 {
-		return errors.NewValidationError(domain.ModuleProduct, "stock", "Stock cannot be negative")
+	if err := ValidateProduct(product); err != nil {
+		return err
 	}
 	product.ID = uuid.New().String()
 	product.CreatedAt = time.Now()
@@ -55,17 +72,8 @@ func (s *ProductService) Create(product *domain.Product) error {
 }
 
 func (s *ProductService) Update(product *domain.Product) error {
-	if product.Name == "" {
-		return errors.NewValidationError(domain.ModuleProduct, "name", "Name is required")
-	}
-	if product.Barcode == "" {
-		return errors.NewValidationError(domain.ModuleProduct, "barcode", "Barcode is required")
-	}
-	if product.Price < 0 {
-		return errors.NewValidationError(domain.ModuleProduct, "price", "Price cannot be negative")
-	}
-	if product.Stock < 0 {
-		return errors.NewValidationError(domain.ModuleProduct, "stock", "Stock cannot be negative")
+	if err := ValidateProduct(product); err != nil {
+		return err
 	}
 	product.UpdatedAt = time.Now()
 	s.log.Info("Updating product", "id", product.ID)
@@ -74,7 +82,11 @@ func (s *ProductService) Update(product *domain.Product) error {
 
 func (s *ProductService) Delete(id string) error {
 	s.log.Info("Deleting product", "id", id)
-	return s.repo.Delete(id)
+	err := s.repo.Delete(id)
+	if err == nil {
+		s.cache.InvalidateProduct(id)
+	}
+	return err
 }
 
 func (s *ProductService) GetCategories() ([]string, error) {
@@ -95,21 +107,33 @@ func (s *ProductService) GetLowStock(threshold int) ([]domain.Product, error) {
 }
 
 func (s *ProductService) Search(query string, limit int) ([]domain.Product, error) {
-	return s.repo.Search(query, limit)
+	return s.repo.Search(sanitizeSearch(query), limit)
 }
 
 // CustomerService handles customer business logic
 type CustomerService struct {
-	repo repository.CustomerRepository
-	log  *logger.Logger
+	repo  repository.CustomerRepository
+	cache *cache.CustomerCache
+	log   *logger.Logger
 }
 
-func NewCustomerService(repo repository.CustomerRepository, log *logger.Logger) *CustomerService {
-	return &CustomerService{repo: repo, log: log}
+func NewCustomerService(repo repository.CustomerRepository, cache *cache.CustomerCache, log *logger.Logger) *CustomerService {
+	return &CustomerService{repo: repo, cache: cache, log: log}
 }
 
 func (s *CustomerService) GetAll(page, limit int, search string) ([]domain.Customer, int64, error) {
-	return s.repo.GetAll(page, limit, search)
+	search = sanitizeSearch(search)
+	if cached, ok := s.cache.GetCustomerList(page, limit, search); ok {
+		return cached.([]domain.Customer), 0, nil
+	}
+
+	result, total, err := s.repo.GetAll(page, limit, search)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	s.cache.SetCustomerList(page, limit, search, result)
+	return result, total, nil
 }
 
 func (s *CustomerService) GetByID(id string) (*domain.Customer, error) {
@@ -121,46 +145,47 @@ func (s *CustomerService) GetByPhone(phone string) (*domain.Customer, error) {
 }
 
 func (s *CustomerService) Create(customer *domain.Customer) error {
-	customer.Name = strings.TrimSpace(customer.Name)
-	if customer.Name == "" {
-		return errors.NewValidationError(domain.ModuleCustomer, "name", "Customer name is required")
+	if err := ValidateCustomer(customer); err != nil {
+		return err
 	}
 	customer.ID = uuid.New().String()
 	customer.CreatedAt = time.Now()
 	customer.UpdatedAt = time.Now()
 	s.log.Info("Creating customer", "name", customer.Name)
-	return s.repo.Create(customer)
+	err := s.repo.Create(customer)
+	if err == nil {
+		s.cache.InvalidateCustomer(customer.ID)
+	}
+	return err
 }
 
 func (s *CustomerService) Update(customer *domain.Customer) error {
-	customer.Name = strings.TrimSpace(customer.Name)
-	if customer.Name == "" {
-		return errors.NewValidationError(domain.ModuleCustomer, "name", "Customer name is required")
+	if err := ValidateCustomer(customer); err != nil {
+		return err
 	}
-	
-	// Fetch existing customer to preserve critical financial fields
-	// This prevents accidental debt/installment_debt deletion on partial updates
+
 	existingCustomer, err := s.repo.GetByID(customer.ID)
-	if err == nil && existingCustomer != nil {
-		// Preserve debt fields if not explicitly provided in the update
-		if customer.Debt == 0 && existingCustomer.Debt != 0 {
-			customer.Debt = existingCustomer.Debt
-		}
-		if customer.InstallmentDebt == 0 && existingCustomer.InstallmentDebt != 0 {
-			customer.InstallmentDebt = existingCustomer.InstallmentDebt
-		}
-		if customer.TotalPurchases == 0 && existingCustomer.TotalPurchases != 0 {
-			customer.TotalPurchases = existingCustomer.TotalPurchases
-		}
+	if err != nil {
+		return err
 	}
-	
+
+	// Preserve system-managed fields
+	customer.Debt = existingCustomer.Debt
+	customer.InstallmentDebt = existingCustomer.InstallmentDebt
+	customer.TotalPurchases = existingCustomer.TotalPurchases
+	customer.CreatedAt = existingCustomer.CreatedAt
+
 	customer.UpdatedAt = time.Now()
 	return s.repo.Update(customer)
 }
 
 func (s *CustomerService) Delete(id string) error {
 	s.log.Info("Deleting customer", "id", id)
-	return s.repo.Delete(id)
+	err := s.repo.Delete(id)
+	if err == nil {
+		s.cache.InvalidateCustomer(id)
+	}
+	return err
 }
 
 func (s *CustomerService) GetTop(limit int) ([]domain.Customer, error) {
@@ -252,6 +277,35 @@ func (s *StaffService) Authenticate(username, password string) (*domain.Staff, e
 	}
 	s.log.Info("Authentication passed in repo, returning staff object")
 	return staff, nil
+}
+
+func (s *StaffService) UpdatePassword(id, oldPassword, newPassword string) error {
+	staff, err := s.repo.GetByID(id)
+	if err != nil {
+		return err
+	}
+
+	if !utils.CheckPassword(oldPassword, staff.Password) {
+		return errors.NewValidationError(domain.ModuleStaff, "oldPassword", "كلمة المرور الحالية غير صحيحة")
+	}
+
+	hashedPassword, err := utils.HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	if err := s.repo.UpdatePassword(id, hashedPassword); err != nil {
+		return err
+	}
+
+	// Clear MustChangePassword flag after first password change
+	if staff.MustChangePassword {
+		return s.repo.UpdateFields(id, map[string]interface{}{
+			"must_change_password": false,
+		})
+	}
+
+	return nil
 }
 
 // SettingsService handles settings business logic

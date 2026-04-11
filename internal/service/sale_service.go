@@ -4,41 +4,51 @@ import (
 	"math"
 	"time"
 
+	"bard/internal/cache"
 	"bard/internal/domain"
 	"bard/internal/logger"
 	"bard/internal/repository"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 // SaleService handles sale business logic
 type SaleService struct {
-	db           *gorm.DB
 	saleRepo     repository.SaleRepository
 	productRepo  repository.ProductRepository
 	customerRepo repository.CustomerRepository
+	cache        *cache.SaleCache
 	log          *logger.Logger
 }
 
 func NewSaleService(
-	db *gorm.DB,
 	saleRepo repository.SaleRepository,
 	productRepo repository.ProductRepository,
 	customerRepo repository.CustomerRepository,
+	cache *cache.SaleCache,
 	log *logger.Logger,
 ) *SaleService {
 	return &SaleService{
-		db:           db,
 		saleRepo:     saleRepo,
 		productRepo:  productRepo,
 		customerRepo: customerRepo,
+		cache:        cache,
 		log:          log,
 	}
 }
 
 func (s *SaleService) GetAll(page, limit int, search, status string) (*domain.PaginatedSales, error) {
-	return s.saleRepo.GetAll(page, limit, search, status)
+	if cached, ok := s.cache.GetSaleList(page, limit, search, status); ok {
+		return cached.(*domain.PaginatedSales), nil
+	}
+
+	result, err := s.saleRepo.GetAll(page, limit, search, status)
+	if err != nil {
+		return nil, err
+	}
+
+	s.cache.SetSaleList(page, limit, search, status, result)
+	return result, nil
 }
 
 func (s *SaleService) GetByID(id string) (*domain.Sale, error) {
@@ -71,102 +81,28 @@ func (s *SaleService) Create(sale *domain.Sale) error {
 	s.log.Info("Creating sale", "id", sale.ID, "total", sale.Total)
 
 	// Use repository transaction for data consistency (stock check is inside transaction)
-	return s.saleRepo.CreateSaleWithStockUpdate(sale)
+	err := s.saleRepo.CreateSaleWithStockUpdate(sale)
+	if err == nil {
+		s.cache.InvalidateAllSales()
+	}
+	return err
 }
 
 func (s *SaleService) ProcessReturn(originalSaleID string) (*domain.Sale, error) {
-	original, err := s.saleRepo.GetByID(originalSaleID)
+	_, err := s.saleRepo.GetByID(originalSaleID)
 	if err != nil {
 		return nil, err
 	}
 
-	returnSale := &domain.Sale{
-		ID:            uuid.New().String(),
-		CustomerID:    original.CustomerID,
-		CustomerName:  original.CustomerName,
-		StaffID:       original.StaffID,
-		StaffName:     original.StaffName,
-		Date:          time.Now().Format("2006-01-02"),
-		Timestamp:     time.Now().Unix(),
-		Status:        "return",
-		PaymentMethod: original.PaymentMethod,
-		Note:          "إرجاع - " + original.ID,
+	result, err := s.saleRepo.ProcessReturnWithStockUpdate(originalSaleID)
+	if err == nil {
+		s.cache.InvalidateAllSales()
 	}
-
-	var total float64
-	for _, item := range original.Items {
-		returnItem := domain.SaleItem{
-			ProductID: item.ProductID,
-			Name:      item.Name,
-			Price:     item.Price,
-			Quantity:  item.Quantity,
-			Total:     -item.Total,
-			Cost:      item.Cost,
-		}
-		returnSale.Items = append(returnSale.Items, returnItem)
-		total += item.Total
-	}
-
-	returnSale.Subtotal = -total
-	returnSale.Discount = -original.Discount
-	returnSale.VAT = -original.VAT
-	returnSale.Total = -original.Total
-
-	// Use transaction for data consistency
-	var createdReturn *domain.Sale
-	err = s.db.Transaction(func(tx *gorm.DB) error {
-		// Restore stock within transaction
-		for _, item := range original.Items {
-			var product domain.Product
-			if err := tx.First(&product, "id = ?", item.ProductID).Error; err != nil {
-				s.log.Warn("Product not found for stock restore", "productId", item.ProductID)
-				continue
-			}
-			newStock := product.Stock + item.Quantity
-			if err := tx.Model(&product).Update("stock", newStock).Error; err != nil {
-				return err
-			}
-		}
-
-		// Reverse debt using the actual total (after discount/VAT/down payment)
-		if original.PaymentMethod == "credit" && original.CustomerID != "" {
-			if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
-				UpdateColumn("debt", gorm.Expr("debt - ?", original.Total)).Error; err != nil {
-				return err
-			}
-		} else if original.PaymentMethod == "installment" && original.CustomerID != "" {
-			if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
-				UpdateColumn("installment_debt", gorm.Expr("installment_debt - ?", original.Total)).Error; err != nil {
-				return err
-			}
-		} else if original.PaymentMethod == "split" && original.CustomerID != "" {
-			if creditAmount, ok := original.SplitDetails["credit"]; ok && creditAmount > 0 {
-				if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
-					UpdateColumn("debt", gorm.Expr("debt - ?", creditAmount)).Error; err != nil {
-					return err
-				}
-			}
-		}
-
-		// Create the return sale
-		if err := tx.Create(returnSale).Error; err != nil {
-			return err
-		}
-		createdReturn = returnSale
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-	return createdReturn, nil
+	return result, err
 }
 
 // PartialReturnItem specifies which item and how much to return
-type PartialReturnItem struct {
-	ProductID string
-	Quantity  float64
-}
+type PartialReturnItem = repository.PartialReturnItem
 
 // ProcessPartialReturn creates a return for a subset of original sale items.
 // returnItems: map[productID]qtyToReturn
@@ -184,13 +120,11 @@ func (s *SaleService) ProcessPartialReturn(originalSaleID string, returnItems []
 		return nil, err
 	}
 
-	// Build lookup: productID → original item
 	originalByProduct := make(map[string]*domain.SaleItem, len(original.Items))
 	for i := range original.Items {
 		originalByProduct[original.Items[i].ProductID] = &original.Items[i]
 	}
 
-	// Validate each return item
 	for _, ri := range returnItems {
 		orig, found := originalByProduct[ri.ProductID]
 		if !found {
@@ -201,7 +135,7 @@ func (s *SaleService) ProcessPartialReturn(originalSaleID string, returnItems []
 			}
 		}
 		available := orig.Quantity - orig.ReturnedQty
-		if ri.Quantity <= 0 || ri.Quantity > available {
+		if ri.Qty <= 0 || ri.Qty > available {
 			return nil, &domain.AppError{
 				Module:  domain.ModuleSales,
 				Code:    "INVALID_RETURN_QTY",
@@ -210,112 +144,24 @@ func (s *SaleService) ProcessPartialReturn(originalSaleID string, returnItems []
 		}
 	}
 
-	// Build return sale
-	returnSale := &domain.Sale{
-		ID:            uuid.New().String(),
-		CustomerID:    original.CustomerID,
-		CustomerName:  original.CustomerName,
-		StaffID:       original.StaffID,
-		StaffName:     original.StaffName,
-		Date:          time.Now().Format("2006-01-02"),
-		Timestamp:     time.Now().Unix(),
-		Status:        "return",
-		PaymentMethod: original.PaymentMethod,
-		Note:          "إرجاع جزئي - " + original.ID,
-	}
-
-	var returnTotal float64
-	for _, ri := range returnItems {
-		orig := originalByProduct[ri.ProductID]
-		unitPrice := orig.Total / orig.Quantity
-		returnItem := domain.SaleItem{
-			SaleID:    returnSale.ID,
-			ProductID: orig.ProductID,
-			Name:      orig.Name,
-			Price:     orig.Price,
-			Quantity:  ri.Quantity,
-			Total:     -(unitPrice * ri.Quantity),
-			Cost:      orig.Cost,
-		}
-		returnSale.Items = append(returnSale.Items, returnItem)
-		returnTotal += unitPrice * ri.Quantity
-	}
-
-	returnSale.Subtotal = -returnTotal
-	returnSale.Total = -returnTotal
-
 	s.log.Info("Processing partial return",
 		"originalID", originalSaleID,
-		"returnTotal", returnTotal,
 		"itemCount", len(returnItems),
 	)
 
-	// Execute inside a transaction
-	var created *domain.Sale
-	err = s.db.Transaction(func(tx *gorm.DB) error {
-		for _, ri := range returnItems {
-			// 1. Restore stock
-			var product domain.Product
-			if err := tx.First(&product, "id = ?", ri.ProductID).Error; err != nil {
-				s.log.Warn("Product not found for stock restore", "productId", ri.ProductID)
-			} else {
-				newStock := product.Stock + ri.Quantity
-				if err := tx.Model(&product).Update("stock", newStock).Error; err != nil {
-					return err
-				}
-			}
-
-			// 2. Update returned_qty on original item
-			if err := tx.Model(&domain.SaleItem{}).
-				Where("sale_id = ? AND product_id = ?", originalSaleID, ri.ProductID).
-				UpdateColumn("returned_qty", gorm.Expr("returned_qty + ?", ri.Quantity)).Error; err != nil {
-				return err
-			}
+	repoItems := make([]repository.PartialReturnItem, len(returnItems))
+	for i, ri := range returnItems {
+		repoItems[i] = repository.PartialReturnItem{
+			ProductID: ri.ProductID,
+			Qty:       ri.Qty,
 		}
-
-		// 3. Adjust debt proportionally (if credit or installment sale)
-		// Prevent division by zero if original.Total is 0
-		if original.CustomerID != "" && original.Total != 0 {
-			absTotal := math.Abs(original.Total)
-			if absTotal > 0.001 { // Use small epsilon for float comparison
-				ratio := returnTotal / absTotal
-				debtReduction := original.Total * ratio
-				switch original.PaymentMethod {
-				case "credit":
-					if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
-						UpdateColumn("debt", gorm.Expr("debt - ?", debtReduction)).Error; err != nil {
-						return err
-					}
-				case "installment":
-					if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
-						UpdateColumn("installment_debt", gorm.Expr("installment_debt - ?", debtReduction)).Error; err != nil {
-						return err
-					}
-				case "split":
-					// Handle split payment debt reversal
-					if creditAmount, ok := original.SplitDetails["credit"]; ok && creditAmount > 0 {
-						creditReduction := creditAmount * ratio
-						if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
-							UpdateColumn("debt", gorm.Expr("debt - ?", creditReduction)).Error; err != nil {
-							return err
-						}
-					}
-				}
-			}
-		}
-
-		// 4. Create return sale record
-		if err := tx.Create(returnSale).Error; err != nil {
-			return err
-		}
-		created = returnSale
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
 	}
-	return created, nil
+
+	result, err := s.saleRepo.ProcessPartialReturnWithStockUpdate(originalSaleID, repoItems)
+	if err == nil {
+		s.cache.InvalidateAllSales()
+	}
+	return result, err
 }
 
 func (s *SaleService) GetParkedSales() ([]domain.ParkedSale, error) {
@@ -332,7 +178,17 @@ func (s *SaleService) DeleteParkedSale(id uint) error {
 }
 
 func (s *SaleService) GetRecent(limit int) ([]domain.Sale, error) {
-	return s.saleRepo.GetRecent(limit)
+	if cached, ok := s.cache.GetRecentSales(limit); ok {
+		return cached.([]domain.Sale), nil
+	}
+
+	result, err := s.saleRepo.GetRecent(limit)
+	if err != nil {
+		return nil, err
+	}
+
+	s.cache.SetRecentSales(limit, result)
+	return result, nil
 }
 
 func (s *SaleService) CalculateInstallmentPlan(total, downPayment float64, months int) (*domain.InstallmentPlan, error) {

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { PurchaseOrder } from '@/types';
 import { useActivityLog } from './activityLog';
+import { useAuthStore } from '@/store/authStore';
 import { wailsApp } from '@/lib/wails';
 
 interface PurchaseOrderState {
@@ -45,10 +46,12 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
   createOrder: async (order) => {
     set({ loading: true, error: null });
     try {
+      const token = useAuthStore.getState().getToken();
+      if (!token) throw new Error('Not authenticated');
       if (!order.items) order.items = [];
-      await wailsApp.CreatePurchaseOrder(order as PurchaseOrder);
+      await wailsApp.CreatePurchaseOrder(token, order as PurchaseOrder);
       useActivityLog.getState().log('expense:create', `إنشاء أمر شراء لمورد`, `${order.supplierName} - ${order.total} د.ع`);
-      await get().fetchOrders(1, 20); // Refresh list
+      await get().fetchOrders(1, 20);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'فشل في إنشاء أمر الشراء';
       set({ error: msg, loading: false });
@@ -59,7 +62,9 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
   updateOrder: async (order) => {
     set({ loading: true, error: null });
     try {
-      await wailsApp.UpdatePurchaseOrder(order);
+      const token = useAuthStore.getState().getToken();
+      if (!token) throw new Error('Not authenticated');
+      await wailsApp.UpdatePurchaseOrder(token, order);
       useActivityLog.getState().log('expense:create', `تحديث أمر شراء`, `${order.id.slice(0, 8)} - ${order.total} د.ع`);
       await get().fetchOrders(get().currentPage, 20);
     } catch (err) {
@@ -72,7 +77,9 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
   deleteOrder: async (id) => {
     set({ loading: true, error: null });
     try {
-      await wailsApp.DeletePurchaseOrder(id);
+      const token = useAuthStore.getState().getToken();
+      if (!token) throw new Error('Not authenticated');
+      await wailsApp.DeletePurchaseOrder(token, id);
       useActivityLog.getState().log('expense:create', `حذف أمر شراء`, `معرف ${id.slice(0, 8)}`);
       await get().fetchOrders(get().currentPage, 20);
     } catch (err) {
@@ -85,7 +92,9 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
   receiveOrder: async (id) => {
     set({ loading: true, error: null });
     try {
-      await wailsApp.ReceivePurchaseOrder(id);
+      const token = useAuthStore.getState().getToken();
+      if (!token) throw new Error('Not authenticated');
+      await wailsApp.ReceivePurchaseOrder(token, id);
       useActivityLog.getState().log('product:create', `استلام أمر شراء`, `معرف ${id.slice(0, 8)}`);
       await get().fetchOrders(get().currentPage, 20);
     } catch (err) {

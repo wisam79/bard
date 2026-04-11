@@ -2,12 +2,22 @@ package sqlite
 
 import (
 	"bard/internal/domain"
-	"bard/internal/errors"
+	apperrors "bard/internal/errors"
 	"bard/internal/repository"
 	"bard/pkg/utils"
 
 	"gorm.io/gorm"
 )
+
+func handleDBError(err error, module domain.ErrorModule, entity string) error {
+	if err == nil {
+		return nil
+	}
+	if err == gorm.ErrRecordNotFound {
+		return apperrors.NewNotFoundError(module, entity)
+	}
+	return apperrors.Wrap(module, err, "database operation failed")
+}
 
 type customerRepository struct {
 	db *gorm.DB
@@ -35,7 +45,7 @@ func (r *customerRepository) GetAll(page, limit int, search string) ([]domain.Cu
 func (r *customerRepository) GetByID(id string) (*domain.Customer, error) {
 	var customer domain.Customer
 	if err := r.db.First(&customer, "id = ?", id).Error; err != nil {
-		return nil, err
+		return nil, handleDBError(err, domain.ModuleCustomer, "customer")
 	}
 	return &customer, nil
 }
@@ -43,7 +53,7 @@ func (r *customerRepository) GetByID(id string) (*domain.Customer, error) {
 func (r *customerRepository) GetByPhone(phone string) (*domain.Customer, error) {
 	var customer domain.Customer
 	if err := r.db.First(&customer, "phone = ?", phone).Error; err != nil {
-		return nil, err
+		return nil, handleDBError(err, domain.ModuleCustomer, "customer")
 	}
 	return &customer, nil
 }
@@ -54,6 +64,10 @@ func (r *customerRepository) Create(customer *domain.Customer) error {
 
 func (r *customerRepository) Update(customer *domain.Customer) error {
 	return r.db.Save(customer).Error
+}
+
+func (r *customerRepository) UpdateFields(id string, fields map[string]interface{}) error {
+	return r.db.Model(&domain.Customer{}).Where("id = ?", id).Updates(fields).Error
 }
 
 func (r *customerRepository) Delete(id string) error {
@@ -93,7 +107,7 @@ func (r *staffRepository) GetAll() ([]domain.Staff, error) {
 func (r *staffRepository) GetByID(id string) (*domain.Staff, error) {
 	var staff domain.Staff
 	if err := r.db.First(&staff, "id = ?", id).Error; err != nil {
-		return nil, err
+		return nil, handleDBError(err, domain.ModuleStaff, "staff")
 	}
 	return &staff, nil
 }
@@ -101,7 +115,7 @@ func (r *staffRepository) GetByID(id string) (*domain.Staff, error) {
 func (r *staffRepository) GetByUsername(username string) (*domain.Staff, error) {
 	var staff domain.Staff
 	if err := r.db.First(&staff, "username = ?", username).Error; err != nil {
-		return nil, err
+		return nil, handleDBError(err, domain.ModuleStaff, "staff")
 	}
 	return &staff, nil
 }
@@ -121,17 +135,24 @@ func (r *staffRepository) Delete(id string) error {
 func (r *staffRepository) Authenticate(username, password string) (*domain.Staff, error) {
 	var staff domain.Staff
 	if err := r.db.Where("username = ? AND is_active = ?", username, true).First(&staff).Error; err != nil {
-		return nil, err
+		if err == gorm.ErrRecordNotFound {
+			return nil, apperrors.ErrInvalidCredentials
+		}
+		return nil, handleDBError(err, domain.ModuleStaff, "staff")
 	}
 	// Verify password using bcrypt
 	if !utils.CheckPassword(password, staff.Password) {
-		return nil, errors.ErrInvalidCredentials
+		return nil, apperrors.ErrInvalidCredentials
 	}
 	return &staff, nil
 }
 
 func (r *staffRepository) UpdatePassword(id, hashedPassword string) error {
 	return r.db.Model(&domain.Staff{}).Where("id = ?", id).Update("password", hashedPassword).Error
+}
+
+func (r *staffRepository) UpdateFields(id string, fields map[string]interface{}) error {
+	return r.db.Model(&domain.Staff{}).Where("id = ?", id).Updates(fields).Error
 }
 
 type financeRepository struct {
@@ -220,7 +241,7 @@ func NewSettingsRepository(db *gorm.DB) repository.SettingsRepository {
 func (r *settingsRepository) GetPreferences() (*domain.AppPreferences, error) {
 	var prefs domain.AppPreferences
 	if err := r.db.First(&prefs).Error; err != nil {
-		return nil, err
+		return nil, handleDBError(err, domain.ModuleSettings, "preferences")
 	}
 	return &prefs, nil
 }
