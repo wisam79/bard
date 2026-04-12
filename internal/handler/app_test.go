@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"bard/internal/audit"
+	"bard/internal/cache"
 	"bard/internal/domain"
 	"bard/internal/logger"
 	"bard/internal/middleware"
@@ -11,7 +13,6 @@ import (
 	"bard/internal/service"
 
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
 
 func newTestApp() (*App, *middleware.AuthMiddleware) {
@@ -30,9 +31,9 @@ func newTestApp() (*App, *middleware.AuthMiddleware) {
 	mockSupplierRepo := new(mocks.MockSupplierRepository)
 	mockPORespo := new(mocks.MockPurchaseOrderRepository)
 
-	productSvc := service.NewProductService(mockProductRepo, log)
-	saleSvc := service.NewSaleService(&gorm.DB{}, mockSaleRepo, mockProductRepo, mockCustomerRepo, log)
-	customerSvc := service.NewCustomerService(mockCustomerRepo, log)
+	productSvc := service.NewProductService(mockProductRepo, cache.NewProductCache(), log)
+	saleSvc := service.NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
+	customerSvc := service.NewCustomerService(mockCustomerRepo, cache.NewCustomerCache(), log)
 	staffSvc := service.NewStaffService(mockStaffRepo, log)
 	financeSvc := service.NewFinanceService(mockFinanceRepo, log)
 	settingsSvc := service.NewSettingsService(mockSettingsRepo, log)
@@ -40,11 +41,59 @@ func newTestApp() (*App, *middleware.AuthMiddleware) {
 	shiftSvc := service.NewShiftService(mockShiftRepo, log)
 	supplierSvc := service.NewSupplierService(mockSupplierRepo, log)
 	poSvc := service.NewPurchaseOrderService(mockPORespo, mockProductRepo, log)
+	auditSvc := audit.NewAuditService(log)
+
+	mockLoyaltyRepo := new(mocks.MockLoyaltyRepository)
+	mockNotificationRepo := new(mocks.MockNotificationRepository)
+	mockBranchRepo := new(mocks.MockBranchRepository)
+	mockKitRepo := new(mocks.MockKitRepository)
+	mockRecurringRepo := new(mocks.MockRecurringInvoiceRepository)
+	mockGiftCardRepo := new(mocks.MockGiftCardRepository)
+	mockKitchenRepo := new(mocks.MockKitchenRepository)
+	mockWalletRepo := new(mocks.MockWalletRepository)
+	mockStockAdjRepo := new(mocks.MockStockAdjustmentRepository)
+
+	loyaltySvc := service.NewLoyaltyService(mockLoyaltyRepo, log)
+	notificationSvc := service.NewNotificationService(mockNotificationRepo, log)
+	branchSvc := service.NewBranchService(mockBranchRepo, log)
+	kitSvc := service.NewKitService(mockKitRepo, log)
+	recurringSvc := service.NewRecurringInvoiceService(mockRecurringRepo, log)
+	analyticsSvc := service.NewAnalyticsService(mockSaleRepo, mockProductRepo, mockCustomerRepo, log)
+	giftCardSvc := service.NewGiftCardService(mockGiftCardRepo, log)
+	kitchenSvc := service.NewKitchenService(mockKitchenRepo, log)
+	walletSvc := service.NewWalletService(mockWalletRepo, log)
+	stockAdjSvc := service.NewStockAdjustmentService(mockStockAdjRepo, mockProductRepo, log)
+
+	mockCurrencyRepo := new(mocks.MockCurrencyRepository)
+	mockMessagingRepo := new(mocks.MockMessagingRepository)
+	mockCommissionRepo := new(mocks.MockCommissionRepository)
+	mockSegmentRepo := new(mocks.MockSegmentRepository)
+	mockTaxRepo := new(mocks.MockTaxRepository)
+	mockKioskRepo := new(mocks.MockKioskRepository)
+	mockDeliveryRepo := new(mocks.MockDeliveryRepository)
+	mockReorderRepo := new(mocks.MockReorderRepository)
+	mockBudgetRepo := new(mocks.MockBudgetRepository)
+	mockReportBuilderRepo := new(mocks.MockReportBuilderRepository)
+
+	currencySvc := service.NewCurrencyService(mockCurrencyRepo, log)
+	messagingSvc := service.NewMessagingService(mockMessagingRepo, log)
+	commissionSvc := service.NewCommissionService(mockCommissionRepo, mockSaleRepo, log)
+	campaignSvc := service.NewCampaignService(mockSegmentRepo, mockCustomerRepo, log)
+	taxSvc := service.NewTaxService(mockTaxRepo, log)
+	kioskSvc := service.NewKioskService(mockKioskRepo, log)
+	deliverySvc := service.NewDeliveryService(mockDeliveryRepo, log)
+	reorderSvc := service.NewReorderService(mockReorderRepo, mockProductRepo, log)
+	budgetSvc := service.NewBudgetService(mockBudgetRepo, log)
+	reportBuilderSvc := service.NewReportBuilderService(mockReportBuilderRepo, log)
 
 	app := NewApp(
 		productSvc, saleSvc, customerSvc, staffSvc, financeSvc,
 		settingsSvc, statsSvc, shiftSvc, supplierSvc, poSvc,
-		authMiddleware, rateLimiter, log,
+		authMiddleware, rateLimiter, auditSvc, log,
+		loyaltySvc, notificationSvc, branchSvc, kitSvc, recurringSvc,
+		analyticsSvc, giftCardSvc, kitchenSvc, walletSvc, stockAdjSvc,
+		currencySvc, messagingSvc, commissionSvc, campaignSvc, taxSvc,
+		kioskSvc, deliverySvc, reorderSvc, budgetSvc, reportBuilderSvc,
 	)
 
 	return app, authMiddleware

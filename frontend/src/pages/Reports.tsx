@@ -1,466 +1,463 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { DashboardStats, TopProduct, Sale } from '@/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAppStore } from '@/store';
+import { useAuthStore } from '@/store/authStore';
 import {
-  BarChart3, TrendingUp, Package, PieChart,
-  Download, ArrowUpRight, Target, Clock, ShoppingCart,
+  ReportTemplate, ScheduledExport, MessagingProvider, MessageTemplate, MessageLog,
+  AnalyticsDashboard, SalesForecast, ProfitAnalysis, DemandForecast, AnomalyDetection
+} from '@/types';
+import {
+  FileSpreadsheet, Plus, Play, Clock, BarChart3, Download, Brain, TrendingUp, AlertTriangle, Package,
+  MessageSquare, Phone, Send, TrendingDown, DollarSign
 } from 'lucide-react';
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer,
-  PieChart as RechartsPie, Pie, Cell,
-} from 'recharts';
-import Skeleton from '@/components/ui/Skeleton';
-import EmptyState from '@/components/ui/EmptyState';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import Button from '@/components/ui/Button';
+import Modal from '@/components/ui/Modal';
 import { wailsApp } from '@/lib/wails';
 
-// ─── Colour palette for pie chart ─────────────────────────────────────────────
-const PIE_COLORS = ['#f59e0b', '#3b82f6', '#22c55e', '#a855f7', '#ef4444'];
+type ReportsTab = 'reports' | 'analytics' | 'builder' | 'messaging';
 
-// ─── Mock trend data ──────────────────────────────────────────────────────────
-const generateTrendData = (months = 6) =>
-  Array.from({ length: months }, (_, i) => {
-    const d = new Date();
-    d.setMonth(d.getMonth() - (months - 1 - i));
-    return {
-      month: d.toLocaleString('ar-IQ', { month: 'short' }),
-      revenue: Math.floor(Math.random() * 3000000) + 500000,
-      profit: Math.floor(Math.random() * 1000000) + 100000,
-    };
+const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#c084fc', '#d8b4fe'];
+
+const TAB_ITEMS: { id: ReportsTab; label: string; icon: React.ReactNode }[] = [
+  { id: 'reports', label: 'التقارير', icon: <FileSpreadsheet size={16} /> },
+  { id: 'analytics', label: 'التحليلات', icon: <Brain size={16} /> },
+  { id: 'builder', label: 'منشئ التقارير', icon: <BarChart3 size={16} /> },
+  { id: 'messaging', label: 'الرسائل', icon: <MessageSquare size={16} /> },
+];
+
+const ReportsSubTab: React.FC = () => {
+  const { data: dashboard, isLoading } = useQuery<AnalyticsDashboard>({
+    queryKey: ['analyticsDashboard'],
+    queryFn: () => wailsApp.GetAnalyticsDashboard(),
   });
 
-const trendData = generateTrendData();
+  if (isLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center h-full">
+        <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
-// ─── Custom Tooltip ──────────────────────────────────────────────────────────
-interface TooltipProps {
-  active?: boolean;
-  payload?: Array<{ value: number; name: string; color: string }>;
-  label?: string;
-}
-const RevenueTooltip: React.FC<TooltipProps> = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null;
   return (
-    <div className="bg-brand-surface border border-brand-border/50 rounded-2xl p-4 shadow-2xl text-right min-w-[150px]">
-      <p className="text-xs font-black text-brand-accent/50 mb-2">{label}</p>
-      {payload.map((p, i) => (
-        <p key={i} className="text-sm font-black mb-0.5" style={{ color: p.color }}>
-          {p.value.toLocaleString('ar-IQ')}
-          <span className="text-[10px] text-brand-accent/30 mr-1">د.ع</span>
-        </p>
-      ))}
+    <div className="p-8 h-full flex flex-col bg-brand-dark/20">
+      <div className="mb-8">
+        <h1 className="text-3xl font-black dark:text-white text-gray-900 tracking-tight flex items-center gap-3">
+          <FileSpreadsheet className="text-primary-400" /> تقارير النظام
+        </h1>
+        <p className="text-brand-accent/50 font-medium mt-1">عرض التقارير المالية والمخزونية والعملياتية</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {[
+          { label: 'إجمالي المبيعات', value: (dashboard?.sales?.total || 0).toLocaleString('ar-IQ'), suffix: 'د.ع', icon: <DollarSign size={20} />, color: 'text-green-400', bg: 'bg-green-500/10' },
+          { label: 'إجمالي المشتريات', value: (dashboard?.purchases?.total || 0).toLocaleString('ar-IQ'), suffix: 'د.ع', icon: <TrendingDown size={20} />, color: 'text-red-400', bg: 'bg-red-500/10' },
+          { label: 'الربح الصافي', value: ((dashboard?.sales?.total || 0) - (dashboard?.purchases?.total || 0)).toLocaleString('ar-IQ'), suffix: 'د.ع', icon: <TrendingUp size={20} />, color: 'text-primary-400', bg: 'bg-primary-500/10' },
+          { label: 'المعاملات', value: dashboard?.sales?.count || 0, icon: <FileSpreadsheet size={20} />, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+        ].map((stat, i) => (
+          <div key={i} className="bg-brand-surface border border-brand-border/30 rounded-3xl p-6 flex items-center gap-5">
+            <div className={`w-14 h-14 rounded-2xl ${stat.bg} flex items-center justify-center ${stat.color} border border-white/5`}>{stat.icon}</div>
+            <div>
+              <p className="text-xs font-bold text-brand-accent/40 uppercase tracking-widest mb-1">{stat.label}</p>
+              <p className="text-xl font-black dark:text-white text-gray-900">{stat.value} <span className="text-sm opacity-30">{stat.suffix}</span></p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
+        <div className="bg-brand-surface border border-brand-border/30 rounded-3xl p-6 flex flex-col">
+          <h3 className="font-bold mb-4 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-primary-500" /> مبيعات الشهر الحالي</h3>
+          <div className="flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={dashboard?.sales?.daily || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Area type="monotone" dataKey="total" stroke="#6366f1" fill="rgba(99,102,241,0.2)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-brand-surface border border-brand-border/30 rounded-3xl p-6 flex flex-col">
+          <h3 className="font-bold mb-4 flex items-center gap-2"><Package className="w-4 h-4 text-amber-500" /> حركة المخزون</h3>
+          <div className="flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={dashboard?.inventory?.movements || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="product" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Bar dataKey="in" fill="#10b981" name="وارد" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="out" fill="#ef4444" name="صادر" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-// ─── Reports Page ─────────────────────────────────────────────────────────────
-const Reports: React.FC = () => {
-  const [dateRange, setDateRange] = useState('month');
-
-  const { data: stats, isLoading } = useQuery<DashboardStats>({
-    queryKey: ['dashboardStats'],
-    queryFn: () => wailsApp.GetDashboardStats(),
+const AnalyticsSubTab: React.FC = () => {
+  const { data: dashboard, isLoading } = useQuery<AnalyticsDashboard>({
+    queryKey: ['analyticsDashboard'],
+    queryFn: () => wailsApp.GetAnalyticsDashboard(),
   });
 
-  const { data: recentSales, isLoading: salesLoading } = useQuery<Sale[]>({
-    queryKey: ['recentSales', 10],
-    queryFn: () => wailsApp.GetRecentSales(10),
-  });
+  if (isLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center h-full">
+        <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
-  // Build pie data from topProducts with null safety
-  const pieData = stats?.topProducts 
-    ? stats.topProducts.map((p: TopProduct) => ({
-        name: p.name,
-        value: p.totalAmount,
-      }))
-    : [];
+  const forecasts = dashboard?.forecasts || [];
+  const profits = dashboard?.profits || [];
+  const demands = dashboard?.demands || [];
+  const anomalies = dashboard?.anomalies || [];
+  const insights = dashboard?.insights || [];
 
   return (
-    <div className="p-6 h-full flex flex-col gap-6 relative bg-brand-dark/20 overflow-auto custom-scrollbar" dir="rtl">
-      {/* ── Header ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black dark:text-white text-gray-900 tracking-tight flex items-center gap-3">
-            <BarChart3 className="text-primary-400" />
-            التقارير والتحليلات الذكية
-          </h1>
-          <p className="text-brand-accent/50 font-medium mt-1">
-            رؤية شاملة لأداء متجرك ومؤشرات النمو
-          </p>
+    <div className="h-full flex flex-col p-6 space-y-6 overflow-auto bg-brand-dark/20">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center"><Brain className="w-5 h-5 text-white" /></div>
+        <div><h1 className="text-xl font-bold">التحليلات الذكية</h1><p className="text-sm text-brand-accent/50">توقعات المبيعات وتحليل الربح والكشف عن الحالات الشاذة</p></div>
+      </div>
+
+      {insights.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {insights.map((insight, i) => (
+            <div key={i} className={`rounded-xl p-4 border ${
+              insight.severity === 'high' ? 'bg-red-500/10 border-red-500/30' :
+              insight.severity === 'medium' ? 'bg-amber-500/10 border-amber-500/30' :
+              'bg-emerald-500/10 border-emerald-500/30'
+            }`}>
+              <div className="flex items-center gap-2 mb-2">
+                {insight.severity === 'high' ? <AlertTriangle className="w-4 h-4 text-red-400" /> : <Play className="w-4 h-4 text-emerald-400" />}
+                <span className="font-bold text-sm">{insight.title}</span>
+              </div>
+              <p className="text-sm text-brand-accent/60">{insight.description}</p>
+            </div>
+          ))}
         </div>
-        <div className="flex gap-3 bg-brand-surface p-1 rounded-2xl border border-brand-border/30 shadow-lg">
-          <select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="bg-transparent text-sm font-black dark:text-white text-gray-900 px-4 py-2 outline-none cursor-pointer"
-          >
-            <option value="today">اليوم</option>
-            <option value="week">هذا الأسبوع</option>
-            <option value="month">هذا الشهر</option>
-            <option value="year">هذا العام</option>
-          </select>
-          <button className="btn-primary flex items-center gap-2 px-4 shadow-none text-sm">
-            <Download size={16} />
-            تصدير PDF
-          </button>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-brand-surface rounded-xl p-5 border border-brand-border/20">
+          <h3 className="font-bold mb-4 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-primary-500" /> توقعات المبيعات (7 أيام)</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={forecasts}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Area type="monotone" dataKey="upperBound" stroke="transparent" fill="rgba(99,102,241,0.1)" />
+                <Area type="monotone" dataKey="predicted" stroke="#6366f1" fill="rgba(99,102,241,0.2)" />
+                <Area type="monotone" dataKey="lowerBound" stroke="transparent" fill="transparent" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-brand-surface rounded-xl p-5 border border-brand-border/20">
+          <h3 className="font-bold mb-4 flex items-center gap-2"><BarChart3 className="w-4 h-4 text-emerald-500" /> تحليل الأرباح</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={profits}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="period" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Bar dataKey="revenue" fill="#6366f1" name="الإيرادات" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="profit" fill="#10b981" name="الربح" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
-      {/* ── KPI Cards ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        {isLoading
-          ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} variant="stat-card" />)
-          : [
-              {
-                label: 'إيرادات الفترة',
-                value: (stats?.monthSales || 0).toLocaleString('ar-IQ'),
-                suffix: 'د.ع',
-                icon: <TrendingUp size={22} />,
-                color: 'text-green-400',
-                bg: 'bg-green-500/10',
-                border: 'border-green-500/20',
-                change: '+15%',
-                positive: true,
-              },
-              {
-                label: 'عدد المبيعات',
-                value: stats?.monthOrders || 0,
-                suffix: 'عملية',
-                icon: <ShoppingCart size={22} />,
-                color: 'text-blue-400',
-                bg: 'bg-blue-500/10',
-                border: 'border-blue-500/20',
-                change: '85% من الهدف',
-                positive: true,
-              },
-              {
-                label: 'إجمالي الديون',
-                value: (stats?.totalDebt || 0).toLocaleString('ar-IQ'),
-                suffix: 'د.ع',
-                icon: <Target size={22} />,
-                color: 'text-red-400',
-                bg: 'bg-red-500/10',
-                border: 'border-red-500/20',
-                change: 'تحت المراقبة',
-                positive: false,
-              },
-              {
-                label: 'تنبيهات المخزون',
-                value: stats?.lowStockCount || 0,
-                suffix: 'صنف',
-                icon: <Package size={22} />,
-                color: 'text-yellow-400',
-                bg: 'bg-yellow-500/10',
-                border: 'border-yellow-500/20',
-                change: 'تحتاج تجديد',
-                positive: false,
-              },
-            ].map((card, i) => (
-              <div
-                key={i}
-                className="bg-brand-surface border border-brand-border/30 rounded-3xl p-6 shadow-xl relative overflow-hidden group hover:border-primary-500/30 transition-all"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div
-                    className={`w-11 h-11 rounded-2xl ${card.bg} flex items-center justify-center ${card.color} border ${card.border} group-hover:scale-110 transition-transform`}
-                  >
-                    {card.icon}
-                  </div>
-                  <p className="text-xs font-bold text-brand-accent/40 uppercase tracking-widest">
-                    {card.label}
-                  </p>
-                </div>
-                <p className="text-2xl font-black dark:text-white text-gray-900">
-                  {card.value}{' '}
-                  <span className="text-xs opacity-30">{card.suffix}</span>
-                </p>
-                <div
-                  className={`flex items-center gap-1 mt-2 text-xs font-bold ${
-                    card.positive ? 'text-green-400' : 'text-red-400'
-                  }`}
-                >
-                  <ArrowUpRight size={12} />
-                  {card.change}
-                </div>
+      <div className="bg-brand-surface rounded-xl p-5 border border-brand-border/20">
+        <h3 className="font-bold mb-4 flex items-center gap-2"><Package className="w-4 h-4 text-amber-500" /> توقعات الطلب وإعادة الطلب</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead><tr className="border-b border-brand-border/20"><th className="text-right py-2 px-3">المنتج</th><th className="text-right py-2 px-3">المخزون الحالي</th><th className="text-right py-2 px-3">الطلب المتوقع</th><th className="text-right py-2 px-3">أيام المخزون</th><th className="text-right py-2 px-3">تاريخ الطلب</th><th className="text-right py-2 px-3">الأولوية</th></tr></thead>
+            <tbody>
+              {demands.map((d, i) => (
+                <tr key={i} className="border-b border-brand-border/10">
+                  <td className="py-2 px-3 font-medium">{d.productName}</td>
+                  <td className="py-2 px-3">{d.currentQty}</td>
+                  <td className="py-2 px-3">{d.predictedDemand}</td>
+                  <td className="py-2 px-3">{d.daysOfStock}</td>
+                  <td className="py-2 px-3">{d.reorderDate}</td>
+                  <td className="py-2 px-3"><span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                    d.urgency === 'critical' ? 'bg-red-500/20 text-red-400' :
+                    d.urgency === 'high' ? 'bg-amber-500/20 text-amber-400' :
+                    d.urgency === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                    'bg-emerald-500/20 text-emerald-400'
+                  }`}>{d.urgency === 'critical' ? 'حرج' : d.urgency === 'high' ? 'عالي' : d.urgency === 'medium' ? 'متوسط' : 'منخفض'}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {demands.length === 0 && <p className="text-center text-brand-accent/40 py-8">لا توجد منتجات تحتاج إعادة طلب</p>}
+        </div>
+      </div>
+
+      {anomalies.length > 0 && (
+        <div className="bg-brand-surface rounded-xl p-5 border border-red-500/30">
+          <h3 className="font-bold mb-4 flex items-center gap-2 text-red-400"><AlertTriangle className="w-4 h-4" /> تنبيهات شاذة</h3>
+          <div className="space-y-3">
+            {anomalies.map((a, i) => (
+              <div key={i} className="bg-red-500/10 rounded-lg p-3">
+                <p className="font-bold text-sm">{a.description}</p>
+                <p className="text-xs text-brand-accent/50 mt-1">المتوقع: {a.expected.toLocaleString()} | الفعلي: {a.actual.toLocaleString()} | الانحراف: {a.deviation}%</p>
               </div>
             ))}
-      </div>
-
-      {/* ── Revenue Trend ── */}
-      <div className="bg-brand-surface border border-brand-border/30 rounded-3xl p-8 shadow-xl">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-black dark:text-white text-gray-900 flex items-center gap-3">
-            <TrendingUp className="text-primary-400" />
-            مسار الإيرادات والأرباح (آخر 6 أشهر)
-          </h3>
-          <div className="flex items-center gap-4 text-xs font-bold">
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-1 rounded-full bg-primary-500 inline-block" />
-              <span className="text-brand-accent/40">إيرادات</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-1 rounded-full bg-green-400 inline-block" />
-              <span className="text-brand-accent/40">أرباح</span>
-            </span>
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={240}>
-          <AreaChart data={trendData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="profitGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="rgba(224,192,151,0.07)"
-              vertical={false}
-            />
-            <XAxis
-              dataKey="month"
-              tick={{ fill: 'rgba(224,192,151,0.4)', fontSize: 12, fontWeight: 700 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fill: 'rgba(224,192,151,0.4)', fontSize: 10 }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(v: number) =>
-                v >= 1000000 ? `${(v / 1000000).toFixed(1)}م` : `${(v / 1000).toFixed(0)}ك`
-              }
-              width={44}
-            />
-            <Tooltip content={<RevenueTooltip />} />
-            <Area
-              type="monotone"
-              dataKey="revenue"
-              name="إيرادات"
-              stroke="#f59e0b"
-              strokeWidth={2.5}
-              fill="url(#revenueGrad)"
-              dot={false}
-              activeDot={{ r: 5, fill: '#f59e0b', strokeWidth: 0 }}
-            />
-            <Area
-              type="monotone"
-              dataKey="profit"
-              name="أرباح"
-              stroke="#22c55e"
-              strokeWidth={2}
-              fill="url(#profitGrad)"
-              dot={false}
-              activeDot={{ r: 5, fill: '#22c55e', strokeWidth: 0 }}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+      )}
+    </div>
+  );
+};
 
-      {/* ── Top Products + Sales List ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Pie + Bar: Top Products */}
-        <div className="bg-brand-surface border border-brand-border/30 rounded-3xl p-8 shadow-xl">
-          <h3 className="text-xl font-black dark:text-white text-gray-900 flex items-center gap-3 mb-6">
-            <PieChart className="text-primary-400" />
-            الأصناف الأكثر طلباً
-          </h3>
+const BuilderSubTab: React.FC = () => {
+  const { notify } = useAppStore();
+  const { getToken } = useAuthStore();
+  const queryClient = useQueryClient();
+  const [activeSubTab, setActiveSubTab] = useState<'templates' | 'scheduled'>('templates');
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [templateForm, setTemplateForm] = useState({ name: '', description: '', type: 'sales' as 'sales' | 'inventory' | 'financial' | 'custom', dataSource: 'sales', columns: '', chartType: 'table' as 'bar' | 'line' | 'pie' | 'table' });
+  const [scheduleForm, setScheduleForm] = useState({ name: '', reportId: '', format: 'pdf' as 'pdf' | 'csv' | 'excel', frequency: 'monthly' as 'daily' | 'weekly' | 'monthly', recipients: '' });
 
-          {isLoading ? (
-            <Skeleton variant="card" />
-          ) : stats?.topProducts && stats.topProducts.length > 0 ? (
-            <>
-              {/* Pie Chart */}
-              <div className="flex justify-center mb-4">
-                <ResponsiveContainer width="100%" height={180}>
-                  <RechartsPie>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {pieData.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={PIE_COLORS[index % PIE_COLORS.length]}
-                          opacity={0.85}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      content={({ active, payload }) =>
-                        active && payload?.length ? (
-                          <div className="bg-brand-surface border border-brand-border/50 rounded-xl p-3 shadow-xl text-right">
-                            <p className="text-xs font-black text-brand-accent/60 mb-0.5">
-                              {payload[0].name}
-                            </p>
-                            <p className="text-sm font-black text-primary-400">
-                              {(payload[0].value as number).toLocaleString('ar-IQ')} د.ع
-                            </p>
-                          </div>
-                        ) : null
-                      }
-                    />
-                  </RechartsPie>
-                </ResponsiveContainer>
-              </div>
+  const { data: templates } = useQuery({ queryKey: ['reportTemplates'], queryFn: () => wailsApp.GetReportTemplates() });
+  const { data: scheduled } = useQuery({ queryKey: ['scheduledExports'], queryFn: () => wailsApp.GetScheduledExports() });
 
-              {/* List */}
-              <div className="space-y-3">
-                {(stats?.topProducts || []).map((product: TopProduct, index: number) => (
-                  <div
-                    key={product.productId}
-                    className="group flex items-center justify-between p-3 bg-brand-dark/20 rounded-2xl border border-brand-border/20 hover:border-primary-500/30 transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-black"
-                        style={{ background: PIE_COLORS[index % PIE_COLORS.length] }}
-                      >
-                        {index + 1}
-                      </span>
-                      <div>
-                        <p className="text-sm font-bold dark:text-white text-gray-900 group-hover:text-primary-400 transition-colors">
-                          {product.name}
-                        </p>
-                        <p className="text-[10px] text-brand-accent/40 font-bold">
-                          الكمية: {product.totalQty}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-sm font-black dark:text-white text-gray-900">
-                      {product.totalAmount.toLocaleString('ar-IQ')}
-                      <span className="text-[10px] opacity-30 mr-0.5">د.ع</span>
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <EmptyState
-              icon={Package}
-              title="لا توجد بيانات كافية"
-              description="ستظهر هنا المنتجات الأكثر مبيعاً بعد إتمام عمليات البيع"
-              compact
-            />
-          )}
+  const createTemplateMutation = useMutation({
+    mutationFn: (t: ReportTemplate) => wailsApp.CreateReportTemplate(getToken() || '', t),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['reportTemplates'] }); notify('تم إنشاء القالب', 'success'); setShowTemplateModal(false); },
+    onError: () => notify('فشل في إنشاء القالب', 'error'),
+  });
+
+  const createScheduleMutation = useMutation({
+    mutationFn: (e: ScheduledExport) => wailsApp.CreateScheduledExport(getToken() || '', e),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['scheduledExports'] }); notify('تم إنشاء التصدير المجدول', 'success'); setShowScheduleModal(false); },
+    onError: () => notify('فشل في إنشاء التصدير', 'error'),
+  });
+
+  const generateMutation = useMutation({
+    mutationFn: (id: string) => wailsApp.GenerateReport(id),
+    onSuccess: () => notify('تم إنشاء التقرير بنجاح', 'success'),
+    onError: () => notify('فشل في إنشاء التقرير', 'error'),
+  });
+
+  return (
+    <div className="p-6 h-full flex flex-col gap-6 relative overflow-hidden bg-brand-dark/20">
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2">
+          <button onClick={() => setActiveSubTab('templates')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeSubTab === 'templates' ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-accent/40 dark:text-white/30'}`}>قوالب التقارير</button>
+          <button onClick={() => setActiveSubTab('scheduled')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeSubTab === 'scheduled' ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-accent/40 dark:text-white/30'}`}>التصدير المجدول</button>
         </div>
-
-        {/* Recent Sales Table */}
-        <div className="bg-brand-surface border border-brand-border/30 rounded-3xl p-8 shadow-xl flex flex-col">
-          <h3 className="text-xl font-black dark:text-white text-gray-900 flex items-center gap-3 mb-6">
-            <Clock className="text-primary-400" />
-            أحدث الحركات المالية
-          </h3>
-
-          <div className="flex-1 space-y-3">
-            {salesLoading ? (
-              <Skeleton variant="table-row" count={6} />
-            ) : recentSales && recentSales.length > 0 ? (
-              recentSales.slice(0, 8).map((sale: Sale) => (
-                <div
-                  key={sale.id}
-                  className="flex items-center justify-between p-3 border-b border-brand-border/10 last:border-0 hover:bg-brand-dark/10 rounded-xl transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                        sale.status === 'return' ? 'bg-red-500' : 'bg-green-500'
-                      }`}
-                    />
-                    <div>
-                      <p className="text-sm font-bold dark:text-white text-gray-900 leading-none mb-1">
-                        {sale.customer || 'عميل غير مسجل'}
-                      </p>
-                      <p className="text-[10px] text-brand-accent/40 font-bold">{sale.date}</p>
-                    </div>
-                  </div>
-                  <p
-                    className={`text-sm font-black ${
-                      sale.status === 'return' ? 'text-red-400' : 'text-primary-400'
-                    }`}
-                  >
-                    {sale.status === 'return' ? '-' : ''}
-                    {sale.total.toLocaleString('ar-IQ')} د.ع
-                  </p>
-                </div>
-              ))
-            ) : (
-              <EmptyState
-                icon={ShoppingCart}
-                title="لا توجد مبيعات حديثة"
-                compact
-              />
-            )}
-          </div>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowScheduleModal(true)} variant="secondary" className="flex items-center gap-2"><Clock size={16} /> تصدير مجدول</Button>
+          <Button onClick={() => setShowTemplateModal(true)} className="flex items-center gap-2"><Plus size={16} /> تقرير جديد</Button>
         </div>
       </div>
 
-      {/* ── Health Indicators ── */}
-      <div className="bg-brand-surface border border-brand-border/30 rounded-3xl p-8 shadow-xl">
-        <h3 className="text-xl font-black dark:text-white text-gray-900 mb-8 flex items-center gap-3">
-          <TrendingUp className="text-primary-400" />
-          مؤشرات الصحة التجارية
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {isLoading
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} variant="card" />
-              ))
-            : [
-                {
-                  label: 'المنتجات النشطة',
-                  value: stats?.totalProducts || 0,
-                  color: 'text-primary-400',
-                  bar: 'bg-primary-500',
-                  pct: '80%',
-                },
-                {
-                  label: 'قاعدة العملاء',
-                  value: stats?.totalCustomers || 0,
-                  color: 'text-blue-400',
-                  bar: 'bg-blue-500',
-                  pct: '65%',
-                },
-                {
-                  label: 'الديون المعلقة',
-                  value: `${(stats?.totalDebt || 0).toLocaleString('ar-IQ')} د.ع`,
-                  color: 'text-red-400',
-                  bar: 'bg-red-500',
-                  pct: '40%',
-                },
-                {
-                  label: 'تنبيهات المخزون',
-                  value: stats?.lowStockCount || 0,
-                  color: 'text-yellow-400',
-                  bar: 'bg-yellow-500',
-                  pct: '25%',
-                },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="bg-brand-dark/20 p-6 rounded-2xl border border-brand-border/20 hover:border-primary-500/30 transition-all"
-                >
-                  <p className={`text-2xl font-black ${item.color} mb-1`}>{item.value}</p>
-                  <p className="text-[10px] font-black text-brand-accent/40 uppercase tracking-widest mb-3">
-                    {item.label}
-                  </p>
-                  <div className="h-1.5 bg-brand-dark rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${item.bar} rounded-full transition-all duration-700`}
-                      style={{ width: item.pct }}
-                    />
-                  </div>
-                </div>
+      {activeSubTab === 'templates' && (
+        <div className="grid grid-cols-2 gap-4">
+          {(templates || []).map((t: ReportTemplate) => (
+            <div key={t.id} className="bg-brand-surface/50 dark:bg-[#1e1e1e]/50 rounded-xl border border-brand-border/15 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2"><div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center"><BarChart3 size={16} className="text-indigo-500" /></div><p className="font-semibold text-sm">{t.name}</p></div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-primary-500/10 text-primary-500">{t.type}</span>
+              </div>
+              <p className="text-xs text-brand-accent/40 dark:text-white/30 mb-3">{t.description || 'بدون وصف'}</p>
+              <div className="flex items-center gap-2">
+                <Button onClick={() => generateMutation.mutate(t.id)} size="sm" className="flex items-center gap-1"><Play size={12} /> تشغيل</Button>
+                <Button size="sm" variant="secondary" className="flex items-center gap-1"><Download size={12} /> تصدير</Button>
+              </div>
+            </div>
+          ))}
+          {(!templates || templates.length === 0) && <p className="text-center text-brand-accent/30 dark:text-white/20 py-8 col-span-2">لا توجد قوالب تقارير</p>}
+        </div>
+      )}
+
+      {activeSubTab === 'scheduled' && (
+        <div className="grid gap-3">
+          {(scheduled || []).map((s: ScheduledExport) => (
+            <div key={s.id} className="bg-brand-surface/50 dark:bg-[#1e1e1e]/50 rounded-xl border border-brand-border/15 p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3"><Clock size={16} className="text-indigo-500" /><div><p className="font-semibold text-sm">{s.name}</p><p className="text-xs text-brand-accent/40">{s.format} • {s.frequency} • {s.recipients}</p></div></div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${s.isActive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-gray-500/10 text-gray-500'}`}>{s.isActive ? 'نشط' : 'معطل'}</span>
+            </div>
+          ))}
+          {(!scheduled || scheduled.length === 0) && <p className="text-center text-brand-accent/30 dark:text-white/20 py-8">لا يوجد تصدير مجدول</p>}
+        </div>
+      )}
+
+      <Modal isOpen={showTemplateModal} onClose={() => setShowTemplateModal(false)} title="تقرير جديد">
+        <div className="space-y-4 p-4">
+          <div><label className="text-xs font-semibold mb-1 block">الاسم</label><input className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={templateForm.name} onChange={e => setTemplateForm({ ...templateForm, name: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">الوصف</label><input className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={templateForm.description} onChange={e => setTemplateForm({ ...templateForm, description: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">النوع</label><select className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={templateForm.type} onChange={e => setTemplateForm({ ...templateForm, type: e.target.value as 'sales' | 'inventory' | 'financial' | 'custom' })}><option value="sales">مبيعات</option><option value="inventory">مخزون</option><option value="financial">مالي</option><option value="custom">مخصص</option></select></div>
+          <div><label className="text-xs font-semibold mb-1 block">نوع الرسم البياني</label><select className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={templateForm.chartType} onChange={e => setTemplateForm({ ...templateForm, chartType: e.target.value as 'bar' | 'line' | 'pie' | 'table' })}><option value="table">جدول</option><option value="bar">أعمدة</option><option value="line">خطي</option><option value="pie">دائري</option></select></div>
+          <Button onClick={() => createTemplateMutation.mutate({ ...templateForm, id: '', columns: '[]', filters: '', sortBy: '', groupBy: '', isShared: false, createdBy: '', createdAt: '', updatedAt: '' } as ReportTemplate)} className="w-full">إنشاء التقرير</Button>
+        </div>
+      </Modal>
+
+      <Modal isOpen={showScheduleModal} onClose={() => setShowScheduleModal(false)} title="تصدير مجدول جديد">
+        <div className="space-y-4 p-4">
+          <div><label className="text-xs font-semibold mb-1 block">الاسم</label><input className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={scheduleForm.name} onChange={e => setScheduleForm({ ...scheduleForm, name: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">التقرير</label><select className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={scheduleForm.reportId} onChange={e => setScheduleForm({ ...scheduleForm, reportId: e.target.value })}><option value="">اختر التقرير</option>{(templates || []).map((t: ReportTemplate) => <option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
+          <div><label className="text-xs font-semibold mb-1 block">الصيغة</label><select className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={scheduleForm.format} onChange={e => setScheduleForm({ ...scheduleForm, format: e.target.value as 'pdf' | 'csv' | 'excel' })}><option value="pdf">PDF</option><option value="csv">CSV</option><option value="excel">Excel</option></select></div>
+          <div><label className="text-xs font-semibold mb-1 block">التكرار</label><select className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={scheduleForm.frequency} onChange={e => setScheduleForm({ ...scheduleForm, frequency: e.target.value as 'daily' | 'weekly' | 'monthly' })}><option value="daily">يومي</option><option value="weekly">أسبوعي</option><option value="monthly">شهري</option></select></div>
+          <div><label className="text-xs font-semibold mb-1 block">المستلمون</label><input className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" placeholder="email1@example.com, email2@example.com" value={scheduleForm.recipients} onChange={e => setScheduleForm({ ...scheduleForm, recipients: e.target.value })} /></div>
+          <Button onClick={() => createScheduleMutation.mutate({ ...scheduleForm, id: '', lastRunAt: undefined, nextRunAt: undefined, isActive: true, createdAt: '', updatedAt: '' } as ScheduledExport)} className="w-full">إنشاء التصدير</Button>
+        </div>
+      </Modal>
+    </div>
+  );
+};
+
+const MessagingSubTab: React.FC = () => {
+  const { notify } = useAppStore();
+  const { getToken } = useAuthStore();
+  const queryClient = useQueryClient();
+  const [activeSubTab, setActiveSubTab] = useState<'providers' | 'templates' | 'logs'>('providers');
+  const [showProviderModal, setShowProviderModal] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [providerForm, setProviderForm] = useState({ name: '', type: 'whatsapp' as 'whatsapp' | 'sms' | 'telegram', apiKey: '', phone: '' });
+  const [templateForm, setTemplateForm] = useState({ name: '', type: 'receipt' as 'receipt' | 'promotion' | 'reminder' | 'custom', content: '' });
+  const [sendForm, setSendForm] = useState({ providerId: '', recipient: '', content: '' });
+
+  const { data: providers } = useQuery({ queryKey: ['messagingProviders'], queryFn: () => wailsApp.GetMessagingProviders() });
+  const { data: templates } = useQuery({ queryKey: ['messageTemplates'], queryFn: () => wailsApp.GetMessageTemplates() });
+  const { data: logsData } = useQuery({ queryKey: ['messageLogs', 1, 50], queryFn: () => wailsApp.GetMessageLogs(1, 50) });
+
+  const logs: MessageLog[] = logsData?.[0] || [];
+
+  const createProviderMutation = useMutation({
+    mutationFn: (p: MessagingProvider) => wailsApp.CreateMessagingProvider(getToken() || '', p),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['messagingProviders'] }); notify('تم إنشاء المزود بنجاح', 'success'); setShowProviderModal(false); },
+    onError: () => notify('فشل في إنشاء المزود', 'error'),
+  });
+
+  const createTemplateMutation = useMutation({
+    mutationFn: (t: MessageTemplate) => wailsApp.CreateMessageTemplate(getToken() || '', t),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['messageTemplates'] }); notify('تم إنشاء القالب بنجاح', 'success'); setShowTemplateModal(false); },
+    onError: () => notify('فشل في إنشاء القالب', 'error'),
+  });
+
+  const sendMutation = useMutation({
+    mutationFn: () => wailsApp.SendMessage(getToken() || '', sendForm.providerId, sendForm.recipient, sendForm.content, '', '', ''),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['messageLogs'] }); notify('تم إرسال الرسالة بنجاح', 'success'); setShowSendModal(false); },
+    onError: () => notify('فشل في إرسال الرسالة', 'error'),
+  });
+
+  return (
+    <div className="p-6 h-full flex flex-col gap-6 relative overflow-hidden bg-brand-dark/20">
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2">
+          <button onClick={() => setActiveSubTab('providers')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeSubTab === 'providers' ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-accent/40 dark:text-white/30 hover:bg-brand-surface/50'}`}><Phone size={14} /> مزودو الخدمة</button>
+          <button onClick={() => setActiveSubTab('templates')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeSubTab === 'templates' ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-accent/40 dark:text-white/30 hover:bg-brand-surface/50'}`}><MessageSquare size={14} /> القوالب</button>
+          <button onClick={() => setActiveSubTab('logs')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeSubTab === 'logs' ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-accent/40 dark:text-white/30 hover:bg-brand-surface/50'}`}><Send size={14} /> سجل الرسائل</button>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowSendModal(true)} variant="secondary" className="flex items-center gap-2"><Send size={16} /> إرسال رسالة</Button>
+          <Button onClick={() => setShowProviderModal(true)} className="flex items-center gap-2"><Plus size={16} /> مزود جديد</Button>
+        </div>
+      </div>
+
+      {activeSubTab === 'providers' && (
+        <div className="grid gap-3">
+          {(providers || []).map((p: MessagingProvider) => (
+            <div key={p.id} className="bg-brand-surface/50 dark:bg-[#1e1e1e]/50 rounded-xl border border-brand-border/15 p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3"><div className={`w-8 h-8 rounded-lg flex items-center justify-center ${p.type === 'whatsapp' ? 'bg-green-500/10' : p.type === 'sms' ? 'bg-blue-500/10' : 'bg-sky-500/10'}`}><Phone size={16} className={p.type === 'whatsapp' ? 'text-green-500' : p.type === 'sms' ? 'text-blue-500' : 'text-sky-500'} /></div><div><p className="font-semibold text-sm">{p.name}</p><p className="text-xs text-brand-accent/40">{p.type} • {p.phone || 'بدون رقم'}</p></div></div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${p.isActive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>{p.isActive ? 'نشط' : 'معطل'}</span>
+            </div>
+          ))}
+          {(!providers || providers.length === 0) && <p className="text-center text-brand-accent/30 dark:text-white/20 py-8">لا يوجد مزودو خدمة</p>}
+        </div>
+      )}
+
+      {activeSubTab === 'templates' && (
+        <div className="grid gap-3">
+          <Button onClick={() => setShowTemplateModal(true)} variant="secondary" className="flex items-center gap-2 self-start"><Plus size={16} /> قالب جديد</Button>
+          {(templates || []).map((t: MessageTemplate) => (
+            <div key={t.id} className="bg-brand-surface/50 dark:bg-[#1e1e1e]/50 rounded-xl border border-brand-border/15 p-4">
+              <div className="flex items-center justify-between mb-2"><p className="font-semibold text-sm">{t.name}</p><span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-primary-500/10 text-primary-500">{t.type}</span></div>
+              <p className="text-xs text-brand-accent/40 line-clamp-2">{t.content}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {activeSubTab === 'logs' && (
+        <div className="bg-brand-surface/50 dark:bg-[#1e1e1e]/50 rounded-xl border border-brand-border/15 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead><tr className="border-b border-brand-border/10"><th className="text-right px-4 py-3 font-semibold text-brand-accent/50">المستلم</th><th className="text-right px-4 py-3 font-semibold text-brand-accent/50">المحتوى</th><th className="text-right px-4 py-3 font-semibold text-brand-accent/50">الحالة</th></tr></thead>
+            <tbody>
+              {logs.map((log: MessageLog) => (
+                <tr key={log.id} className="border-b border-brand-border/5"><td className="px-4 py-3">{log.recipient}</td><td className="px-4 py-3 text-xs truncate max-w-[200px]">{log.content}</td><td className="px-4 py-3"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${log.status === 'sent' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>{log.status}</span></td></tr>
               ))}
+            </tbody>
+          </table>
         </div>
+      )}
+
+      <Modal isOpen={showProviderModal} onClose={() => setShowProviderModal(false)} title="مزود خدمة جديد">
+        <div className="space-y-4 p-4">
+          <div><label className="text-xs font-semibold mb-1 block">الاسم</label><input className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={providerForm.name} onChange={e => setProviderForm({ ...providerForm, name: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">النوع</label><select className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={providerForm.type} onChange={e => setProviderForm({ ...providerForm, type: e.target.value as 'whatsapp' | 'sms' | 'telegram' })}><option value="whatsapp">واتساب</option><option value="sms">رسائل SMS</option><option value="telegram">تلغرام</option></select></div>
+          <div><label className="text-xs font-semibold mb-1 block">مفتاح API</label><input className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={providerForm.apiKey} onChange={e => setProviderForm({ ...providerForm, apiKey: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">رقم الهاتف</label><input className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={providerForm.phone} onChange={e => setProviderForm({ ...providerForm, phone: e.target.value })} /></div>
+          <Button onClick={() => createProviderMutation.mutate({ ...providerForm, id: '', isDefault: false, isActive: true, createdAt: '', updatedAt: '' } as MessagingProvider)} className="w-full">إنشاء المزود</Button>
+        </div>
+      </Modal>
+
+      <Modal isOpen={showTemplateModal} onClose={() => setShowTemplateModal(false)} title="قالب رسالة جديد">
+        <div className="space-y-4 p-4">
+          <div><label className="text-xs font-semibold mb-1 block">الاسم</label><input className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={templateForm.name} onChange={e => setTemplateForm({ ...templateForm, name: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">النوع</label><select className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={templateForm.type} onChange={e => setTemplateForm({ ...templateForm, type: e.target.value as 'receipt' | 'promotion' | 'reminder' | 'custom' })}><option value="receipt">إيصال</option><option value="promotion">ترويجي</option><option value="reminder">تذكير</option><option value="custom">مخصص</option></select></div>
+          <div><label className="text-xs font-semibold mb-1 block">المحتوى</label><textarea className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm h-24 resize-none" value={templateForm.content} onChange={e => setTemplateForm({ ...templateForm, content: e.target.value })} placeholder="استخدم {{name}} للمتغيرات" /></div>
+          <Button onClick={() => createTemplateMutation.mutate({ ...templateForm, id: '', isActive: true, createdAt: '', updatedAt: '' } as MessageTemplate)} className="w-full">إنشاء القالب</Button>
+        </div>
+      </Modal>
+
+      <Modal isOpen={showSendModal} onClose={() => setShowSendModal(false)} title="إرسال رسالة">
+        <div className="space-y-4 p-4">
+          <div><label className="text-xs font-semibold mb-1 block">مزود الخدمة</label><select className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={sendForm.providerId} onChange={e => setSendForm({ ...sendForm, providerId: e.target.value })}><option value="">اختر المزود</option>{(providers || []).map((p: MessagingProvider) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+          <div><label className="text-xs font-semibold mb-1 block">المستلم</label><input className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm" placeholder="+9647700000000" value={sendForm.recipient} onChange={e => setSendForm({ ...sendForm, recipient: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">المحتوى</label><textarea className="w-full bg-brand-surface/50 border border-brand-border/20 rounded-lg px-3 py-2 text-sm h-24 resize-none" value={sendForm.content} onChange={e => setSendForm({ ...sendForm, content: e.target.value })} /></div>
+          <Button onClick={() => sendMutation.mutate()} className="w-full flex items-center justify-center gap-2"><Send size={16} /> إرسال</Button>
+        </div>
+      </Modal>
+    </div>
+  );
+};
+
+const Reports: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<ReportsTab>('reports');
+
+  return (
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="flex items-center gap-1 p-2 px-6 bg-brand-surface/30 border-b border-brand-border/15">
+        {TAB_ITEMS.map((tab) => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-black transition-all ${activeTab === tab.id ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-accent/40 dark:text-white/30 hover:bg-brand-surface/50 hover:text-brand-accent/70'}`}>{tab.icon}{tab.label}</button>
+        ))}
+      </div>
+      <div className="flex-1 overflow-hidden relative">
+        {activeTab === 'reports' && <ReportsSubTab />}
+        {activeTab === 'analytics' && <AnalyticsSubTab />}
+        {activeTab === 'builder' && <BuilderSubTab />}
+        {activeTab === 'messaging' && <MessagingSubTab />}
       </div>
     </div>
   );

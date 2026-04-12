@@ -52,7 +52,7 @@ const Modal: React.FC<ModalProps> = ({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-dark/40 dark:bg-black/60 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-dark/30 dark:bg-black/50 backdrop-blur-md animate-fade-in"
       onClick={closeOnOverlayClick ? () => onClose() : undefined}
       role="dialog"
       aria-modal="true"
@@ -61,40 +61,39 @@ const Modal: React.FC<ModalProps> = ({
       <div
         ref={modalRef}
         className={`
-          w-full ${sizeClasses[size]} bg-brand-surface dark:bg-brand-surface border border-brand-border/40
-          rounded-3xl shadow-2xl shadow-brand-dark/20 transform transition-all
+          w-full ${sizeClasses[size]} bg-brand-surface/95 dark:bg-[#2d2d30]/95
+          border border-brand-border/30 dark:border-white/[0.06]
+          rounded-2xl shadow-2xl transform transition-all
           flex flex-col max-h-[90vh] overflow-hidden
-          animate-in fade-in zoom-in-95 duration-200
+          backdrop-blur-2xl
+          animate-fade-in-scale
         `}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between p-6 border-b border-brand-border/30 bg-brand-border/5">
+          <div className="flex items-center justify-between p-5 border-b border-brand-border/15 dark:border-white/[0.04] bg-brand-surface/30 dark:bg-white/[0.02]">
             {title && (
-              <h2 id="modal-title" className="text-xl font-black text-brand-accent tracking-tight">
+              <h2 id="modal-title" className="text-lg font-black text-brand-accent dark:text-white tracking-tight">
                 {title}
               </h2>
             )}
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="p-2 rounded-2xl hover:bg-brand-border/40 text-brand-accent/40 hover:text-brand-accent transition-all active:scale-90"
+                className="p-2 rounded-xl hover:bg-brand-border/20 dark:hover:bg-white/[0.06] text-brand-accent/30 dark:text-white/20 hover:text-brand-accent dark:hover:text-white/60 transition-all duration-200 active:scale-90"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             )}
           </div>
         )}
 
-        {/* Content */}
-        <div className="p-6 overflow-y-auto flex-1 text-brand-accent/80">
+        <div className="p-5 overflow-y-auto flex-1 text-brand-accent/80 dark:text-white/70">
           {children}
         </div>
 
-        {/* Footer */}
         {footer && (
-          <div className="p-6 border-t border-brand-border/30 flex justify-end gap-3 bg-brand-border/5">
+          <div className="p-5 border-t border-brand-border/15 dark:border-white/[0.04] flex justify-end gap-3 bg-brand-surface/30 dark:bg-white/[0.02]">
             {footer}
           </div>
         )}

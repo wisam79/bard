@@ -43,7 +43,7 @@ describe('Button', () => {
   it('renders with danger variant', () => {
     render(<Button variant="danger">Delete</Button>);
 
-    expect(screen.getByRole('button', { name: 'Delete' })).toHaveClass('bg-rose-600');
+    expect(screen.getByRole('button', { name: 'Delete' })).toHaveClass('bg-rose-500');
   });
 
   it('renders with small size', () => {

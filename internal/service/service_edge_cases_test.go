@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"bard/internal/cache"
 	"bard/internal/domain"
 	"bard/internal/errors"
 	"bard/internal/logger"
@@ -19,7 +20,7 @@ import (
 func TestProductService_Create_WithZeroValues(t *testing.T) {
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewProductService(mockRepo, log)
+	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	// Zero price should be allowed (free product)
 	product := &domain.Product{
@@ -39,7 +40,7 @@ func TestProductService_Create_WithZeroValues(t *testing.T) {
 func TestProductService_Create_WithWhitespace(t *testing.T) {
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewProductService(mockRepo, log)
+	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	product := &domain.Product{
 		Name:    "  Trimmed Name  ",
@@ -59,7 +60,7 @@ func TestProductService_Create_WithWhitespace(t *testing.T) {
 func TestProductService_Update_NonExistentProduct(t *testing.T) {
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewProductService(mockRepo, log)
+	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	product := &domain.Product{
 		ID:      "non-existent",
@@ -79,7 +80,7 @@ func TestProductService_Update_NonExistentProduct(t *testing.T) {
 func TestProductService_Search_EmptyQuery(t *testing.T) {
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewProductService(mockRepo, log)
+	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	products := []domain.Product{}
 	mockRepo.On("Search", "", 10).Return(products, nil)
@@ -93,7 +94,7 @@ func TestProductService_Search_EmptyQuery(t *testing.T) {
 func TestProductService_GetLowStock_ZeroThreshold(t *testing.T) {
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewProductService(mockRepo, log)
+	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	products := []domain.Product{
 		{ID: "1", Name: "Product 1", Stock: 0},
@@ -113,7 +114,7 @@ func TestProductService_GetLowStock_ZeroThreshold(t *testing.T) {
 func TestCustomerService_Create_WithEmptyPhone(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewCustomerService(mockRepo, log)
+	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	customer := &domain.Customer{
 		Name:  "John Doe",
@@ -130,7 +131,7 @@ func TestCustomerService_Create_WithEmptyPhone(t *testing.T) {
 func TestCustomerService_Update_PreserveDebt(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewCustomerService(mockRepo, log)
+	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	existingCustomer := &domain.Customer{
 		ID:              "cust-1",
@@ -159,7 +160,7 @@ func TestCustomerService_Update_PreserveDebt(t *testing.T) {
 func TestCustomerService_GetAll_ZeroLimit(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewCustomerService(mockRepo, log)
+	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	customers := []domain.Customer{}
 	// CustomerService.GetAll passes parameters directly to repo without validation

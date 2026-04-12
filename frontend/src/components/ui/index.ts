@@ -9,4 +9,8 @@ export { default as ToggleSwitch } from './ToggleSwitch';
 export { default as FormField } from './FormField';
 export { default as Skeleton } from './Skeleton';
 export { default as EmptyState } from './EmptyState';
+export { AnimatedNumber } from './AnimatedNumber';
+export { Sparkline } from './Sparkline';
+export { SpotlightCard } from './SpotlightCard';
+export { PremiumBadge } from './PremiumBadge';
 export type { ReceiptData } from './PrintReceipt';

@@ -6,24 +6,152 @@ export function AddCashMovement(arg1, arg2, arg3, arg4, arg5) {
   return window['go']['handler']['App']['AddCashMovement'](arg1, arg2, arg3, arg4, arg5);
 }
 
+export function AddCustomerToSegment(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['AddCustomerToSegment'](arg1, arg2, arg3);
+}
+
+export function ApplyVoucher(arg1) {
+  return window['go']['handler']['App']['ApplyVoucher'](arg1);
+}
+
+export function ApproveExpense(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['ApproveExpense'](arg1, arg2, arg3);
+}
+
+export function ApproveStockTransfer(arg1, arg2) {
+  return window['go']['handler']['App']['ApproveStockTransfer'](arg1, arg2);
+}
+
+export function AssignDeliveryDriver(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['AssignDeliveryDriver'](arg1, arg2, arg3);
+}
+
+export function AssignProductTax(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['AssignProductTax'](arg1, arg2, arg3);
+}
+
+export function AutoReorder(arg1) {
+  return window['go']['handler']['App']['AutoReorder'](arg1);
+}
+
+export function AutoSegmentCustomers(arg1) {
+  return window['go']['handler']['App']['AutoSegmentCustomers'](arg1);
+}
+
 export function CalculateInstallmentPlan(arg1, arg2, arg3) {
   return window['go']['handler']['App']['CalculateInstallmentPlan'](arg1, arg2, arg3);
+}
+
+export function CancelKitchenOrder(arg1, arg2) {
+  return window['go']['handler']['App']['CancelKitchenOrder'](arg1, arg2);
 }
 
 export function ChangePassword(arg1, arg2, arg3) {
   return window['go']['handler']['App']['ChangePassword'](arg1, arg2, arg3);
 }
 
+export function CheckBudgetLimit(arg1, arg2) {
+  return window['go']['handler']['App']['CheckBudgetLimit'](arg1, arg2);
+}
+
 export function CloseShift(arg1, arg2) {
   return window['go']['handler']['App']['CloseShift'](arg1, arg2);
+}
+
+export function CompleteKitchenOrder(arg1, arg2) {
+  return window['go']['handler']['App']['CompleteKitchenOrder'](arg1, arg2);
+}
+
+export function CompleteStockTransfer(arg1, arg2) {
+  return window['go']['handler']['App']['CompleteStockTransfer'](arg1, arg2);
+}
+
+export function ConvertCurrency(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['ConvertCurrency'](arg1, arg2, arg3);
+}
+
+export function CreateApprovalWorkflow(arg1, arg2) {
+  return window['go']['handler']['App']['CreateApprovalWorkflow'](arg1, arg2);
+}
+
+export function CreateBranch(arg1, arg2) {
+  return window['go']['handler']['App']['CreateBranch'](arg1, arg2);
+}
+
+export function CreateBudget(arg1, arg2) {
+  return window['go']['handler']['App']['CreateBudget'](arg1, arg2);
+}
+
+export function CreateCampaign(arg1, arg2) {
+  return window['go']['handler']['App']['CreateCampaign'](arg1, arg2);
+}
+
+export function CreateCommissionRule(arg1, arg2) {
+  return window['go']['handler']['App']['CreateCommissionRule'](arg1, arg2);
+}
+
+export function CreateCurrency(arg1, arg2) {
+  return window['go']['handler']['App']['CreateCurrency'](arg1, arg2);
 }
 
 export function CreateCustomer(arg1) {
   return window['go']['handler']['App']['CreateCustomer'](arg1);
 }
 
+export function CreateCustomerSegment(arg1, arg2) {
+  return window['go']['handler']['App']['CreateCustomerSegment'](arg1, arg2);
+}
+
+export function CreateCustomerWallet(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['CreateCustomerWallet'](arg1, arg2, arg3);
+}
+
+export function CreateDeliveryDriver(arg1, arg2) {
+  return window['go']['handler']['App']['CreateDeliveryDriver'](arg1, arg2);
+}
+
+export function CreateDeliveryOrder(arg1, arg2) {
+  return window['go']['handler']['App']['CreateDeliveryOrder'](arg1, arg2);
+}
+
 export function CreateExpense(arg1, arg2) {
   return window['go']['handler']['App']['CreateExpense'](arg1, arg2);
+}
+
+export function CreateGiftCard(arg1, arg2) {
+  return window['go']['handler']['App']['CreateGiftCard'](arg1, arg2);
+}
+
+export function CreateKioskLayout(arg1, arg2) {
+  return window['go']['handler']['App']['CreateKioskLayout'](arg1, arg2);
+}
+
+export function CreateKitchenOrder(arg1, arg2) {
+  return window['go']['handler']['App']['CreateKitchenOrder'](arg1, arg2);
+}
+
+export function CreateKitchenStation(arg1, arg2) {
+  return window['go']['handler']['App']['CreateKitchenStation'](arg1, arg2);
+}
+
+export function CreateLoyaltyRule(arg1, arg2) {
+  return window['go']['handler']['App']['CreateLoyaltyRule'](arg1, arg2);
+}
+
+export function CreateLoyaltyTier(arg1, arg2) {
+  return window['go']['handler']['App']['CreateLoyaltyTier'](arg1, arg2);
+}
+
+export function CreateMessageTemplate(arg1, arg2) {
+  return window['go']['handler']['App']['CreateMessageTemplate'](arg1, arg2);
+}
+
+export function CreateMessagingProvider(arg1, arg2) {
+  return window['go']['handler']['App']['CreateMessagingProvider'](arg1, arg2);
+}
+
+export function CreateNotificationTemplate(arg1, arg2) {
+  return window['go']['handler']['App']['CreateNotificationTemplate'](arg1, arg2);
 }
 
 export function CreatePayment(arg1) {
@@ -34,28 +162,132 @@ export function CreateProduct(arg1, arg2) {
   return window['go']['handler']['App']['CreateProduct'](arg1, arg2);
 }
 
+export function CreateProductKit(arg1, arg2) {
+  return window['go']['handler']['App']['CreateProductKit'](arg1, arg2);
+}
+
 export function CreatePurchaseOrder(arg1, arg2) {
   return window['go']['handler']['App']['CreatePurchaseOrder'](arg1, arg2);
+}
+
+export function CreateRecurringInvoice(arg1, arg2) {
+  return window['go']['handler']['App']['CreateRecurringInvoice'](arg1, arg2);
+}
+
+export function CreateReorderRule(arg1, arg2) {
+  return window['go']['handler']['App']['CreateReorderRule'](arg1, arg2);
+}
+
+export function CreateReportTemplate(arg1, arg2) {
+  return window['go']['handler']['App']['CreateReportTemplate'](arg1, arg2);
 }
 
 export function CreateSale(arg1) {
   return window['go']['handler']['App']['CreateSale'](arg1);
 }
 
+export function CreateScheduledExport(arg1, arg2) {
+  return window['go']['handler']['App']['CreateScheduledExport'](arg1, arg2);
+}
+
 export function CreateStaff(arg1, arg2) {
   return window['go']['handler']['App']['CreateStaff'](arg1, arg2);
+}
+
+export function CreateStockAdjustment(arg1, arg2, arg3, arg4, arg5) {
+  return window['go']['handler']['App']['CreateStockAdjustment'](arg1, arg2, arg3, arg4, arg5);
+}
+
+export function CreateStockTransfer(arg1, arg2) {
+  return window['go']['handler']['App']['CreateStockTransfer'](arg1, arg2);
 }
 
 export function CreateSupplier(arg1, arg2) {
   return window['go']['handler']['App']['CreateSupplier'](arg1, arg2);
 }
 
+export function CreateTaxRate(arg1, arg2) {
+  return window['go']['handler']['App']['CreateTaxRate'](arg1, arg2);
+}
+
+export function CreateVoucher(arg1, arg2) {
+  return window['go']['handler']['App']['CreateVoucher'](arg1, arg2);
+}
+
+export function CreateWasteRecord(arg1, arg2, arg3, arg4, arg5) {
+  return window['go']['handler']['App']['CreateWasteRecord'](arg1, arg2, arg3, arg4, arg5);
+}
+
+export function DebitWallet(arg1, arg2, arg3, arg4) {
+  return window['go']['handler']['App']['DebitWallet'](arg1, arg2, arg3, arg4);
+}
+
+export function DeleteApprovalWorkflow(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteApprovalWorkflow'](arg1, arg2);
+}
+
+export function DeleteBranch(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteBranch'](arg1, arg2);
+}
+
+export function DeleteBudget(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteBudget'](arg1, arg2);
+}
+
+export function DeleteCampaign(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteCampaign'](arg1, arg2);
+}
+
+export function DeleteCommissionRule(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteCommissionRule'](arg1, arg2);
+}
+
+export function DeleteCurrency(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteCurrency'](arg1, arg2);
+}
+
 export function DeleteCustomer(arg1) {
   return window['go']['handler']['App']['DeleteCustomer'](arg1);
 }
 
+export function DeleteCustomerSegment(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteCustomerSegment'](arg1, arg2);
+}
+
+export function DeleteDeliveryDriver(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteDeliveryDriver'](arg1, arg2);
+}
+
 export function DeleteExpense(arg1, arg2) {
   return window['go']['handler']['App']['DeleteExpense'](arg1, arg2);
+}
+
+export function DeleteGiftCard(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteGiftCard'](arg1, arg2);
+}
+
+export function DeleteKioskLayout(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteKioskLayout'](arg1, arg2);
+}
+
+export function DeleteKitchenStation(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteKitchenStation'](arg1, arg2);
+}
+
+export function DeleteLoyaltyTier(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteLoyaltyTier'](arg1, arg2);
+}
+
+export function DeleteMessageTemplate(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteMessageTemplate'](arg1, arg2);
+}
+
+export function DeleteMessagingProvider(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteMessagingProvider'](arg1, arg2);
+}
+
+export function DeleteNotificationTemplate(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteNotificationTemplate'](arg1, arg2);
 }
 
 export function DeleteParkedSale(arg1) {
@@ -66,8 +298,28 @@ export function DeleteProduct(arg1, arg2) {
   return window['go']['handler']['App']['DeleteProduct'](arg1, arg2);
 }
 
+export function DeleteProductKit(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteProductKit'](arg1, arg2);
+}
+
 export function DeletePurchaseOrder(arg1, arg2) {
   return window['go']['handler']['App']['DeletePurchaseOrder'](arg1, arg2);
+}
+
+export function DeleteRecurringInvoice(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteRecurringInvoice'](arg1, arg2);
+}
+
+export function DeleteReorderRule(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteReorderRule'](arg1, arg2);
+}
+
+export function DeleteReportTemplate(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteReportTemplate'](arg1, arg2);
+}
+
+export function DeleteScheduledExport(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteScheduledExport'](arg1, arg2);
 }
 
 export function DeleteStaff(arg1, arg2) {
@@ -78,12 +330,68 @@ export function DeleteSupplier(arg1, arg2) {
   return window['go']['handler']['App']['DeleteSupplier'](arg1, arg2);
 }
 
+export function DeleteTaxRate(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteTaxRate'](arg1, arg2);
+}
+
+export function DeleteVoucher(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteVoucher'](arg1, arg2);
+}
+
+export function DetectAnomalies() {
+  return window['go']['handler']['App']['DetectAnomalies']();
+}
+
+export function EndKioskSession(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['EndKioskSession'](arg1, arg2, arg3);
+}
+
 export function ExportDatabase(arg1) {
   return window['go']['handler']['App']['ExportDatabase'](arg1);
 }
 
+export function GenerateReport(arg1) {
+  return window['go']['handler']['App']['GenerateReport'](arg1);
+}
+
+export function GetActiveKioskSessions() {
+  return window['go']['handler']['App']['GetActiveKioskSessions']();
+}
+
 export function GetActiveShift(arg1) {
   return window['go']['handler']['App']['GetActiveShift'](arg1);
+}
+
+export function GetAllStaffPerformance(arg1, arg2) {
+  return window['go']['handler']['App']['GetAllStaffPerformance'](arg1, arg2);
+}
+
+export function GetAnalyticsDashboard() {
+  return window['go']['handler']['App']['GetAnalyticsDashboard']();
+}
+
+export function GetApprovalWorkflows() {
+  return window['go']['handler']['App']['GetApprovalWorkflows']();
+}
+
+export function GetBaseCurrency() {
+  return window['go']['handler']['App']['GetBaseCurrency']();
+}
+
+export function GetBranch(arg1) {
+  return window['go']['handler']['App']['GetBranch'](arg1);
+}
+
+export function GetBranches() {
+  return window['go']['handler']['App']['GetBranches']();
+}
+
+export function GetBudgets() {
+  return window['go']['handler']['App']['GetBudgets']();
+}
+
+export function GetCampaigns() {
+  return window['go']['handler']['App']['GetCampaigns']();
 }
 
 export function GetCashMovements(arg1) {
@@ -94,8 +402,36 @@ export function GetCategories() {
   return window['go']['handler']['App']['GetCategories']();
 }
 
+export function GetCommissionPayments(arg1) {
+  return window['go']['handler']['App']['GetCommissionPayments'](arg1);
+}
+
+export function GetCommissionRules() {
+  return window['go']['handler']['App']['GetCommissionRules']();
+}
+
+export function GetCurrencies() {
+  return window['go']['handler']['App']['GetCurrencies']();
+}
+
+export function GetCurrencyByCode(arg1) {
+  return window['go']['handler']['App']['GetCurrencyByCode'](arg1);
+}
+
+export function GetCurrencyTransactions(arg1) {
+  return window['go']['handler']['App']['GetCurrencyTransactions'](arg1);
+}
+
 export function GetCustomer(arg1) {
   return window['go']['handler']['App']['GetCustomer'](arg1);
+}
+
+export function GetCustomerSegments() {
+  return window['go']['handler']['App']['GetCustomerSegments']();
+}
+
+export function GetCustomerWallet(arg1) {
+  return window['go']['handler']['App']['GetCustomerWallet'](arg1);
 }
 
 export function GetCustomers(arg1, arg2, arg3) {
@@ -106,8 +442,96 @@ export function GetDashboardStats() {
   return window['go']['handler']['App']['GetDashboardStats']();
 }
 
+export function GetDefaultTaxRate() {
+  return window['go']['handler']['App']['GetDefaultTaxRate']();
+}
+
+export function GetDeliveryDrivers() {
+  return window['go']['handler']['App']['GetDeliveryDrivers']();
+}
+
+export function GetDeliveryOrders(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['GetDeliveryOrders'](arg1, arg2, arg3);
+}
+
+export function GetDemandForecast() {
+  return window['go']['handler']['App']['GetDemandForecast']();
+}
+
+export function GetExpenseApprovals(arg1) {
+  return window['go']['handler']['App']['GetExpenseApprovals'](arg1);
+}
+
 export function GetExpenses(arg1, arg2, arg3) {
   return window['go']['handler']['App']['GetExpenses'](arg1, arg2, arg3);
+}
+
+export function GetGiftCardByCode(arg1) {
+  return window['go']['handler']['App']['GetGiftCardByCode'](arg1);
+}
+
+export function GetGiftCardTransactions(arg1) {
+  return window['go']['handler']['App']['GetGiftCardTransactions'](arg1);
+}
+
+export function GetGiftCards(arg1, arg2) {
+  return window['go']['handler']['App']['GetGiftCards'](arg1, arg2);
+}
+
+export function GetKioskLayout(arg1) {
+  return window['go']['handler']['App']['GetKioskLayout'](arg1);
+}
+
+export function GetKioskLayouts() {
+  return window['go']['handler']['App']['GetKioskLayouts']();
+}
+
+export function GetKitchenOrder(arg1) {
+  return window['go']['handler']['App']['GetKitchenOrder'](arg1);
+}
+
+export function GetKitchenOrders() {
+  return window['go']['handler']['App']['GetKitchenOrders']();
+}
+
+export function GetKitchenStations() {
+  return window['go']['handler']['App']['GetKitchenStations']();
+}
+
+export function GetLoyaltyRules() {
+  return window['go']['handler']['App']['GetLoyaltyRules']();
+}
+
+export function GetLoyaltyTiers() {
+  return window['go']['handler']['App']['GetLoyaltyTiers']();
+}
+
+export function GetLoyaltyTransactions(arg1) {
+  return window['go']['handler']['App']['GetLoyaltyTransactions'](arg1);
+}
+
+export function GetMessageLogs(arg1, arg2) {
+  return window['go']['handler']['App']['GetMessageLogs'](arg1, arg2);
+}
+
+export function GetMessageTemplates() {
+  return window['go']['handler']['App']['GetMessageTemplates']();
+}
+
+export function GetMessagingProviders() {
+  return window['go']['handler']['App']['GetMessagingProviders']();
+}
+
+export function GetNotificationLogs(arg1, arg2) {
+  return window['go']['handler']['App']['GetNotificationLogs'](arg1, arg2);
+}
+
+export function GetNotificationSettings() {
+  return window['go']['handler']['App']['GetNotificationSettings']();
+}
+
+export function GetNotificationTemplates() {
+  return window['go']['handler']['App']['GetNotificationTemplates']();
 }
 
 export function GetParkedSales() {
@@ -130,12 +554,28 @@ export function GetProductByBarcode(arg1) {
   return window['go']['handler']['App']['GetProductByBarcode'](arg1);
 }
 
+export function GetProductKit(arg1) {
+  return window['go']['handler']['App']['GetProductKit'](arg1);
+}
+
+export function GetProductKits() {
+  return window['go']['handler']['App']['GetProductKits']();
+}
+
 export function GetProductStats() {
   return window['go']['handler']['App']['GetProductStats']();
 }
 
+export function GetProductTaxes(arg1) {
+  return window['go']['handler']['App']['GetProductTaxes'](arg1);
+}
+
 export function GetProducts(arg1, arg2, arg3, arg4) {
   return window['go']['handler']['App']['GetProducts'](arg1, arg2, arg3, arg4);
+}
+
+export function GetProfitAnalysis(arg1) {
+  return window['go']['handler']['App']['GetProfitAnalysis'](arg1);
 }
 
 export function GetPurchaseOrder(arg1) {
@@ -150,6 +590,30 @@ export function GetRecentSales(arg1) {
   return window['go']['handler']['App']['GetRecentSales'](arg1);
 }
 
+export function GetRecurringInvoice(arg1) {
+  return window['go']['handler']['App']['GetRecurringInvoice'](arg1);
+}
+
+export function GetRecurringInvoices(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['GetRecurringInvoices'](arg1, arg2, arg3);
+}
+
+export function GetReorderAlerts() {
+  return window['go']['handler']['App']['GetReorderAlerts']();
+}
+
+export function GetReorderRules() {
+  return window['go']['handler']['App']['GetReorderRules']();
+}
+
+export function GetReportTemplate(arg1) {
+  return window['go']['handler']['App']['GetReportTemplate'](arg1);
+}
+
+export function GetReportTemplates() {
+  return window['go']['handler']['App']['GetReportTemplates']();
+}
+
 export function GetSale(arg1) {
   return window['go']['handler']['App']['GetSale'](arg1);
 }
@@ -158,8 +622,32 @@ export function GetSales(arg1, arg2, arg3, arg4) {
   return window['go']['handler']['App']['GetSales'](arg1, arg2, arg3, arg4);
 }
 
+export function GetSalesForecast(arg1) {
+  return window['go']['handler']['App']['GetSalesForecast'](arg1);
+}
+
+export function GetScheduledExports() {
+  return window['go']['handler']['App']['GetScheduledExports']();
+}
+
 export function GetStaff(arg1) {
   return window['go']['handler']['App']['GetStaff'](arg1);
+}
+
+export function GetStaffPerformance(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['GetStaffPerformance'](arg1, arg2, arg3);
+}
+
+export function GetStockAdjustments(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['GetStockAdjustments'](arg1, arg2, arg3);
+}
+
+export function GetStockTransfers(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['GetStockTransfers'](arg1, arg2, arg3);
+}
+
+export function GetStockVarianceReport() {
+  return window['go']['handler']['App']['GetStockVarianceReport']();
 }
 
 export function GetSupplier(arg1) {
@@ -168,6 +656,30 @@ export function GetSupplier(arg1) {
 
 export function GetSuppliers() {
   return window['go']['handler']['App']['GetSuppliers']();
+}
+
+export function GetTaxRates() {
+  return window['go']['handler']['App']['GetTaxRates']();
+}
+
+export function GetTaxReport(arg1, arg2) {
+  return window['go']['handler']['App']['GetTaxReport'](arg1, arg2);
+}
+
+export function GetVouchers() {
+  return window['go']['handler']['App']['GetVouchers']();
+}
+
+export function GetWalletTransactions(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['GetWalletTransactions'](arg1, arg2, arg3);
+}
+
+export function GetWasteRecords(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['GetWasteRecords'](arg1, arg2, arg3);
+}
+
+export function GetWasteSummary(arg1, arg2) {
+  return window['go']['handler']['App']['GetWasteSummary'](arg1, arg2);
 }
 
 export function ImportDatabase(arg1, arg2) {
@@ -182,8 +694,16 @@ export function Logout(arg1) {
   return window['go']['handler']['App']['Logout'](arg1);
 }
 
+export function MarkCommissionPaid(arg1, arg2) {
+  return window['go']['handler']['App']['MarkCommissionPaid'](arg1, arg2);
+}
+
 export function ParkSale(arg1) {
   return window['go']['handler']['App']['ParkSale'](arg1);
+}
+
+export function PauseRecurringInvoice(arg1, arg2) {
+  return window['go']['handler']['App']['PauseRecurringInvoice'](arg1, arg2);
 }
 
 export function ProcessReturn(arg1, arg2) {
@@ -194,8 +714,32 @@ export function ReceivePurchaseOrder(arg1, arg2) {
   return window['go']['handler']['App']['ReceivePurchaseOrder'](arg1, arg2);
 }
 
+export function RedeemGiftCard(arg1, arg2, arg3, arg4) {
+  return window['go']['handler']['App']['RedeemGiftCard'](arg1, arg2, arg3, arg4);
+}
+
+export function RedeemLoyaltyPoints(arg1, arg2, arg3, arg4, arg5) {
+  return window['go']['handler']['App']['RedeemLoyaltyPoints'](arg1, arg2, arg3, arg4, arg5);
+}
+
+export function RejectExpense(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['RejectExpense'](arg1, arg2, arg3);
+}
+
+export function RemoveCustomerFromSegment(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['RemoveCustomerFromSegment'](arg1, arg2, arg3);
+}
+
+export function RemoveProductTax(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['RemoveProductTax'](arg1, arg2, arg3);
+}
+
 export function ResetDatabase(arg1) {
   return window['go']['handler']['App']['ResetDatabase'](arg1);
+}
+
+export function ResumeRecurringInvoice(arg1, arg2) {
+  return window['go']['handler']['App']['ResumeRecurringInvoice'](arg1, arg2);
 }
 
 export function SearchCustomerByPhone(arg1) {
@@ -206,16 +750,120 @@ export function SearchProducts(arg1, arg2) {
   return window['go']['handler']['App']['SearchProducts'](arg1, arg2);
 }
 
+export function SendMessage(arg1, arg2, arg3, arg4, arg5, arg6) {
+  return window['go']['handler']['App']['SendMessage'](arg1, arg2, arg3, arg4, arg5, arg6);
+}
+
+export function SetAutoDebit(arg1, arg2, arg3, arg4) {
+  return window['go']['handler']['App']['SetAutoDebit'](arg1, arg2, arg3, arg4);
+}
+
+export function StartCampaign(arg1, arg2) {
+  return window['go']['handler']['App']['StartCampaign'](arg1, arg2);
+}
+
+export function StartKioskSession(arg1) {
+  return window['go']['handler']['App']['StartKioskSession'](arg1);
+}
+
+export function StartKitchenOrder(arg1, arg2) {
+  return window['go']['handler']['App']['StartKitchenOrder'](arg1, arg2);
+}
+
 export function StartShift(arg1, arg2, arg3) {
   return window['go']['handler']['App']['StartShift'](arg1, arg2, arg3);
+}
+
+export function TopUpGiftCard(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['TopUpGiftCard'](arg1, arg2, arg3);
+}
+
+export function TopUpWallet(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['TopUpWallet'](arg1, arg2, arg3);
+}
+
+export function UpdateBranch(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateBranch'](arg1, arg2);
+}
+
+export function UpdateBudget(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateBudget'](arg1, arg2);
+}
+
+export function UpdateCampaign(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateCampaign'](arg1, arg2);
+}
+
+export function UpdateCommissionRule(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateCommissionRule'](arg1, arg2);
+}
+
+export function UpdateCreditLimit(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['UpdateCreditLimit'](arg1, arg2, arg3);
+}
+
+export function UpdateCurrency(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateCurrency'](arg1, arg2);
 }
 
 export function UpdateCustomer(arg1) {
   return window['go']['handler']['App']['UpdateCustomer'](arg1);
 }
 
+export function UpdateCustomerSegment(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateCustomerSegment'](arg1, arg2);
+}
+
+export function UpdateDeliveryDriver(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateDeliveryDriver'](arg1, arg2);
+}
+
+export function UpdateDeliveryStatus(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['UpdateDeliveryStatus'](arg1, arg2, arg3);
+}
+
+export function UpdateExchangeRate(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['UpdateExchangeRate'](arg1, arg2, arg3);
+}
+
 export function UpdateExpense(arg1, arg2) {
   return window['go']['handler']['App']['UpdateExpense'](arg1, arg2);
+}
+
+export function UpdateGiftCard(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateGiftCard'](arg1, arg2);
+}
+
+export function UpdateKioskLayout(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateKioskLayout'](arg1, arg2);
+}
+
+export function UpdateKitchenItemStatus(arg1, arg2, arg3, arg4) {
+  return window['go']['handler']['App']['UpdateKitchenItemStatus'](arg1, arg2, arg3, arg4);
+}
+
+export function UpdateLoyaltyRule(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateLoyaltyRule'](arg1, arg2);
+}
+
+export function UpdateLoyaltyTier(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateLoyaltyTier'](arg1, arg2);
+}
+
+export function UpdateMessageTemplate(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateMessageTemplate'](arg1, arg2);
+}
+
+export function UpdateMessagingProvider(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateMessagingProvider'](arg1, arg2);
+}
+
+export function UpdateNotificationSettings(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateNotificationSettings'](arg1, arg2);
+}
+
+export function UpdateNotificationTemplate(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateNotificationTemplate'](arg1, arg2);
 }
 
 export function UpdatePreferences(arg1, arg2) {
@@ -226,8 +874,28 @@ export function UpdateProduct(arg1, arg2) {
   return window['go']['handler']['App']['UpdateProduct'](arg1, arg2);
 }
 
+export function UpdateProductKit(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateProductKit'](arg1, arg2);
+}
+
 export function UpdatePurchaseOrder(arg1, arg2) {
   return window['go']['handler']['App']['UpdatePurchaseOrder'](arg1, arg2);
+}
+
+export function UpdateRecurringInvoice(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateRecurringInvoice'](arg1, arg2);
+}
+
+export function UpdateReorderRule(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateReorderRule'](arg1, arg2);
+}
+
+export function UpdateReportTemplate(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateReportTemplate'](arg1, arg2);
+}
+
+export function UpdateScheduledExport(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateScheduledExport'](arg1, arg2);
 }
 
 export function UpdateStaff(arg1, arg2) {
@@ -236,4 +904,12 @@ export function UpdateStaff(arg1, arg2) {
 
 export function UpdateSupplier(arg1, arg2) {
   return window['go']['handler']['App']['UpdateSupplier'](arg1, arg2);
+}
+
+export function UpdateTaxRate(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateTaxRate'](arg1, arg2);
+}
+
+export function UpdateVoucher(arg1, arg2) {
+  return window['go']['handler']['App']['UpdateVoucher'](arg1, arg2);
 }

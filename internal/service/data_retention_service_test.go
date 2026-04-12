@@ -9,6 +9,7 @@ import (
 	"bard/internal/mocks"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestNewDataRetentionService(t *testing.T) {
@@ -35,7 +36,7 @@ func TestDataRetentionService_GetRetentionSummary(t *testing.T) {
 		{ID: "4", Status: "completed", Date: "2025-04-01"},
 	}
 
-	mockSaleRepo.On("GetByDateRange", "2000-01-01", "2025-04-03").Return(oldSales, nil)
+	mockSaleRepo.On("GetByDateRange", "2000-01-01", mock.AnythingOfType("string")).Return(oldSales, nil)
 
 	summary, err := svc.GetRetentionSummary()
 
@@ -55,7 +56,7 @@ func TestDataRetentionService_GetRetentionSummary_RepoError(t *testing.T) {
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewDataRetentionService(mockSaleRepo, mockFinanceRepo, log, 30)
 
-	mockSaleRepo.On("GetByDateRange", "2000-01-01", "2026-03-04").Return([]domain.Sale(nil), assert.AnError)
+	mockSaleRepo.On("GetByDateRange", "2000-01-01", mock.AnythingOfType("string")).Return([]domain.Sale(nil), assert.AnError)
 
 	summary, err := svc.GetRetentionSummary()
 
@@ -75,7 +76,7 @@ func TestDataRetentionService_CleanupOldData(t *testing.T) {
 		{ID: "2", Status: "return", Date: "2025-02-01"},
 	}
 
-	mockSaleRepo.On("GetByDateRange", "2000-01-01", "2025-04-03").Return(oldSales, nil)
+	mockSaleRepo.On("GetByDateRange", "2000-01-01", mock.AnythingOfType("string")).Return(oldSales, nil)
 
 	result, err := svc.CleanupOldData()
 

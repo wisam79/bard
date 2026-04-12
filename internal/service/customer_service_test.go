@@ -3,6 +3,7 @@ package service
 import (
 	"testing"
 
+	"bard/internal/cache"
 	"bard/internal/domain"
 	"bard/internal/errors"
 	"bard/internal/logger"
@@ -15,7 +16,7 @@ import (
 func TestCustomerService_GetAll(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewCustomerService(mockRepo, log)
+	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	customers := []domain.Customer{
 		{ID: "1", Name: "Customer 1", Debt: 100},
@@ -35,7 +36,7 @@ func TestCustomerService_GetAll(t *testing.T) {
 func TestCustomerService_GetByID(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewCustomerService(mockRepo, log)
+	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	expected := &domain.Customer{ID: "test-id", Name: "Test Customer"}
 	mockRepo.On("GetByID", "test-id").Return(expected, nil)
@@ -51,7 +52,7 @@ func TestCustomerService_GetByID(t *testing.T) {
 func TestCustomerService_Create(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewCustomerService(mockRepo, log)
+	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	customer := &domain.Customer{
 		Name:  "Test Customer",
@@ -104,7 +105,7 @@ func TestCustomerService_Create_Validation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := new(mocks.MockCustomerRepository)
 			log := logger.New(logger.LevelInfo, false)
-			svc := NewCustomerService(mockRepo, log)
+			svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 			if !tt.wantErr {
 				mockRepo.On("Create", mock.AnythingOfType("*domain.Customer")).Return(nil)
@@ -126,7 +127,7 @@ func TestCustomerService_Create_Validation(t *testing.T) {
 func TestCustomerService_Update(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewCustomerService(mockRepo, log)
+	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	existingCustomer := &domain.Customer{
 		ID:              "test-id",
@@ -156,7 +157,7 @@ func TestCustomerService_Update(t *testing.T) {
 func TestCustomerService_Update_PreservesFinancialFields(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewCustomerService(mockRepo, log)
+	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	existingCustomer := &domain.Customer{
 		ID:              "test-id",
@@ -186,7 +187,7 @@ func TestCustomerService_Update_PreservesFinancialFields(t *testing.T) {
 func TestCustomerService_Delete(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewCustomerService(mockRepo, log)
+	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	mockRepo.On("Delete", "test-id").Return(nil)
 
@@ -199,7 +200,7 @@ func TestCustomerService_Delete(t *testing.T) {
 func TestCustomerService_GetByPhone(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewCustomerService(mockRepo, log)
+	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	expected := &domain.Customer{ID: "1", Name: "Phone Customer", Phone: "1234567890"}
 	mockRepo.On("GetByPhone", "1234567890").Return(expected, nil)
@@ -214,7 +215,7 @@ func TestCustomerService_GetByPhone(t *testing.T) {
 func TestCustomerService_GetTop(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewCustomerService(mockRepo, log)
+	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	topCustomers := []domain.Customer{
 		{ID: "1", Name: "Top Customer 1", TotalPurchases: 10000},

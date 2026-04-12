@@ -3,13 +3,13 @@ package service
 import (
 	"testing"
 
+	"bard/internal/cache"
 	"bard/internal/domain"
 	"bard/internal/logger"
 	"bard/internal/mocks"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"gorm.io/gorm"
 )
 
 func TestSaleService_GetAll(t *testing.T) {
@@ -17,7 +17,7 @@ func TestSaleService_GetAll(t *testing.T) {
 	mockProductRepo := new(mocks.MockProductRepository)
 	mockCustomerRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSaleService(&gorm.DB{}, mockSaleRepo, mockProductRepo, mockCustomerRepo, log)
+	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
 	paginatedSales := &domain.PaginatedSales{
 		Data: []domain.Sale{
@@ -44,7 +44,7 @@ func TestSaleService_GetByID(t *testing.T) {
 	mockProductRepo := new(mocks.MockProductRepository)
 	mockCustomerRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSaleService(&gorm.DB{}, mockSaleRepo, mockProductRepo, mockCustomerRepo, log)
+	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
 	expectedSale := &domain.Sale{ID: "test-id", Total: 150, Status: "completed"}
 	mockSaleRepo.On("GetByID", "test-id").Return(expectedSale, nil)
@@ -62,7 +62,7 @@ func TestSaleService_GetByID_NotFound(t *testing.T) {
 	mockProductRepo := new(mocks.MockProductRepository)
 	mockCustomerRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSaleService(&gorm.DB{}, mockSaleRepo, mockProductRepo, mockCustomerRepo, log)
+	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
 	mockSaleRepo.On("GetByID", "nonexistent").Return((*domain.Sale)(nil), &domain.AppError{
 		Module: domain.ModuleSales,
@@ -164,7 +164,7 @@ func TestSaleService_GetParkedSales(t *testing.T) {
 	mockProductRepo := new(mocks.MockProductRepository)
 	mockCustomerRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSaleService(&gorm.DB{}, mockSaleRepo, mockProductRepo, mockCustomerRepo, log)
+	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
 	parkedSales := []domain.ParkedSale{
 		{ID: 1, Total: 100, ItemsCount: 2},
@@ -184,7 +184,7 @@ func TestSaleService_ParkSale(t *testing.T) {
 	mockProductRepo := new(mocks.MockProductRepository)
 	mockCustomerRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSaleService(&gorm.DB{}, mockSaleRepo, mockProductRepo, mockCustomerRepo, log)
+	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
 	parked := &domain.ParkedSale{
 		ItemsJSON:    "[]",
@@ -207,7 +207,7 @@ func TestSaleService_DeleteParkedSale(t *testing.T) {
 	mockProductRepo := new(mocks.MockProductRepository)
 	mockCustomerRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSaleService(&gorm.DB{}, mockSaleRepo, mockProductRepo, mockCustomerRepo, log)
+	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
 	mockSaleRepo.On("DeleteParkedSale", uint(1)).Return(nil)
 
@@ -222,7 +222,7 @@ func TestSaleService_GetRecent(t *testing.T) {
 	mockProductRepo := new(mocks.MockProductRepository)
 	mockCustomerRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSaleService(&gorm.DB{}, mockSaleRepo, mockProductRepo, mockCustomerRepo, log)
+	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
 	recentSales := []domain.Sale{
 		{ID: "1", Total: 100},
@@ -237,4 +237,52 @@ func TestSaleService_GetRecent(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(result))
 	mockSaleRepo.AssertExpectations(t)
+}
+
+func TestSaleService_Create_Validation(t *testing.T) {
+	mockSaleRepo := new(mocks.MockSaleRepository)
+	mockProductRepo := new(mocks.MockProductRepository)
+	mockCustomerRepo := new(mocks.MockCustomerRepository)
+	log := logger.New(logger.LevelInfo, false)
+	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
+
+	sale := &domain.Sale{
+		Items: []domain.SaleItem{},
+	}
+
+	err := svc.Create(sale)
+	assert.Error(t, err)
+}
+
+func TestSaleService_ProcessReturn(t *testing.T) {
+	mockSaleRepo := new(mocks.MockSaleRepository)
+	mockProductRepo := new(mocks.MockProductRepository)
+	mockCustomerRepo := new(mocks.MockCustomerRepository)
+	log := logger.New(logger.LevelInfo, false)
+	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
+
+	originalSale := &domain.Sale{ID: "sale-1", Total: 100, Status: "completed"}
+	returnedSale := &domain.Sale{ID: "ret-1", Total: 100, Status: "return"}
+
+	mockSaleRepo.On("GetByID", "sale-1").Return(originalSale, nil)
+	mockSaleRepo.On("ProcessReturnWithStockUpdate", "sale-1").Return(returnedSale, nil)
+
+	result, err := svc.ProcessReturn("sale-1")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "return", result.Status)
+	mockSaleRepo.AssertExpectations(t)
+}
+
+func TestSaleService_ProcessPartialReturn_EmptyItems(t *testing.T) {
+	mockSaleRepo := new(mocks.MockSaleRepository)
+	mockProductRepo := new(mocks.MockProductRepository)
+	mockCustomerRepo := new(mocks.MockCustomerRepository)
+	log := logger.New(logger.LevelInfo, false)
+	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
+
+	result, err := svc.ProcessPartialReturn("sale-1", []PartialReturnItem{})
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }

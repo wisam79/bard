@@ -74,6 +74,27 @@ func main() {
 	supplierRepo := sqlite.NewSupplierRepository(db)
 	poRepo := sqlite.NewPurchaseOrderRepository(db)
 
+	loyaltyRepo := sqlite.NewLoyaltyRepository(db)
+	notificationRepo := sqlite.NewNotificationRepository(db)
+	branchRepo := sqlite.NewBranchRepository(db)
+	kitRepo := sqlite.NewKitRepository(db)
+	recurringRepo := sqlite.NewRecurringInvoiceRepository(db)
+	giftCardRepo := sqlite.NewGiftCardRepository(db)
+	kitchenRepo := sqlite.NewKitchenRepository(db)
+	walletRepo := sqlite.NewWalletRepository(db)
+	stockAdjRepo := sqlite.NewStockAdjustmentRepository(db)
+
+	currencyRepo := sqlite.NewCurrencyRepository(db)
+	messagingRepo := sqlite.NewMessagingRepository(db)
+	commissionRepo := sqlite.NewCommissionRepository(db)
+	segmentRepo := sqlite.NewSegmentRepository(db)
+	taxRepo := sqlite.NewTaxRepository(db)
+	kioskRepo := sqlite.NewKioskRepository(db)
+	deliveryRepo := sqlite.NewDeliveryRepository(db)
+	reorderRepo := sqlite.NewReorderRepository(db)
+	budgetRepo := sqlite.NewBudgetRepository(db)
+	reportBuilderRepo := sqlite.NewReportBuilderRepository(db)
+
 	rateLimiter := middleware.NewRateLimiter(5, 15*time.Minute, 30*time.Minute)
 	authMiddleware := middleware.NewAuthMiddleware(appLogger, rateLimiter)
 
@@ -87,6 +108,28 @@ func main() {
 	shiftSvc := service.NewShiftService(shiftRepo, appLogger)
 	supplierSvc := service.NewSupplierService(supplierRepo, appLogger)
 	poSvc := service.NewPurchaseOrderService(poRepo, productRepo, appLogger)
+
+	loyaltySvc := service.NewLoyaltyService(loyaltyRepo, appLogger)
+	notificationSvc := service.NewNotificationService(notificationRepo, appLogger)
+	branchSvc := service.NewBranchService(branchRepo, appLogger)
+	kitSvc := service.NewKitService(kitRepo, appLogger)
+	recurringSvc := service.NewRecurringInvoiceService(recurringRepo, appLogger)
+	analyticsSvc := service.NewAnalyticsService(saleRepo, productRepo, customerRepo, appLogger)
+	giftCardSvc := service.NewGiftCardService(giftCardRepo, appLogger)
+	kitchenSvc := service.NewKitchenService(kitchenRepo, appLogger)
+	walletSvc := service.NewWalletService(walletRepo, appLogger)
+	stockAdjSvc := service.NewStockAdjustmentService(stockAdjRepo, productRepo, appLogger)
+
+	currencySvc := service.NewCurrencyService(currencyRepo, appLogger)
+	messagingSvc := service.NewMessagingService(messagingRepo, appLogger)
+	commissionSvc := service.NewCommissionService(commissionRepo, saleRepo, appLogger)
+	campaignSvc := service.NewCampaignService(segmentRepo, customerRepo, appLogger)
+	taxSvc := service.NewTaxService(taxRepo, appLogger)
+	kioskSvc := service.NewKioskService(kioskRepo, appLogger)
+	deliverySvc := service.NewDeliveryService(deliveryRepo, appLogger)
+	reorderSvc := service.NewReorderService(reorderRepo, productRepo, appLogger)
+	budgetSvc := service.NewBudgetService(budgetRepo, appLogger)
+	reportBuilderSvc := service.NewReportBuilderService(reportBuilderRepo, appLogger)
 
 	app := handler.NewApp(
 		productSvc,
@@ -103,6 +146,26 @@ func main() {
 		rateLimiter,
 		auditSvc,
 		appLogger,
+		loyaltySvc,
+		notificationSvc,
+		branchSvc,
+		kitSvc,
+		recurringSvc,
+		analyticsSvc,
+		giftCardSvc,
+		kitchenSvc,
+		walletSvc,
+		stockAdjSvc,
+		currencySvc,
+		messagingSvc,
+		commissionSvc,
+		campaignSvc,
+		taxSvc,
+		kioskSvc,
+		deliverySvc,
+		reorderSvc,
+		budgetSvc,
+		reportBuilderSvc,
 	)
 
 	err = wails.Run(&options.App{

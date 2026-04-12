@@ -59,3 +59,4 @@ wailsjs/
 
 # Build artifacts
 build/bin/
+nul

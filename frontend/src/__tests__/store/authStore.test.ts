@@ -57,8 +57,8 @@ describe('authStore', () => {
 
   // ── Login via Wails API ────────────────────────────────────────────────────
   describe('login', () => {
-    it('sets authenticated when API returns a staff object', async () => {
-      mockApp.Login = vi.fn().mockResolvedValue(mockStaff);
+    it('sets authenticated when API returns a staff object with token', async () => {
+      mockApp.Login = vi.fn().mockResolvedValue({ ...mockStaff, token: 'test-token' });
 
       const result = await useAuthStore.getState().login('admin', 'password');
 

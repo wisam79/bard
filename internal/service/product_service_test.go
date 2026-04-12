@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"bard/internal/cache"
 	"bard/internal/domain"
 	"bard/internal/errors"
 	"bard/internal/logger"
@@ -18,7 +19,7 @@ func TestProductService_GetAll(t *testing.T) {
 	// Arrange
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewProductService(mockRepo, log)
+	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	paginatedProducts := &domain.PaginatedProducts{
 		Data: []domain.Product{
@@ -47,7 +48,7 @@ func TestProductService_Create(t *testing.T) {
 	// Arrange
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewProductService(mockRepo, log)
+	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	product := &domain.Product{
 		Name:     "Test Product",
@@ -125,7 +126,7 @@ func TestProductService_Create_Validation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := new(mocks.MockProductRepository)
 			log := logger.New(logger.LevelInfo, false)
-			svc := NewProductService(mockRepo, log)
+			svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
 			err := svc.Create(tt.product)
 
@@ -146,7 +147,7 @@ func TestProductService_Update(t *testing.T) {
 	// Arrange
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewProductService(mockRepo, log)
+	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	product := &domain.Product{
 		ID:        "test-id",
@@ -175,7 +176,7 @@ func TestProductService_Delete(t *testing.T) {
 	// Arrange
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewProductService(mockRepo, log)
+	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	productID := "test-id"
 
@@ -194,7 +195,7 @@ func TestProductService_GetCategories(t *testing.T) {
 	// Arrange
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewProductService(mockRepo, log)
+	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	categories := []string{"Electronics", "Food", "Drinks"}
 
@@ -215,7 +216,7 @@ func TestProductService_GetStats(t *testing.T) {
 	// Arrange
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewProductService(mockRepo, log)
+	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	stats := &domain.ProductStats{
 		TotalStock: 1000,
@@ -241,7 +242,7 @@ func TestProductService_GetLowStock(t *testing.T) {
 	// Arrange
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewProductService(mockRepo, log)
+	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	products := []domain.Product{
 		{ID: "1", Name: "Product 1", Stock: 3, MinStock: 5},
@@ -264,7 +265,7 @@ func TestProductService_Search(t *testing.T) {
 	// Arrange
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewProductService(mockRepo, log)
+	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	products := []domain.Product{
 		{ID: "1", Name: "Coffee", Price: 100},

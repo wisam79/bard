@@ -4,57 +4,269 @@ import {domain} from '../models';
 
 export function AddCashMovement(arg1:string,arg2:string,arg3:string,arg4:string,arg5:number):Promise<void>;
 
+export function AddCustomerToSegment(arg1:string,arg2:string,arg3:string):Promise<void>;
+
+export function ApplyVoucher(arg1:string):Promise<domain.Voucher>;
+
+export function ApproveExpense(arg1:string,arg2:string,arg3:string):Promise<void>;
+
+export function ApproveStockTransfer(arg1:string,arg2:string):Promise<void>;
+
+export function AssignDeliveryDriver(arg1:string,arg2:string,arg3:string):Promise<void>;
+
+export function AssignProductTax(arg1:string,arg2:string,arg3:string):Promise<void>;
+
+export function AutoReorder(arg1:string):Promise<number>;
+
+export function AutoSegmentCustomers(arg1:string):Promise<number>;
+
 export function CalculateInstallmentPlan(arg1:number,arg2:number,arg3:number):Promise<domain.InstallmentPlan>;
+
+export function CancelKitchenOrder(arg1:string,arg2:string):Promise<void>;
 
 export function ChangePassword(arg1:string,arg2:string,arg3:string):Promise<void>;
 
+export function CheckBudgetLimit(arg1:string,arg2:number):Promise<boolean>;
+
 export function CloseShift(arg1:string,arg2:number):Promise<domain.Shift>;
+
+export function CompleteKitchenOrder(arg1:string,arg2:string):Promise<void>;
+
+export function CompleteStockTransfer(arg1:string,arg2:string):Promise<void>;
+
+export function ConvertCurrency(arg1:number,arg2:string,arg3:string):Promise<number>;
+
+export function CreateApprovalWorkflow(arg1:string,arg2:domain.ApprovalWorkflow):Promise<void>;
+
+export function CreateBranch(arg1:string,arg2:domain.Branch):Promise<void>;
+
+export function CreateBudget(arg1:string,arg2:domain.Budget):Promise<void>;
+
+export function CreateCampaign(arg1:string,arg2:domain.Campaign):Promise<void>;
+
+export function CreateCommissionRule(arg1:string,arg2:domain.CommissionRule):Promise<void>;
+
+export function CreateCurrency(arg1:string,arg2:domain.Currency):Promise<void>;
 
 export function CreateCustomer(arg1:domain.Customer):Promise<void>;
 
+export function CreateCustomerSegment(arg1:string,arg2:domain.CustomerSegment):Promise<void>;
+
+export function CreateCustomerWallet(arg1:string,arg2:string,arg3:number):Promise<domain.CustomerWallet>;
+
+export function CreateDeliveryDriver(arg1:string,arg2:domain.DeliveryDriver):Promise<void>;
+
+export function CreateDeliveryOrder(arg1:string,arg2:domain.DeliveryOrder):Promise<void>;
+
 export function CreateExpense(arg1:string,arg2:domain.Expense):Promise<void>;
+
+export function CreateGiftCard(arg1:string,arg2:domain.GiftCard):Promise<void>;
+
+export function CreateKioskLayout(arg1:string,arg2:domain.KioskLayout):Promise<void>;
+
+export function CreateKitchenOrder(arg1:string,arg2:domain.KitchenOrder):Promise<domain.KitchenOrder>;
+
+export function CreateKitchenStation(arg1:string,arg2:domain.KitchenStation):Promise<void>;
+
+export function CreateLoyaltyRule(arg1:string,arg2:domain.LoyaltyRule):Promise<void>;
+
+export function CreateLoyaltyTier(arg1:string,arg2:domain.LoyaltyTier):Promise<void>;
+
+export function CreateMessageTemplate(arg1:string,arg2:domain.MessageTemplate):Promise<void>;
+
+export function CreateMessagingProvider(arg1:string,arg2:domain.MessagingProvider):Promise<void>;
+
+export function CreateNotificationTemplate(arg1:string,arg2:domain.NotificationTemplate):Promise<void>;
 
 export function CreatePayment(arg1:domain.Payment):Promise<void>;
 
 export function CreateProduct(arg1:string,arg2:domain.Product):Promise<void>;
 
+export function CreateProductKit(arg1:string,arg2:domain.ProductKit):Promise<void>;
+
 export function CreatePurchaseOrder(arg1:string,arg2:domain.PurchaseOrder):Promise<void>;
+
+export function CreateRecurringInvoice(arg1:string,arg2:domain.RecurringInvoice):Promise<void>;
+
+export function CreateReorderRule(arg1:string,arg2:domain.ReorderRule):Promise<void>;
+
+export function CreateReportTemplate(arg1:string,arg2:domain.ReportTemplate):Promise<void>;
 
 export function CreateSale(arg1:domain.Sale):Promise<void>;
 
+export function CreateScheduledExport(arg1:string,arg2:domain.ScheduledExport):Promise<void>;
+
 export function CreateStaff(arg1:string,arg2:domain.Staff):Promise<void>;
+
+export function CreateStockAdjustment(arg1:string,arg2:string,arg3:string,arg4:string,arg5:number):Promise<void>;
+
+export function CreateStockTransfer(arg1:string,arg2:domain.StockTransfer):Promise<void>;
 
 export function CreateSupplier(arg1:string,arg2:domain.Supplier):Promise<void>;
 
+export function CreateTaxRate(arg1:string,arg2:domain.TaxRate):Promise<void>;
+
+export function CreateVoucher(arg1:string,arg2:domain.Voucher):Promise<void>;
+
+export function CreateWasteRecord(arg1:string,arg2:string,arg3:string,arg4:string,arg5:number):Promise<void>;
+
+export function DebitWallet(arg1:string,arg2:string,arg3:number,arg4:string):Promise<void>;
+
+export function DeleteApprovalWorkflow(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteBranch(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteBudget(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteCampaign(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteCommissionRule(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteCurrency(arg1:string,arg2:string):Promise<void>;
+
 export function DeleteCustomer(arg1:string):Promise<void>;
 
+export function DeleteCustomerSegment(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteDeliveryDriver(arg1:string,arg2:string):Promise<void>;
+
 export function DeleteExpense(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteGiftCard(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteKioskLayout(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteKitchenStation(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteLoyaltyTier(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteMessageTemplate(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteMessagingProvider(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteNotificationTemplate(arg1:string,arg2:string):Promise<void>;
 
 export function DeleteParkedSale(arg1:number):Promise<void>;
 
 export function DeleteProduct(arg1:string,arg2:string):Promise<void>;
 
+export function DeleteProductKit(arg1:string,arg2:string):Promise<void>;
+
 export function DeletePurchaseOrder(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteRecurringInvoice(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteReorderRule(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteReportTemplate(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteScheduledExport(arg1:string,arg2:string):Promise<void>;
 
 export function DeleteStaff(arg1:string,arg2:string):Promise<void>;
 
 export function DeleteSupplier(arg1:string,arg2:string):Promise<void>;
 
+export function DeleteTaxRate(arg1:string,arg2:string):Promise<void>;
+
+export function DeleteVoucher(arg1:string,arg2:string):Promise<void>;
+
+export function DetectAnomalies():Promise<Array<domain.AnomalyDetection>>;
+
+export function EndKioskSession(arg1:number,arg2:string,arg3:number):Promise<void>;
+
 export function ExportDatabase(arg1:string):Promise<domain.DatabaseExport>;
 
+export function GenerateReport(arg1:string):Promise<any>;
+
+export function GetActiveKioskSessions():Promise<Array<domain.KioskSession>>;
+
 export function GetActiveShift(arg1:string):Promise<domain.Shift>;
+
+export function GetAllStaffPerformance(arg1:string,arg2:string):Promise<Array<domain.StaffPerformance>>;
+
+export function GetAnalyticsDashboard():Promise<domain.AnalyticsDashboard>;
+
+export function GetApprovalWorkflows():Promise<Array<domain.ApprovalWorkflow>>;
+
+export function GetBaseCurrency():Promise<domain.Currency>;
+
+export function GetBranch(arg1:string):Promise<domain.Branch>;
+
+export function GetBranches():Promise<Array<domain.Branch>>;
+
+export function GetBudgets():Promise<Array<domain.Budget>>;
+
+export function GetCampaigns():Promise<Array<domain.Campaign>>;
 
 export function GetCashMovements(arg1:string):Promise<Array<domain.CashMovement>>;
 
 export function GetCategories():Promise<Array<string>>;
 
+export function GetCommissionPayments(arg1:string):Promise<Array<domain.CommissionPayment>>;
+
+export function GetCommissionRules():Promise<Array<domain.CommissionRule>>;
+
+export function GetCurrencies():Promise<Array<domain.Currency>>;
+
+export function GetCurrencyByCode(arg1:string):Promise<domain.Currency>;
+
+export function GetCurrencyTransactions(arg1:string):Promise<Array<domain.CurrencyTransaction>>;
+
 export function GetCustomer(arg1:string):Promise<domain.Customer>;
+
+export function GetCustomerSegments():Promise<Array<domain.CustomerSegment>>;
+
+export function GetCustomerWallet(arg1:string):Promise<domain.CustomerWallet>;
 
 export function GetCustomers(arg1:number,arg2:number,arg3:string):Promise<Array<domain.Customer>>;
 
 export function GetDashboardStats():Promise<domain.DashboardStats>;
 
+export function GetDefaultTaxRate():Promise<domain.TaxRate>;
+
+export function GetDeliveryDrivers():Promise<Array<domain.DeliveryDriver>>;
+
+export function GetDeliveryOrders(arg1:number,arg2:number,arg3:string):Promise<Array<domain.DeliveryOrder>>;
+
+export function GetDemandForecast():Promise<Array<domain.DemandForecast>>;
+
+export function GetExpenseApprovals(arg1:string):Promise<Array<domain.ExpenseApproval>>;
+
 export function GetExpenses(arg1:number,arg2:number,arg3:string):Promise<Array<domain.Expense>>;
+
+export function GetGiftCardByCode(arg1:string):Promise<domain.GiftCard>;
+
+export function GetGiftCardTransactions(arg1:string):Promise<Array<domain.GiftCardTransaction>>;
+
+export function GetGiftCards(arg1:number,arg2:number):Promise<Array<domain.GiftCard>>;
+
+export function GetKioskLayout(arg1:string):Promise<domain.KioskLayout>;
+
+export function GetKioskLayouts():Promise<Array<domain.KioskLayout>>;
+
+export function GetKitchenOrder(arg1:string):Promise<domain.KitchenOrder>;
+
+export function GetKitchenOrders():Promise<Array<domain.KitchenOrder>>;
+
+export function GetKitchenStations():Promise<Array<domain.KitchenStation>>;
+
+export function GetLoyaltyRules():Promise<Array<domain.LoyaltyRule>>;
+
+export function GetLoyaltyTiers():Promise<Array<domain.LoyaltyTier>>;
+
+export function GetLoyaltyTransactions(arg1:string):Promise<Array<domain.LoyaltyTransaction>>;
+
+export function GetMessageLogs(arg1:number,arg2:number):Promise<Array<domain.MessageLog>>;
+
+export function GetMessageTemplates():Promise<Array<domain.MessageTemplate>>;
+
+export function GetMessagingProviders():Promise<Array<domain.MessagingProvider>>;
+
+export function GetNotificationLogs(arg1:number,arg2:number):Promise<Array<domain.NotificationLog>>;
+
+export function GetNotificationSettings():Promise<domain.NotificationSettings>;
+
+export function GetNotificationTemplates():Promise<Array<domain.NotificationTemplate>>;
 
 export function GetParkedSales():Promise<Array<domain.ParkedSale>>;
 
@@ -66,9 +278,17 @@ export function GetProduct(arg1:string):Promise<domain.Product>;
 
 export function GetProductByBarcode(arg1:string):Promise<domain.Product>;
 
+export function GetProductKit(arg1:string):Promise<domain.ProductKit>;
+
+export function GetProductKits():Promise<Array<domain.ProductKit>>;
+
 export function GetProductStats():Promise<domain.ProductStats>;
 
+export function GetProductTaxes(arg1:string):Promise<Array<domain.ProductTax>>;
+
 export function GetProducts(arg1:number,arg2:number,arg3:string,arg4:string):Promise<domain.PaginatedProducts>;
+
+export function GetProfitAnalysis(arg1:number):Promise<Array<domain.ProfitAnalysis>>;
 
 export function GetPurchaseOrder(arg1:string):Promise<domain.PurchaseOrder>;
 
@@ -76,15 +296,51 @@ export function GetPurchaseOrders(arg1:number,arg2:number,arg3:string):Promise<d
 
 export function GetRecentSales(arg1:number):Promise<Array<domain.Sale>>;
 
+export function GetRecurringInvoice(arg1:string):Promise<domain.RecurringInvoice>;
+
+export function GetRecurringInvoices(arg1:number,arg2:number,arg3:string):Promise<Array<domain.RecurringInvoice>>;
+
+export function GetReorderAlerts():Promise<Array<domain.ReorderAlert>>;
+
+export function GetReorderRules():Promise<Array<domain.ReorderRule>>;
+
+export function GetReportTemplate(arg1:string):Promise<domain.ReportTemplate>;
+
+export function GetReportTemplates():Promise<Array<domain.ReportTemplate>>;
+
 export function GetSale(arg1:string):Promise<domain.Sale>;
 
 export function GetSales(arg1:number,arg2:number,arg3:string,arg4:string):Promise<domain.PaginatedSales>;
 
+export function GetSalesForecast(arg1:number):Promise<Array<domain.SalesForecast>>;
+
+export function GetScheduledExports():Promise<Array<domain.ScheduledExport>>;
+
 export function GetStaff(arg1:string):Promise<Array<domain.Staff>>;
+
+export function GetStaffPerformance(arg1:string,arg2:string,arg3:string):Promise<domain.StaffPerformance>;
+
+export function GetStockAdjustments(arg1:number,arg2:number,arg3:string):Promise<Array<domain.StockAdjustment>>;
+
+export function GetStockTransfers(arg1:number,arg2:number,arg3:string):Promise<Array<domain.StockTransfer>>;
+
+export function GetStockVarianceReport():Promise<Array<domain.StockVarianceReport>>;
 
 export function GetSupplier(arg1:string):Promise<domain.Supplier>;
 
 export function GetSuppliers():Promise<Array<domain.Supplier>>;
+
+export function GetTaxRates():Promise<Array<domain.TaxRate>>;
+
+export function GetTaxReport(arg1:string,arg2:string):Promise<Array<domain.TaxReport>>;
+
+export function GetVouchers():Promise<Array<domain.Voucher>>;
+
+export function GetWalletTransactions(arg1:string,arg2:number,arg3:number):Promise<Array<domain.WalletTransaction>>;
+
+export function GetWasteRecords(arg1:number,arg2:number,arg3:string):Promise<Array<domain.WasteRecord>>;
+
+export function GetWasteSummary(arg1:string,arg2:string):Promise<Array<domain.WasteRecord>>;
 
 export function ImportDatabase(arg1:string,arg2:domain.DatabaseExport):Promise<void>;
 
@@ -92,30 +348,112 @@ export function Login(arg1:string,arg2:string):Promise<domain.Staff>;
 
 export function Logout(arg1:string):Promise<void>;
 
+export function MarkCommissionPaid(arg1:string,arg2:number):Promise<void>;
+
 export function ParkSale(arg1:domain.ParkedSale):Promise<void>;
+
+export function PauseRecurringInvoice(arg1:string,arg2:string):Promise<void>;
 
 export function ProcessReturn(arg1:string,arg2:string):Promise<domain.Sale>;
 
 export function ReceivePurchaseOrder(arg1:string,arg2:string):Promise<void>;
 
+export function RedeemGiftCard(arg1:string,arg2:string,arg3:number,arg4:string):Promise<void>;
+
+export function RedeemLoyaltyPoints(arg1:string,arg2:string,arg3:number,arg4:string,arg5:number):Promise<void>;
+
+export function RejectExpense(arg1:string,arg2:string,arg3:string):Promise<void>;
+
+export function RemoveCustomerFromSegment(arg1:string,arg2:string,arg3:string):Promise<void>;
+
+export function RemoveProductTax(arg1:string,arg2:string,arg3:string):Promise<void>;
+
 export function ResetDatabase(arg1:string):Promise<void>;
+
+export function ResumeRecurringInvoice(arg1:string,arg2:string):Promise<void>;
 
 export function SearchCustomerByPhone(arg1:string):Promise<domain.Customer>;
 
 export function SearchProducts(arg1:string,arg2:number):Promise<Array<domain.Product>>;
 
+export function SendMessage(arg1:string,arg2:string,arg3:string,arg4:string,arg5:string,arg6:string):Promise<void>;
+
+export function SetAutoDebit(arg1:string,arg2:string,arg3:boolean,arg4:number):Promise<void>;
+
+export function StartCampaign(arg1:string,arg2:string):Promise<void>;
+
+export function StartKioskSession(arg1:string):Promise<domain.KioskSession>;
+
+export function StartKitchenOrder(arg1:string,arg2:string):Promise<void>;
+
 export function StartShift(arg1:string,arg2:string,arg3:number):Promise<domain.Shift>;
+
+export function TopUpGiftCard(arg1:string,arg2:string,arg3:number):Promise<void>;
+
+export function TopUpWallet(arg1:string,arg2:string,arg3:number):Promise<void>;
+
+export function UpdateBranch(arg1:string,arg2:domain.Branch):Promise<void>;
+
+export function UpdateBudget(arg1:string,arg2:domain.Budget):Promise<void>;
+
+export function UpdateCampaign(arg1:string,arg2:domain.Campaign):Promise<void>;
+
+export function UpdateCommissionRule(arg1:string,arg2:domain.CommissionRule):Promise<void>;
+
+export function UpdateCreditLimit(arg1:string,arg2:string,arg3:number):Promise<void>;
+
+export function UpdateCurrency(arg1:string,arg2:domain.Currency):Promise<void>;
 
 export function UpdateCustomer(arg1:domain.Customer):Promise<void>;
 
+export function UpdateCustomerSegment(arg1:string,arg2:domain.CustomerSegment):Promise<void>;
+
+export function UpdateDeliveryDriver(arg1:string,arg2:domain.DeliveryDriver):Promise<void>;
+
+export function UpdateDeliveryStatus(arg1:string,arg2:string,arg3:string):Promise<void>;
+
+export function UpdateExchangeRate(arg1:string,arg2:string,arg3:number):Promise<void>;
+
 export function UpdateExpense(arg1:string,arg2:domain.Expense):Promise<void>;
+
+export function UpdateGiftCard(arg1:string,arg2:domain.GiftCard):Promise<void>;
+
+export function UpdateKioskLayout(arg1:string,arg2:domain.KioskLayout):Promise<void>;
+
+export function UpdateKitchenItemStatus(arg1:string,arg2:string,arg3:number,arg4:string):Promise<void>;
+
+export function UpdateLoyaltyRule(arg1:string,arg2:domain.LoyaltyRule):Promise<void>;
+
+export function UpdateLoyaltyTier(arg1:string,arg2:domain.LoyaltyTier):Promise<void>;
+
+export function UpdateMessageTemplate(arg1:string,arg2:domain.MessageTemplate):Promise<void>;
+
+export function UpdateMessagingProvider(arg1:string,arg2:domain.MessagingProvider):Promise<void>;
+
+export function UpdateNotificationSettings(arg1:string,arg2:domain.NotificationSettings):Promise<void>;
+
+export function UpdateNotificationTemplate(arg1:string,arg2:domain.NotificationTemplate):Promise<void>;
 
 export function UpdatePreferences(arg1:string,arg2:domain.AppPreferences):Promise<void>;
 
 export function UpdateProduct(arg1:string,arg2:domain.Product):Promise<void>;
 
+export function UpdateProductKit(arg1:string,arg2:domain.ProductKit):Promise<void>;
+
 export function UpdatePurchaseOrder(arg1:string,arg2:domain.PurchaseOrder):Promise<void>;
+
+export function UpdateRecurringInvoice(arg1:string,arg2:domain.RecurringInvoice):Promise<void>;
+
+export function UpdateReorderRule(arg1:string,arg2:domain.ReorderRule):Promise<void>;
+
+export function UpdateReportTemplate(arg1:string,arg2:domain.ReportTemplate):Promise<void>;
+
+export function UpdateScheduledExport(arg1:string,arg2:domain.ScheduledExport):Promise<void>;
 
 export function UpdateStaff(arg1:string,arg2:domain.Staff):Promise<void>;
 
 export function UpdateSupplier(arg1:string,arg2:domain.Supplier):Promise<void>;
+
+export function UpdateTaxRate(arg1:string,arg2:domain.TaxRate):Promise<void>;
+
+export function UpdateVoucher(arg1:string,arg2:domain.Voucher):Promise<void>;

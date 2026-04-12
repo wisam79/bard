@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/store';
-import { useAuthStore } from '@/store/authStore';
 import { AppPreferences, Staff } from '@/types';
-import { Settings as SettingsIcon, Store, Palette, Shield, Database, Printer } from 'lucide-react';
+import { Settings as SettingsIcon, Store, Palette, Shield, Database, Printer, Wifi } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import StoreSettings from '../components/features/settings/StoreSettings';
@@ -11,13 +10,13 @@ import PrintSettings from '../components/features/settings/PrintSettings';
 import AppearanceSettings from '../components/features/settings/AppearanceSettings';
 import StaffSettings from '../components/features/settings/StaffSettings';
 import DataSettings from '../components/features/settings/DataSettings';
+import { LanSyncPanel } from '@/components/features/LanSyncPanel';
 import { wailsApp } from '@/lib/wails';
 
 const Settings: React.FC = () => {
   const { notify } = useAppStore();
-  const getToken = useAuthStore.getState().getToken;
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'store' | 'appearance' | 'print' | 'staff' | 'data'>('store');
+  const [activeTab, setActiveTab] = useState<'store' | 'appearance' | 'print' | 'staff' | 'data' | 'lan' | 'shifts'>('store');
   const [showStaffModal, setShowStaffModal] = useState(false);
   const [, setEditingStaff] = useState<Staff | null>(null);
   const [staffForm, setStaffForm] = useState({ username: '', name: '', password: '', role: 'cashier' as 'cashier' | 'manager' | 'admin', phone: '' });
@@ -31,11 +30,7 @@ const Settings: React.FC = () => {
 
   const { data: staffList } = useQuery<Staff[]>({
     queryKey: ['staff'],
-    queryFn: () => {
-      const token = getToken();
-      if (!token) throw new Error('Not authenticated');
-      return wailsApp.GetStaff(token);
-    },
+    queryFn: () => wailsApp.GetStaff(),
   });
 
   useEffect(() => {
@@ -43,11 +38,7 @@ const Settings: React.FC = () => {
   }, [prefs]);
 
   const updatePrefsMutation = useMutation({
-    mutationFn: (p: Partial<AppPreferences>) => {
-      const token = getToken();
-      if (!token) throw new Error('Not authenticated');
-      return wailsApp.UpdatePreferences(token, p as AppPreferences);
-    },
+    mutationFn: (p: Partial<AppPreferences>) => wailsApp.UpdatePreferences(p as AppPreferences),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['preferences'] });
       notify('تم حفظ الإعدادات بنجاح', 'success');
@@ -56,11 +47,7 @@ const Settings: React.FC = () => {
   });
 
   const createStaffMutation = useMutation({
-    mutationFn: (s: Partial<Staff>) => {
-      const token = getToken();
-      if (!token) throw new Error('Not authenticated');
-      return wailsApp.CreateStaff(token, s as Staff);
-    },
+    mutationFn: (s: Partial<Staff>) => wailsApp.CreateStaff(s as Staff),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
       notify('تم إضافة الموظف بنجاح', 'success');
@@ -71,11 +58,7 @@ const Settings: React.FC = () => {
   });
 
   const resetDbMutation = useMutation({
-    mutationFn: () => {
-      const token = getToken();
-      if (!token) throw new Error('Not authenticated');
-      return wailsApp.ResetDatabase(token);
-    },
+    mutationFn: () => wailsApp.ResetDatabase('confirm'),
     onSuccess: () => {
       queryClient.invalidateQueries();
       notify('تم إعادة تعيين قاعدة البيانات', 'success');
@@ -97,14 +80,12 @@ const Settings: React.FC = () => {
 
   const handleExport = async () => {
     try {
-      const token = getToken();
-      if (!token) throw new Error('Not authenticated');
-      const data = await wailsApp.ExportDatabase(token);
+      const data = await wailsApp.ExportDatabase();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `beidar-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `bard-backup-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
       notify('تم تصدير البيانات بنجاح', 'success');
@@ -115,29 +96,24 @@ const Settings: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-6 flex items-center justify-center h-full bg-brand-dark/20">
+      <div className="p-6 flex items-center justify-center h-full">
         <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   const tabs = [
-    { id: 'store' as const, label: 'إعدادات المتجر', icon: <Store size={18} /> },
-    { id: 'print' as const, label: 'إعدادات الطباعة', icon: <Printer size={18} /> },
-    { id: 'appearance' as const, label: 'المظهر والنظام', icon: <Palette size={18} /> },
-    { id: 'staff' as const, label: 'الموظفين والصلاحيات', icon: <Shield size={18} /> },
-    { id: 'data' as const, label: 'البيانات والنسخ الاحتياطي', icon: <Database size={18} /> },
+    { id: 'store' as const, label: 'المتجر', icon: <Store size={18} />, color: 'text-blue-500' },
+    { id: 'appearance' as const, label: 'المظهر', icon: <Palette size={18} />, color: 'text-violet-500' },
+    { id: 'print' as const, label: 'الطباعة', icon: <Printer size={18} />, color: 'text-emerald-500' },
+    { id: 'staff' as const, label: 'الموظفين', icon: <Shield size={18} />, color: 'text-amber-500' },
+    { id: 'lan' as const, label: 'الشبكة', icon: <Wifi size={18} />, color: 'text-cyan-500' },
+    { id: 'data' as const, label: 'البيانات', icon: <Database size={18} />, color: 'text-rose-500' },
   ];
 
   return (
-    <div className="p-6 h-full flex flex-col gap-6 relative overflow-hidden bg-brand-dark/20">
-      {/* Print Preview Modal */}
-      <Modal
-        isOpen={showPrintPreview}
-        onClose={() => setShowPrintPreview(false)}
-        title="معاينة الإيصال"
-        size="sm"
-      >
+    <div className="p-6 h-full flex flex-col gap-5 relative overflow-hidden animate-fade-in">
+      <Modal isOpen={showPrintPreview} onClose={() => setShowPrintPreview(false)} title="معاينة الإيصال" size="sm">
         <div className="bg-white p-6 rounded-xl" id="receipt-preview">
           <div className="text-center mb-4">
             <h2 className="text-lg font-bold">{formData?.storeName || 'Bard'}</h2>
@@ -148,95 +124,54 @@ const Settings: React.FC = () => {
             <p className="text-xs">التاريخ: 01/04/2026</p>
           </div>
           <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b">
-                <th className="py-1 text-right">الصنف</th>
-                <th className="py-1 text-center">الكمية</th>
-                <th className="py-1 text-left">المجموع</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="py-1">منتج تجريبي</td>
-                <td className="py-1 text-center">2</td>
-                <td className="py-1 text-left">5,000 د.ع</td>
-              </tr>
-            </tbody>
+            <thead><tr className="border-b"><th className="py-1 text-right">الصنف</th><th className="py-1 text-center">الكمية</th><th className="py-1 text-left">المجموع</th></tr></thead>
+            <tbody><tr><td className="py-1">منتج تجريبي</td><td className="py-1 text-center">2</td><td className="py-1 text-left">5,000 د.ع</td></tr></tbody>
           </table>
           <hr className="border-dashed my-2" />
           <div className="space-y-1 text-xs">
-            <div className="flex justify-between">
-              <span>المجموع الفرعي:</span>
-              <span>5,000 د.ع</span>
-            </div>
-            <div className="flex justify-between font-bold border-t pt-1">
-              <span>الإجمالي:</span>
-              <span>5,000 د.ع</span>
-            </div>
+            <div className="flex justify-between"><span>المجموع الفرعي:</span><span>5,000 د.ع</span></div>
+            <div className="flex justify-between font-bold border-t pt-1"><span>الإجمالي:</span><span>5,000 د.ع</span></div>
           </div>
           <hr className="border-dashed my-2" />
-          <p className="text-center text-xs">شكراً لزيارتكم</p>
+          <p className="text-center text-xs">{formData?.receiptFooter || 'شكراً لزيارتكم'}</p>
         </div>
       </Modal>
 
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-black dark:text-white text-gray-900 tracking-tight flex items-center gap-3">
-          <SettingsIcon className="text-primary-400" />
-          مركز الإعدادات
-        </h1>
-        <p className="text-brand-accent/50 font-medium mt-1">تخصيص النظام وإدارة موارد متجرك</p>
+      <div className="flex items-center gap-4">
+        <div className="w-1 h-8 bg-primary-500 rounded-full" />
+        <div>
+          <h1 className="text-2xl font-black text-brand-accent dark:text-white tracking-tight flex items-center gap-3">
+            <SettingsIcon className="text-primary-500" size={24} />
+            مركز الإعدادات
+          </h1>
+          <p className="text-[10px] text-brand-accent/20 dark:text-white/10 font-medium">تخصيص النظام وإدارة موارد متجرك</p>
+        </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8 flex-1 overflow-hidden">
-        {/* Navigation Sidebar */}
-        <div className="w-full lg:w-72 flex flex-col gap-2">
+      <div className="flex flex-col lg:flex-row gap-5 flex-1 overflow-hidden">
+        <div className="w-full lg:w-56 flex flex-row lg:flex-col gap-1.5 overflow-x-auto lg:overflow-x-visible">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all duration-300 ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-300 whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-primary-500 text-white shadow-xl shadow-primary-500/20 translate-x-1'
-                  : 'bg-brand-surface text-brand-accent/50 hover:dark:text-white text-gray-900 hover:bg-brand-surface/80 border border-brand-border/30'
+                  ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
+                  : 'bg-brand-surface/30 dark:bg-white/[0.02] text-brand-accent/30 dark:text-white/15 hover:text-brand-accent dark:hover:text-white/50 hover:bg-brand-surface/50 dark:hover:bg-white/[0.04] border border-brand-border/10 dark:border-white/[0.03]'
               }`}
             >
-              <div className={`transition-transform duration-300 ${activeTab === tab.id ? 'scale-110' : ''}`}>
-                {tab.icon}
-              </div>
+              <span className={activeTab === tab.id ? 'text-white' : tab.color}>{tab.icon}</span>
               <span>{tab.label}</span>
             </button>
           ))}
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto bg-brand-surface border border-brand-border/30 rounded-3xl p-8 shadow-2xl">
-          {/* Store Settings */}
-          {activeTab === 'store' && (
-            <StoreSettings formData={formData} setFormData={setFormData} onSave={handleSavePrefs} />
-          )}
-
-          {/* Print Settings */}
-          {activeTab === 'print' && (
-            <PrintSettings formData={formData} setFormData={setFormData} onSave={handleSavePrefs} />
-          )}
-
-          {/* Appearance Settings */}
-          {activeTab === 'appearance' && (
-            <AppearanceSettings formData={formData} setFormData={setFormData} onSave={handleSavePrefs} />
-          )}
-
-          {/* Staff Settings */}
-          {activeTab === 'staff' && (
-            <StaffSettings
-              staffs={staffList || []}
-              setEditingStaff={setEditingStaff}
-              setShowStaffModal={setShowStaffModal}
-              isLoading={isLoading}
-            />
-          )}
-
-          {/* Data Settings */}
+        <div className="flex-1 overflow-y-auto bg-brand-surface/20 dark:bg-white/[0.02] backdrop-blur-xl border border-brand-border/15 dark:border-white/[0.05] rounded-2xl p-6 shadow-sm">
+          {activeTab === 'store' && <StoreSettings formData={formData} setFormData={setFormData} onSave={handleSavePrefs} />}
+          {activeTab === 'appearance' && <AppearanceSettings formData={formData} setFormData={setFormData} onSave={handleSavePrefs} />}
+          {activeTab === 'print' && <PrintSettings formData={formData} setFormData={setFormData} onSave={handleSavePrefs} />}
+          {activeTab === 'staff' && <StaffSettings staffs={staffList || []} setEditingStaff={setEditingStaff} setShowStaffModal={setShowStaffModal} isLoading={isLoading} />}
+          {activeTab === 'lan' && <LanSyncPanel notify={notify} />}
           {activeTab === 'data' && (
             <DataSettings
               onExport={handleExport}
@@ -254,45 +189,36 @@ const Settings: React.FC = () => {
         </div>
       </div>
 
-      {/* Staff Modal */}
-      <Modal
-        isOpen={showStaffModal}
-        onClose={() => setShowStaffModal(false)}
-        title="إضافة موظف جديد"
-        size="md"
-        footer={
-          <>
-            <Button onClick={() => setShowStaffModal(false)} variant="secondary">إلغاء</Button>
-            <Button onClick={handleCreateStaff} loading={createStaffMutation.isPending}>
-              إضافة الموظف
-            </Button>
-          </>
-        }
-      >
-        <form onSubmit={(e) => { e.preventDefault(); handleCreateStaff(); }} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-xs font-black text-brand-accent/50 uppercase tracking-widest mr-1">اسم المستخدم *</label>
+      <Modal isOpen={showStaffModal} onClose={() => setShowStaffModal(false)} title="إضافة موظف جديد" size="md" footer={
+        <>
+          <Button onClick={() => setShowStaffModal(false)} variant="secondary">إلغاء</Button>
+          <Button onClick={handleCreateStaff} loading={createStaffMutation.isPending}>إضافة الموظف</Button>
+        </>
+      }>
+        <form onSubmit={(e) => { e.preventDefault(); handleCreateStaff(); }} className="space-y-5">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-brand-accent/30 dark:text-white/15 uppercase tracking-[0.15em]">اسم المستخدم *</label>
             <input type="text" value={staffForm.username} onChange={(e) => setStaffForm({ ...staffForm, username: e.target.value })} className="input py-3 font-mono" placeholder="username" required />
           </div>
-          <div className="space-y-2">
-            <label className="text-xs font-black text-brand-accent/50 uppercase tracking-widest mr-1">الاسم الكامل *</label>
-            <input type="text" value={staffForm.name} onChange={(e) => setStaffForm({ ...staffForm, name: e.target.value })} className="input py-3" placeholder="أدخل الاسم بالكامل..." required />
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-brand-accent/30 dark:text-white/15 uppercase tracking-[0.15em]">الاسم الكامل *</label>
+            <input type="text" value={staffForm.name} onChange={(e) => setStaffForm({ ...staffForm, name: e.target.value })} className="input py-3" required />
           </div>
-          <div className="space-y-2">
-            <label className="text-xs font-black text-brand-accent/50 uppercase tracking-widest mr-1">كلمة المرور *</label>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-brand-accent/30 dark:text-white/15 uppercase tracking-[0.15em]">كلمة المرور *</label>
             <input type="password" value={staffForm.password} onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })} className="input py-3 font-mono" required />
           </div>
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-xs font-black text-brand-accent/50 uppercase tracking-widest mr-1">الصلاحية</label>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-brand-accent/30 dark:text-white/15 uppercase tracking-[0.15em]">الصلاحية</label>
               <select value={staffForm.role} onChange={(e) => setStaffForm({ ...staffForm, role: e.target.value as "cashier" | "manager" | "admin" })} className="input py-3">
                 <option value="cashier">كاشير</option>
                 <option value="manager">مدير فرع</option>
                 <option value="admin">مدير نظام</option>
               </select>
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-black text-brand-accent/50 uppercase tracking-widest mr-1">رقم الهاتف</label>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-brand-accent/30 dark:text-white/15 uppercase tracking-[0.15em]">رقم الهاتف</label>
               <input type="text" value={staffForm.phone} onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })} className="input py-3 font-mono" />
             </div>
           </div>

@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"bard/internal/cache"
 	"bard/internal/domain"
 	"bard/internal/logger"
 	"bard/internal/mocks"
@@ -18,7 +19,7 @@ import (
 func TestProductService_FullCRUDLifecycle(t *testing.T) {
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewProductService(mockRepo, log)
+	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	// CREATE
 	product := &domain.Product{
@@ -62,7 +63,7 @@ func TestProductService_FullCRUDLifecycle(t *testing.T) {
 func TestProductService_GetAllWithPagination(t *testing.T) {
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewProductService(mockRepo, log)
+	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	expectedProducts := &domain.PaginatedProducts{
 		Data: []domain.Product{
@@ -97,7 +98,7 @@ func TestProductService_GetAllWithPagination(t *testing.T) {
 func TestProductService_GetByBarcode(t *testing.T) {
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewProductService(mockRepo, log)
+	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	expectedProduct := &domain.Product{
 		ID:      "prod-1",
@@ -119,7 +120,7 @@ func TestProductService_GetByBarcode(t *testing.T) {
 func TestProductService_GetByBarcode_NotFound(t *testing.T) {
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewProductService(mockRepo, log)
+	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	mockRepo.On("GetByBarcode", "nonexistent").Return((*domain.Product)(nil), assert.AnError)
 
@@ -133,7 +134,7 @@ func TestProductService_GetByBarcode_NotFound(t *testing.T) {
 func TestProductService_GetCategories_Sorted(t *testing.T) {
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewProductService(mockRepo, log)
+	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	categories := []string{"Electronics", "Food", "Clothing", "Beverages"}
 	mockRepo.On("GetCategories").Return(categories, nil)
@@ -150,7 +151,7 @@ func TestProductService_GetCategories_Sorted(t *testing.T) {
 func TestProductService_GetStats_ProfitCalculation(t *testing.T) {
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewProductService(mockRepo, log)
+	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	expectedStats := &domain.ProductStats{
 		TotalStock: 1000,
@@ -172,7 +173,7 @@ func TestProductService_GetStats_ProfitCalculation(t *testing.T) {
 func TestProductService_GetLowStock_BelowThreshold(t *testing.T) {
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewProductService(mockRepo, log)
+	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	lowStockProducts := []domain.Product{
 		{ID: "1", Name: "Product 1", Stock: 2, MinStock: 5},
@@ -195,7 +196,7 @@ func TestProductService_GetLowStock_BelowThreshold(t *testing.T) {
 func TestProductService_Search_CaseInsensitive(t *testing.T) {
 	mockRepo := new(mocks.MockProductRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewProductService(mockRepo, log)
+	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
 	products := []domain.Product{
 		{ID: "1", Name: "Coffee", Price: 100},
@@ -218,7 +219,7 @@ func TestProductService_Search_CaseInsensitive(t *testing.T) {
 func TestCustomerService_FullCRUDLifecycle(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewCustomerService(mockRepo, log)
+	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	// CREATE
 	customer := &domain.Customer{
@@ -258,7 +259,7 @@ func TestCustomerService_FullCRUDLifecycle(t *testing.T) {
 func TestCustomerService_GetAll_WithSearch(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewCustomerService(mockRepo, log)
+	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	expectedCustomers := []domain.Customer{
 		{ID: "1", Name: "John Doe", Phone: "1234567890"},
@@ -278,7 +279,7 @@ func TestCustomerService_GetAll_WithSearch(t *testing.T) {
 func TestCustomerService_GetByPhone(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewCustomerService(mockRepo, log)
+	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	expectedCustomer := &domain.Customer{
 		ID:    "cust-1",
@@ -300,7 +301,7 @@ func TestCustomerService_GetByPhone(t *testing.T) {
 func TestCustomerService_GetTop(t *testing.T) {
 	mockRepo := new(mocks.MockCustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewCustomerService(mockRepo, log)
+	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
 	topCustomers := []domain.Customer{
 		{ID: "1", Name: "VIP Customer 1", TotalPurchases: 100000},

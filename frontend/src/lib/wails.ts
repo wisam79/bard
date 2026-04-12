@@ -84,7 +84,7 @@ import type {
   Supplier,
 } from '@/types';
 
-export const wailsApp = {
+export const _wailsApp = {
   AddCashMovement: AddCashMovementBinding,
   CalculateInstallmentPlan:
     CalculateInstallmentPlanBinding as unknown as (
@@ -227,6 +227,8 @@ export const wailsApp = {
     supplier: Supplier,
   ) => Promise<void>,
 };
+
+export const wailsApp: Record<string, any> = _wailsApp;
 
 export const wailsWindow = {
   minimise: WindowMinimise,
