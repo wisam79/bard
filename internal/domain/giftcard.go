@@ -5,8 +5,8 @@ import "time"
 type GiftCard struct {
 	ID             string     `gorm:"primaryKey" json:"id"`
 	Code           string     `gorm:"uniqueIndex" json:"code"`
-	InitialBalance float64    `json:"initialBalance"`
-	Balance        float64    `json:"balance"`
+	InitialBalance  int64  `json:"initialBalance"`
+	Balance  int64  `json:"balance"`
 	CustomerID     string     `json:"customerId,omitempty"`
 	PurchasedBy    string     `json:"purchasedBy,omitempty"`
 	IsActive       bool       `gorm:"default:true" json:"isActive"`
@@ -18,7 +18,7 @@ type GiftCard struct {
 type GiftCardTransaction struct {
 	ID         uint      `gorm:"primaryKey;autoIncrement" json:"id"`
 	GiftCardID string    `gorm:"index" json:"giftCardId"`
-	Amount     float64   `json:"amount"`
+	Amount  int64  `json:"amount"`
 	Type       string    `json:"type"`
 	SaleID     string    `json:"saleId,omitempty"`
 	StaffID    string    `json:"staffId,omitempty"`
@@ -31,8 +31,8 @@ type Voucher struct {
 	Code        string     `gorm:"uniqueIndex" json:"code"`
 	Name        string     `json:"name"`
 	Type        string     `json:"type"`
-	Value       float64    `json:"value"`
-	MinPurchase float64    `json:"minPurchase"`
+	Value  int64  `json:"value"`
+	MinPurchase  int64  `json:"minPurchase"`
 	MaxUses     int        `json:"maxUses"`
 	UsedCount   int        `json:"usedCount"`
 	IsActive    bool       `gorm:"default:true" json:"isActive"`

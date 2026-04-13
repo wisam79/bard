@@ -41,12 +41,12 @@ const Toggle: React.FC<{ active: boolean; onToggle: () => void }> = ({ active, o
 );
 
 const SettingRow: React.FC<{ icon: React.ReactNode; title: string; desc: string; active: boolean; onToggle: () => void }> = ({ icon, title, desc, active, onToggle }) => (
-  <div className="flex items-center justify-between p-5 bg-brand-dark/10 dark:bg-white/[0.01] rounded-2xl border border-brand-border/10 dark:border-white/[0.03] hover:border-brand-border/20 dark:hover:border-white/[0.06] transition-colors">
+  <div className="flex items-center justify-between p-5 bg-brand-dark/25 dark:bg-white/[0.01] rounded-2xl border border-brand-border/25 dark:border-white/[0.09] hover:border-brand-border/35 dark:hover:border-white/[0.09] transition-colors">
     <div className="flex items-center gap-4">
       <div className="w-10 h-10 rounded-xl bg-primary-500/[0.06] border border-primary-500/10 flex items-center justify-center text-primary-500/60">{icon}</div>
       <div>
         <p className="text-sm font-bold text-brand-accent dark:text-white/80">{title}</p>
-        <p className="text-[10px] text-brand-accent/25 dark:text-white/15 font-medium mt-0.5">{desc}</p>
+        <p className="text-[10px] text-brand-muted/45 dark:text-white/30 font-medium mt-0.5">{desc}</p>
       </div>
     </div>
     <Toggle active={active} onToggle={onToggle} />
@@ -116,15 +116,15 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ formData, setFo
 
       {/* Feature 1: Theme Mode */}
       <div className="space-y-3">
-        <h4 className="text-xs font-black text-brand-accent/25 dark:text-white/15 uppercase tracking-[0.2em]">1. وضع العرض</h4>
+        <h4 className="text-xs font-black text-brand-muted/45 dark:text-white/30 uppercase tracking-[0.2em]">1. وضع العرض</h4>
         <div className="grid grid-cols-2 gap-3">
-          <button onClick={() => { if (theme === 'light') toggleTheme(); }} className={`p-4 rounded-2xl border-2 transition-all flex items-center gap-3 ${theme === 'dark' ? 'border-primary-500 bg-primary-500/[0.06] shadow-lg shadow-primary-500/10' : 'border-brand-border/20 bg-brand-dark/10'}`}>
-            <Moon size={20} className={theme === 'dark' ? 'text-primary-500' : 'text-brand-accent/25'} />
-            <div className="text-right"><p className="text-sm font-bold text-brand-accent dark:text-white">داكن</p><p className="text-[9px] text-brand-accent/20 dark:text-white/10">مريح للعيون</p></div>
+          <button onClick={() => { if (theme === 'light') toggleTheme(); }} className={`p-4 rounded-2xl border-2 transition-all flex items-center gap-3 ${theme === 'dark' ? 'border-primary-500 bg-primary-500/[0.06] shadow-lg shadow-primary-500/10' : 'border-brand-border/35 bg-brand-dark/25'}`}>
+            <Moon size={20} className={theme === 'dark' ? 'text-primary-500' : 'text-brand-muted/45'} />
+            <div className="text-right"><p className="text-sm font-bold text-brand-accent dark:text-white">داكن</p><p className="text-[9px] text-brand-muted/40 dark:text-white/25">مريح للعيون</p></div>
           </button>
-          <button onClick={() => { if (theme === 'dark') toggleTheme(); }} className={`p-4 rounded-2xl border-2 transition-all flex items-center gap-3 ${theme === 'light' ? 'border-primary-500 bg-primary-500/[0.06] shadow-lg shadow-primary-500/10' : 'border-brand-border/20 bg-brand-dark/10'}`}>
-            <Sun size={20} className={theme === 'light' ? 'text-primary-500' : 'text-brand-accent/25'} />
-            <div className="text-right"><p className="text-sm font-bold text-brand-accent dark:text-white">فاتح</p><p className="text-[9px] text-brand-accent/20 dark:text-white/10">إضاءة نهارية</p></div>
+          <button onClick={() => { if (theme === 'dark') toggleTheme(); }} className={`p-4 rounded-2xl border-2 transition-all flex items-center gap-3 ${theme === 'light' ? 'border-primary-500 bg-primary-500/[0.06] shadow-lg shadow-primary-500/10' : 'border-brand-border/35 bg-brand-dark/25'}`}>
+            <Sun size={20} className={theme === 'light' ? 'text-primary-500' : 'text-brand-muted/45'} />
+            <div className="text-right"><p className="text-sm font-bold text-brand-accent dark:text-white">فاتح</p><p className="text-[9px] text-brand-muted/40 dark:text-white/25">إضاءة نهارية</p></div>
           </button>
         </div>
       </div>
@@ -132,7 +132,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ formData, setFo
       {/* Feature 2: Accent Color */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-black text-brand-accent/25 dark:text-white/15 uppercase tracking-[0.2em]">2. اللون الأساسي</h4>
+          <h4 className="text-xs font-black text-brand-muted/45 dark:text-white/30 uppercase tracking-[0.2em]">2. اللون الأساسي</h4>
           <button onClick={() => setShowAccentPicker(!showAccentPicker)} className="flex items-center gap-2 text-[10px] font-bold text-primary-500/60 hover:text-primary-500 transition-colors">
             <div className="w-4 h-4 rounded-full" style={{ backgroundColor: ACCENT_COLORS.find(c => c.id === accentColor)?.hex }} />
             {ACCENT_COLORS.find(c => c.id === accentColor)?.label}
@@ -140,9 +140,9 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ formData, setFo
         </div>
         <div className={`grid grid-cols-5 gap-2 transition-all duration-300 ${showAccentPicker ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
           {ACCENT_COLORS.map((color) => (
-            <button key={color.id} onClick={() => setAccentColor(color.id)} className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${accentColor === color.id ? 'border-current scale-105 shadow-lg bg-white/5' : 'border-brand-border/10 dark:border-white/[0.04] hover:border-brand-border/30 dark:hover:border-white/[0.08]'}`} style={{ borderColor: accentColor === color.id ? color.hex : undefined }}>
+            <button key={color.id} onClick={() => setAccentColor(color.id)} className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${accentColor === color.id ? 'border-current scale-105 shadow-lg bg-white/5' : 'border-brand-border/25 dark:border-white/[0.07] hover:border-brand-border/30 dark:hover:border-white/[0.08]'}`} style={{ borderColor: accentColor === color.id ? color.hex : undefined }}>
               <div className="w-8 h-8 rounded-xl shadow-inner" style={{ backgroundColor: color.hex, boxShadow: accentColor === color.id ? `0 4px 15px ${color.hex}40` : undefined }} />
-              <span className="text-[9px] font-bold text-brand-accent/30 dark:text-white/15">{color.label}</span>
+              <span className="text-[9px] font-bold text-brand-muted/50 dark:text-white/30">{color.label}</span>
               {accentColor === color.id && <Check size={12} style={{ color: color.hex }} className="mt-0.5" />}
             </button>
           ))}
@@ -156,11 +156,11 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ formData, setFo
 
       {/* Feature 3: Wallpaper/Background */}
       <div className="space-y-3">
-        <h4 className="text-xs font-black text-brand-accent/25 dark:text-white/15 uppercase tracking-[0.2em]">3. خلفية التطبيق</h4>
+        <h4 className="text-xs font-black text-brand-muted/45 dark:text-white/30 uppercase tracking-[0.2em]">3. خلفية التطبيق</h4>
         <div className="grid grid-cols-3 gap-2">
           {WALLPAPERS.map((wp) => (
-            <button key={wp.id} onClick={() => setWallpaper(wp.id)} className={`h-20 rounded-xl border-2 transition-all flex items-center justify-center ${wp.preview} ${wallpaper === wp.id ? 'border-primary-500 shadow-lg shadow-primary-500/10' : 'border-brand-border/10 dark:border-white/[0.04] hover:border-brand-border/30'}`}>
-              <span className="text-[9px] font-bold text-brand-accent/25 dark:text-white/15">{wp.label}</span>
+            <button key={wp.id} onClick={() => setWallpaper(wp.id)} className={`h-20 rounded-xl border-2 transition-all flex items-center justify-center ${wp.preview} ${wallpaper === wp.id ? 'border-primary-500 shadow-lg shadow-primary-500/10' : 'border-brand-border/25 dark:border-white/[0.07] hover:border-brand-border/30'}`}>
+              <span className="text-[9px] font-bold text-brand-muted/45 dark:text-white/30">{wp.label}</span>
             </button>
           ))}
         </div>
@@ -168,14 +168,14 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ formData, setFo
 
       {/* Feature 4: Font Size */}
       <div className="space-y-3">
-        <h4 className="text-xs font-black text-brand-accent/25 dark:text-white/15 uppercase tracking-[0.2em]">4. حجم الخط</h4>
+        <h4 className="text-xs font-black text-brand-muted/45 dark:text-white/30 uppercase tracking-[0.2em]">4. حجم الخط</h4>
         <div className="flex gap-2">
           {[
             { id: 'small', label: 'صغير', size: 'text-xs' },
             { id: 'medium', label: 'متوسط', size: 'text-sm' },
             { id: 'large', label: 'كبير', size: 'text-base' },
           ].map((s) => (
-            <button key={s.id} onClick={() => updateFontSize(s.id)} className={`flex-1 py-3 rounded-xl text-xs font-bold border-2 transition-all ${fontSize === s.id ? 'bg-primary-500 border-primary-500 text-white shadow-lg shadow-primary-500/20' : 'bg-brand-dark/10 border-brand-border/10 text-brand-accent/30 dark:text-white/15 hover:border-brand-border/30'}`}>
+            <button key={s.id} onClick={() => updateFontSize(s.id)} className={`flex-1 py-3 rounded-xl text-xs font-bold border-2 transition-all ${fontSize === s.id ? 'bg-primary-500 border-primary-500 text-white shadow-lg shadow-primary-500/20' : 'bg-brand-dark/25 border-brand-border/25 text-brand-muted/50 dark:text-white/30 hover:border-brand-border/30'}`}>
               <span className={s.size}>{s.label}</span>
             </button>
           ))}
@@ -184,32 +184,32 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ formData, setFo
 
       {/* Feature 5: Animations */}
       <div className="space-y-3">
-        <h4 className="text-xs font-black text-brand-accent/25 dark:text-white/15 uppercase tracking-[0.2em]">5. الحركات والتأثيرات</h4>
+        <h4 className="text-xs font-black text-brand-muted/45 dark:text-white/30 uppercase tracking-[0.2em]">5. الحركات والتأثيرات</h4>
         <SettingRow icon={<Zap size={18} />} title="الحركات والانتقالات" desc="تأثيرات الانزلاق والتلاشي والنبض" active={animationsEnabled} onToggle={toggleAnimations} />
       </div>
 
       {/* Feature 6: Sound */}
       <div className="space-y-3">
-        <h4 className="text-xs font-black text-brand-accent/25 dark:text-white/15 uppercase tracking-[0.2em]">6. المؤثرات الصوتية</h4>
+        <h4 className="text-xs font-black text-brand-muted/45 dark:text-white/30 uppercase tracking-[0.2em]">6. المؤثرات الصوتية</h4>
         <SettingRow icon={formData.enableSound ? <Volume2 size={18} /> : <VolumeX size={18} />} title="تنبيهات صوتية" desc="صوت عند البيع، الخطأ، والتنبيهات" active={formData.enableSound || false} onToggle={() => setFormData({ ...formData, enableSound: !formData.enableSound })} />
       </div>
 
       {/* Feature 7: Compact Mode */}
       <div className="space-y-3">
-        <h4 className="text-xs font-black text-brand-accent/25 dark:text-white/15 uppercase tracking-[0.2em]">7. وضع العرض المضغوط</h4>
+        <h4 className="text-xs font-black text-brand-muted/45 dark:text-white/30 uppercase tracking-[0.2em]">7. وضع العرض المضغوط</h4>
         <SettingRow icon={<Maximize2 size={18} />} title="الوضع المضغوط" desc="تقليل المسافات وزيادة كثافة المعلومات" active={compactMode} onToggle={toggleCompactMode} />
       </div>
 
       {/* Feature 8: Auto Lock */}
       <div className="space-y-3">
-        <h4 className="text-xs font-black text-brand-accent/25 dark:text-white/15 uppercase tracking-[0.2em]">8. القفل التلقائي</h4>
-        <div className="p-5 bg-brand-dark/10 dark:bg-white/[0.01] rounded-2xl border border-brand-border/10 dark:border-white/[0.03]">
+        <h4 className="text-xs font-black text-brand-muted/45 dark:text-white/30 uppercase tracking-[0.2em]">8. القفل التلقائي</h4>
+        <div className="p-5 bg-brand-dark/25 dark:bg-white/[0.01] rounded-2xl border border-brand-border/25 dark:border-white/[0.09]">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-500/[0.06] border border-amber-500/10 flex items-center justify-center text-amber-500/60"><Monitor size={18} /></div>
               <div>
                 <p className="text-sm font-bold text-brand-accent dark:text-white/80">قفل الشاشة بعد عدم النشاط</p>
-                <p className="text-[10px] text-brand-accent/25 dark:text-white/15 font-medium mt-0.5">0 = معطل</p>
+                <p className="text-[10px] text-brand-muted/45 dark:text-white/30 font-medium mt-0.5">0 = معطل</p>
               </div>
             </div>
           </div>
@@ -221,7 +221,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ formData, setFo
               { mins: 15, label: '15 دقيقة' },
               { mins: 30, label: '30 دقيقة' },
             ].map((opt) => (
-              <button key={opt.mins} onClick={() => updateAutoLock(opt.mins)} className={`flex-1 py-2 rounded-lg text-[9px] font-bold border transition-all ${autoLockTime === opt.mins ? 'bg-primary-500 border-primary-500 text-white' : 'bg-brand-dark/10 border-brand-border/10 text-brand-accent/25 dark:text-white/15 hover:border-brand-border/30'}`}>
+              <button key={opt.mins} onClick={() => updateAutoLock(opt.mins)} className={`flex-1 py-2 rounded-lg text-[9px] font-bold border transition-all ${autoLockTime === opt.mins ? 'bg-primary-500 border-primary-500 text-white' : 'bg-brand-dark/25 border-brand-border/25 text-brand-muted/45 dark:text-white/30 hover:border-brand-border/30'}`}>
                 {opt.label}
               </button>
             ))}
@@ -231,15 +231,15 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ formData, setFo
 
       {/* Feature 9: Language */}
       <div className="space-y-3">
-        <h4 className="text-xs font-black text-brand-accent/25 dark:text-white/15 uppercase tracking-[0.2em]">9. لغة الواجهة</h4>
+        <h4 className="text-xs font-black text-brand-muted/45 dark:text-white/30 uppercase tracking-[0.2em]">9. لغة الواجهة</h4>
         <div className="flex gap-2">
           {[
             { id: 'ar', label: 'العربية', desc: 'من اليمين لليسار' },
             { id: 'en', label: 'English', desc: 'Left to Right' },
           ].map((lang) => (
-            <button key={lang.id} onClick={() => updateLanguage(lang.id)} className={`flex-1 p-4 rounded-2xl border-2 transition-all text-right ${language === lang.id ? 'border-primary-500 bg-primary-500/[0.06] shadow-lg shadow-primary-500/10' : 'border-brand-border/10 bg-brand-dark/10 hover:border-brand-border/30'}`}>
+            <button key={lang.id} onClick={() => updateLanguage(lang.id)} className={`flex-1 p-4 rounded-2xl border-2 transition-all text-right ${language === lang.id ? 'border-primary-500 bg-primary-500/[0.06] shadow-lg shadow-primary-500/10' : 'border-brand-border/25 bg-brand-dark/25 hover:border-brand-border/30'}`}>
               <p className="text-sm font-bold text-brand-accent dark:text-white">{lang.label}</p>
-              <p className="text-[9px] text-brand-accent/20 dark:text-white/10">{lang.desc}</p>
+              <p className="text-[9px] text-brand-muted/40 dark:text-white/25">{lang.desc}</p>
             </button>
           ))}
         </div>
@@ -247,7 +247,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ formData, setFo
 
       {/* Feature 10: Quick Sell / Accessibility */}
       <div className="space-y-3">
-        <h4 className="text-xs font-black text-brand-accent/25 dark:text-white/15 uppercase tracking-[0.2em]">10. إعدادات إمكانية الوصول</h4>
+        <h4 className="text-xs font-black text-brand-muted/45 dark:text-white/30 uppercase tracking-[0.2em]">10. إعدادات إمكانية الوصول</h4>
         <div className="space-y-2">
           <SettingRow icon={<Eye size={18} />} title="البيع السريع (Quick Sell)" desc="إتمام البيع بخطوة واحدة بدون تأكيد" active={formData.quickSell || false} onToggle={() => setFormData({ ...formData, quickSell: !formData.quickSell })} />
           <SettingRow icon={<LayoutGrid size={18} />} title="عرض الباركود في المنتجات" desc="إظهار رمز الباركود في بطاقات المنتجات" active={formData.showBarcode || false} onToggle={() => setFormData({ ...formData, showBarcode: !formData.showBarcode })} />
@@ -257,19 +257,19 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ formData, setFo
 
       {/* Feature 11: Business Mode */}
       <div className="space-y-3">
-        <h4 className="text-xs font-black text-brand-accent/25 dark:text-white/15 uppercase tracking-[0.2em]">11. نوع النشاط التجاري</h4>
+        <h4 className="text-xs font-black text-brand-muted/45 dark:text-white/30 uppercase tracking-[0.2em]">11. نوع النشاط التجاري</h4>
         <div className="grid grid-cols-3 gap-3">
           {([
             { id: 'retail' as BusinessMode, label: 'تجاري', desc: 'متجر / سوبرماركت / صيدلية', icon: <Store size={24} />, color: 'primary' },
             { id: 'restaurant' as BusinessMode, label: 'مطعم', desc: 'مطعم / كافيه / وجبات سريعة', icon: <UtensilsCrossed size={24} />, color: 'amber' },
             { id: 'wholesale' as BusinessMode, label: 'جملة', desc: 'توزيع / بيع جملة / مستودع', icon: <Building2 size={24} />, color: 'emerald' },
           ]).map((mode) => (
-            <button key={mode.id} onClick={() => setBusinessMode(mode.id)} className={`p-5 rounded-2xl border-2 transition-all text-center ${businessMode === mode.id ? 'border-primary-500 bg-primary-500/[0.06] shadow-lg shadow-primary-500/10' : 'border-brand-border/10 bg-brand-dark/10 hover:border-brand-border/30'}`}>
-              <div className={`w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center ${businessMode === mode.id ? `bg-${mode.color}-500/15 text-${mode.color}-500` : 'bg-brand-surface/30 text-brand-accent/20 dark:text-white/10'}`}>
+            <button key={mode.id} onClick={() => setBusinessMode(mode.id)} className={`p-5 rounded-2xl border-2 transition-all text-center ${businessMode === mode.id ? 'border-primary-500 bg-primary-500/[0.06] shadow-lg shadow-primary-500/10' : 'border-brand-border/25 bg-brand-dark/25 hover:border-brand-border/30'}`}>
+              <div className={`w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center ${businessMode === mode.id ? `bg-${mode.color}-500/15 text-${mode.color}-500` : 'bg-brand-surface/30 text-brand-muted/40 dark:text-white/25'}`}>
                 {mode.icon}
               </div>
               <p className="text-sm font-black text-brand-accent dark:text-white mb-1">{mode.label}</p>
-              <p className="text-[9px] text-brand-accent/20 dark:text-white/10 leading-relaxed">{mode.desc}</p>
+              <p className="text-[9px] text-brand-muted/40 dark:text-white/25 leading-relaxed">{mode.desc}</p>
               {businessMode === mode.id && <div className="mt-2"><Check size={14} className="text-primary-500 mx-auto" /></div>}
             </button>
           ))}
@@ -277,8 +277,8 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ formData, setFo
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-6 border-t border-brand-border/15 dark:border-white/[0.04]">
-        <button onClick={handleResetAppearance} className="flex items-center gap-2 text-xs font-bold text-brand-accent/25 dark:text-white/15 hover:text-red-500 transition-colors">
+      <div className="flex items-center justify-between pt-6 border-t border-brand-border/30 dark:border-white/[0.07]">
+        <button onClick={handleResetAppearance} className="flex items-center gap-2 text-xs font-bold text-brand-muted/45 dark:text-white/30 hover:text-red-500 transition-colors">
           <RotateCcw size={14} /> إعادة تعيين الافتراضي
         </button>
         <Button onClick={onSave}>حفظ إعدادات المظهر</Button>

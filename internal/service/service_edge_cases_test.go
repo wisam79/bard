@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"bard/internal/cache"
+	"bard/internal/crypto"
 	"bard/internal/domain"
 	"bard/internal/errors"
 	"bard/internal/logger"
@@ -13,12 +14,22 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func newTestEncryptor(t *testing.T) *crypto.Encryptor {
+	t.Helper()
+	key := make([]byte, 32)
+	enc, err := crypto.NewEncryptor(key)
+	if err != nil {
+		t.Fatalf("failed to create test encryptor: %v", err)
+	}
+	return enc
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // Product Service - Additional Edge Case Tests
 // ═══════════════════════════════════════════════════════════════════════════════
 
 func TestProductService_Create_WithZeroValues(t *testing.T) {
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -38,7 +49,7 @@ func TestProductService_Create_WithZeroValues(t *testing.T) {
 }
 
 func TestProductService_Create_WithWhitespace(t *testing.T) {
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -58,7 +69,7 @@ func TestProductService_Create_WithWhitespace(t *testing.T) {
 }
 
 func TestProductService_Update_NonExistentProduct(t *testing.T) {
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -78,7 +89,7 @@ func TestProductService_Update_NonExistentProduct(t *testing.T) {
 }
 
 func TestProductService_Search_EmptyQuery(t *testing.T) {
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -92,7 +103,7 @@ func TestProductService_Search_EmptyQuery(t *testing.T) {
 }
 
 func TestProductService_GetLowStock_ZeroThreshold(t *testing.T) {
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -112,7 +123,7 @@ func TestProductService_GetLowStock_ZeroThreshold(t *testing.T) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 func TestCustomerService_Create_WithEmptyPhone(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -129,7 +140,7 @@ func TestCustomerService_Create_WithEmptyPhone(t *testing.T) {
 }
 
 func TestCustomerService_Update_PreserveDebt(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -158,7 +169,7 @@ func TestCustomerService_Update_PreserveDebt(t *testing.T) {
 }
 
 func TestCustomerService_GetAll_ZeroLimit(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -178,7 +189,7 @@ func TestCustomerService_GetAll_ZeroLimit(t *testing.T) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 func TestStaffService_Create_WithEmptyPassword(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewStaffService(mockRepo, log)
 
@@ -199,7 +210,7 @@ func TestStaffService_Create_WithEmptyPassword(t *testing.T) {
 }
 
 func TestStaffService_Update_PreservePassword(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewStaffService(mockRepo, log)
 
@@ -227,7 +238,7 @@ func TestStaffService_Update_PreservePassword(t *testing.T) {
 }
 
 func TestStaffService_Authenticate_InactiveStaff(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewStaffService(mockRepo, log)
 
@@ -240,7 +251,7 @@ func TestStaffService_Authenticate_InactiveStaff(t *testing.T) {
 }
 
 func TestStaffService_Create_InvalidRole(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewStaffService(mockRepo, log)
 
@@ -260,7 +271,7 @@ func TestStaffService_Create_InvalidRole(t *testing.T) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 func TestFinanceService_CreateExpense_NegativeAmount(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewFinanceService(mockRepo, log)
 
@@ -279,7 +290,7 @@ func TestFinanceService_CreateExpense_NegativeAmount(t *testing.T) {
 }
 
 func TestFinanceService_GetExpenses_EmptyCategory(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewFinanceService(mockRepo, log)
 
@@ -294,7 +305,7 @@ func TestFinanceService_GetExpenses_EmptyCategory(t *testing.T) {
 }
 
 func TestFinanceService_CreatePayment_ZeroAmount(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewFinanceService(mockRepo, log)
 
@@ -316,9 +327,9 @@ func TestFinanceService_CreatePayment_ZeroAmount(t *testing.T) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 func TestSettingsService_GetPreferences_NotFound(t *testing.T) {
-	mockRepo := new(mocks.MockSettingsRepository)
+	mockRepo := new(mocks.SettingsRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewSettingsService(mockRepo, log)
+	svc := service.NewSettingsService(mockRepo, newTestEncryptor(t), log)
 
 	mockRepo.On("GetPreferences").Return(nil, errors.NewNotFoundError(domain.ModuleSettings, "Preferences"))
 
@@ -330,9 +341,9 @@ func TestSettingsService_GetPreferences_NotFound(t *testing.T) {
 }
 
 func TestSettingsService_UpdatePreferences_EmptyStoreName(t *testing.T) {
-	mockRepo := new(mocks.MockSettingsRepository)
+	mockRepo := new(mocks.SettingsRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := service.NewSettingsService(mockRepo, log)
+	svc := service.NewSettingsService(mockRepo, newTestEncryptor(t), log)
 
 	prefs := &domain.AppPreferences{
 		StoreName: "", // Empty store name
@@ -351,7 +362,7 @@ func TestSettingsService_UpdatePreferences_EmptyStoreName(t *testing.T) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 func TestShiftService_StartShift_NegativeStartCash(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewShiftService(mockRepo, log)
 
@@ -365,7 +376,7 @@ func TestShiftService_StartShift_NegativeStartCash(t *testing.T) {
 }
 
 func TestShiftService_StartShift_AlreadyExists(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewShiftService(mockRepo, log)
 
@@ -385,7 +396,7 @@ func TestShiftService_StartShift_AlreadyExists(t *testing.T) {
 }
 
 func TestShiftService_CloseShift_NonExistent(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewShiftService(mockRepo, log)
 
@@ -398,7 +409,7 @@ func TestShiftService_CloseShift_NonExistent(t *testing.T) {
 }
 
 func TestShiftService_AddCashMovement_NegativeAmount(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewShiftService(mockRepo, log)
 
@@ -414,7 +425,7 @@ func TestShiftService_AddCashMovement_NegativeAmount(t *testing.T) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 func TestSupplierService_Create_EmptyName(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewSupplierService(mockRepo, log)
 
@@ -428,7 +439,7 @@ func TestSupplierService_Create_EmptyName(t *testing.T) {
 }
 
 func TestSupplierService_Update_NonExistent(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewSupplierService(mockRepo, log)
 
@@ -445,7 +456,7 @@ func TestSupplierService_Update_NonExistent(t *testing.T) {
 }
 
 func TestSupplierService_GetAll_EmptyList(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewSupplierService(mockRepo, log)
 

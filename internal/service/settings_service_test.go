@@ -3,6 +3,7 @@ package service
 import (
 	"testing"
 
+	"bard/internal/crypto"
 	"bard/internal/domain"
 	"bard/internal/logger"
 	"bard/internal/mocks"
@@ -10,10 +11,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func newTestEncryptor(t *testing.T) *crypto.Encryptor {
+	t.Helper()
+	key := make([]byte, 32) // zero-key is fine for tests
+	enc, err := crypto.NewEncryptor(key)
+	if err != nil {
+		t.Fatalf("failed to create test encryptor: %v", err)
+	}
+	return enc
+}
+
 func TestSettingsService_GetPreferences(t *testing.T) {
-	mockRepo := new(mocks.MockSettingsRepository)
+	mockRepo := new(mocks.SettingsRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSettingsService(mockRepo, log)
+	svc := NewSettingsService(mockRepo, newTestEncryptor(t), log)
 
 	expected := &domain.AppPreferences{
 		StoreName: "Bard Store",
@@ -33,9 +44,9 @@ func TestSettingsService_GetPreferences(t *testing.T) {
 }
 
 func TestSettingsService_GetPreferences_Error(t *testing.T) {
-	mockRepo := new(mocks.MockSettingsRepository)
+	mockRepo := new(mocks.SettingsRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSettingsService(mockRepo, log)
+	svc := NewSettingsService(mockRepo, newTestEncryptor(t), log)
 
 	mockRepo.On("GetPreferences").Return((*domain.AppPreferences)(nil), assert.AnError)
 
@@ -47,9 +58,9 @@ func TestSettingsService_GetPreferences_Error(t *testing.T) {
 }
 
 func TestSettingsService_UpdatePreferences(t *testing.T) {
-	mockRepo := new(mocks.MockSettingsRepository)
+	mockRepo := new(mocks.SettingsRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSettingsService(mockRepo, log)
+	svc := NewSettingsService(mockRepo, newTestEncryptor(t), log)
 
 	prefs := &domain.AppPreferences{
 		StoreName: "Updated Store",
@@ -66,9 +77,9 @@ func TestSettingsService_UpdatePreferences(t *testing.T) {
 }
 
 func TestSettingsService_UpdatePreferences_Error(t *testing.T) {
-	mockRepo := new(mocks.MockSettingsRepository)
+	mockRepo := new(mocks.SettingsRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSettingsService(mockRepo, log)
+	svc := NewSettingsService(mockRepo, newTestEncryptor(t), log)
 
 	prefs := &domain.AppPreferences{StoreName: "Test"}
 
@@ -81,9 +92,9 @@ func TestSettingsService_UpdatePreferences_Error(t *testing.T) {
 }
 
 func TestSettingsService_ResetDatabase(t *testing.T) {
-	mockRepo := new(mocks.MockSettingsRepository)
+	mockRepo := new(mocks.SettingsRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSettingsService(mockRepo, log)
+	svc := NewSettingsService(mockRepo, newTestEncryptor(t), log)
 
 	mockRepo.On("ResetDatabase").Return(nil)
 
@@ -94,9 +105,9 @@ func TestSettingsService_ResetDatabase(t *testing.T) {
 }
 
 func TestSettingsService_ResetDatabase_Error(t *testing.T) {
-	mockRepo := new(mocks.MockSettingsRepository)
+	mockRepo := new(mocks.SettingsRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSettingsService(mockRepo, log)
+	svc := NewSettingsService(mockRepo, newTestEncryptor(t), log)
 
 	mockRepo.On("ResetDatabase").Return(assert.AnError)
 
@@ -107,9 +118,9 @@ func TestSettingsService_ResetDatabase_Error(t *testing.T) {
 }
 
 func TestSettingsService_ExportDatabase(t *testing.T) {
-	mockRepo := new(mocks.MockSettingsRepository)
+	mockRepo := new(mocks.SettingsRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSettingsService(mockRepo, log)
+	svc := NewSettingsService(mockRepo, newTestEncryptor(t), log)
 
 	expected := &domain.DatabaseExport{
 		Products: []domain.Product{{ID: "1", Name: "Product 1"}},
@@ -126,9 +137,9 @@ func TestSettingsService_ExportDatabase(t *testing.T) {
 }
 
 func TestSettingsService_ExportDatabase_Error(t *testing.T) {
-	mockRepo := new(mocks.MockSettingsRepository)
+	mockRepo := new(mocks.SettingsRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSettingsService(mockRepo, log)
+	svc := NewSettingsService(mockRepo, newTestEncryptor(t), log)
 
 	mockRepo.On("ExportDatabase").Return((*domain.DatabaseExport)(nil), assert.AnError)
 
@@ -140,9 +151,9 @@ func TestSettingsService_ExportDatabase_Error(t *testing.T) {
 }
 
 func TestSettingsService_ImportDatabase(t *testing.T) {
-	mockRepo := new(mocks.MockSettingsRepository)
+	mockRepo := new(mocks.SettingsRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSettingsService(mockRepo, log)
+	svc := NewSettingsService(mockRepo, newTestEncryptor(t), log)
 
 	data := &domain.DatabaseExport{
 		Products: []domain.Product{{ID: "1", Name: "Product 1"}},
@@ -157,9 +168,9 @@ func TestSettingsService_ImportDatabase(t *testing.T) {
 }
 
 func TestSettingsService_ImportDatabase_Error(t *testing.T) {
-	mockRepo := new(mocks.MockSettingsRepository)
+	mockRepo := new(mocks.SettingsRepository)
 	log := logger.New(logger.LevelInfo, false)
-	svc := NewSettingsService(mockRepo, log)
+	svc := NewSettingsService(mockRepo, newTestEncryptor(t), log)
 
 	data := &domain.DatabaseExport{}
 

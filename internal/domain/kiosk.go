@@ -24,6 +24,6 @@ type KioskSession struct {
 	SaleID      string     `json:"saleId,omitempty"`
 	StartedAt   time.Time  `json:"startedAt"`
 	EndedAt     *time.Time `json:"endedAt,omitempty"`
-	TotalAmount float64    `json:"totalAmount"`
+	TotalAmount  int64  `json:"totalAmount"`
 	Status      string     `json:"status"`
 }

@@ -61,23 +61,23 @@ function Table<T extends Record<string, unknown>>({
   return (
     <div className="overflow-x-auto">
       <table className="w-full" dir="rtl">
-        <thead className="bg-brand-dark/30 border-b border-brand-border/30">
+        <thead className="bg-brand-dark/40 border-b border-brand-border/40">
           <tr>
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`px-4 py-3 text-right text-[10px] font-black text-brand-accent/40 uppercase tracking-widest ${col.className || ''}`}
+                className={`px-4 py-3 text-right text-[10px] font-black text-brand-muted/60 uppercase tracking-widest ${col.className || ''}`}
               >
                 {col.title}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-brand-border/10">
+        <tbody className="divide-y divide-brand-border/15">
           {data.map((item, index) => (
             <tr
               key={index}
-              className={`hover:bg-brand-dark/20 transition-colors group ${onRowClick ? 'cursor-pointer' : ''}`}
+              className={`hover:bg-brand-surface/40 transition-colors group ${onRowClick ? 'cursor-pointer' : ''}`}
               onClick={() => onRowClick?.(item)}
             >
               {columns.map((col) => (

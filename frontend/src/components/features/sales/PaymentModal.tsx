@@ -57,7 +57,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       <div className="space-y-8 py-4">
         {/* Customer Name */}
         <div>
-          <label className="block text-[11px] font-black text-brand-accent/40 uppercase tracking-widest mb-2 px-1">
+          <label className="block text-[11px] font-black text-brand-muted/60 uppercase tracking-widest mb-2 px-1">
             اسم العميل (اختياري)
           </label>
           <input
@@ -65,13 +65,13 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
             placeholder="اتركه فارغاً للعميل النقدي"
-            className="w-full px-5 py-4 rounded-2xl border border-brand-border/40 bg-brand-surface/20 dark:bg-brand-dark/20 text-brand-accent placeholder:text-brand-accent/10 focus:border-primary-500/50 focus:ring-4 focus:ring-primary-500/5 transition-all outline-none font-bold"
+            className="w-full px-5 py-4 rounded-2xl border border-brand-border/40 bg-brand-surface/35 dark:bg-brand-dark/35 text-brand-accent placeholder:text-brand-muted/30 focus:border-primary-500/50 focus:ring-4 focus:ring-primary-500/5 transition-all outline-none font-bold"
           />
         </div>
 
         {/* Payment Method */}
         <div>
-          <label className="block text-[11px] font-black text-brand-accent/40 uppercase tracking-widest mb-3 px-1">
+          <label className="block text-[11px] font-black text-brand-muted/60 uppercase tracking-widest mb-3 px-1">
             طريقة الدفع
           </label>
           <div className="grid grid-cols-3 gap-4">
@@ -86,7 +86,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 className={`group p-5 rounded-2xl border-2 transition-all text-center flex flex-col items-center gap-2 ${
                   paymentMethod === method.value
                     ? 'border-primary-600 dark:border-primary-500 bg-primary-500/5 text-primary-600 dark:text-primary-400 shadow-lg shadow-primary-500/10'
-                    : 'border-brand-border/30 dark:border-brand-border/20 hover:border-brand-border bg-transparent text-brand-accent/40'
+                    : 'border-brand-border/30 dark:border-brand-border/35 hover:border-brand-border bg-transparent text-brand-muted/60'
                 }`}
               >
                 <div className={`text-3xl transition-transform group-hover:scale-110 duration-300 ${paymentMethod === method.value ? 'grayscale-0' : 'grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0'}`}>
@@ -101,7 +101,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         <div className="grid grid-cols-2 gap-6">
           {/* Discount */}
           <div>
-            <label className="block text-[11px] font-black text-brand-accent/40 uppercase tracking-widest mb-2 px-1">
+            <label className="block text-[11px] font-black text-brand-muted/60 uppercase tracking-widest mb-2 px-1">
               الخصم (د.ع)
             </label>
             <input
@@ -110,19 +110,19 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               onChange={(e) => setDiscount(Math.min(Number(e.target.value), subtotal))}
               min="0"
               max={subtotal}
-              className="w-full px-5 py-4 rounded-2xl border border-brand-border/40 bg-brand-surface/20 dark:bg-brand-dark/20 text-brand-accent focus:border-primary-500/50 focus:ring-4 focus:ring-primary-500/5 transition-all outline-none font-black text-lg"
+              className="w-full px-5 py-4 rounded-2xl border border-brand-border/40 bg-brand-surface/35 dark:bg-brand-dark/35 text-brand-accent focus:border-primary-500/50 focus:ring-4 focus:ring-primary-500/5 transition-all outline-none font-black text-lg"
             />
           </div>
 
           {/* Total Display */}
           <div className="flex flex-col justify-end">
             <div className="bg-brand-surface dark:bg-brand-dark/60 p-5 rounded-2xl border border-brand-border/40 shadow-inner group transition-all hover:border-primary-500/20">
-              <p className="text-[10px] font-black text-brand-accent/30 uppercase tracking-[0.2em] mb-1">الإجمالي النهائي</p>
+              <p className="text-[10px] font-black text-brand-muted/50 uppercase tracking-[0.2em] mb-1">الإجمالي النهائي</p>
               <div className="flex items-baseline justify-between">
                 <span className="text-2xl font-black text-primary-600 dark:text-primary-400 tracking-tighter transition-all">
                   {total.toLocaleString('ar-IQ')}
                 </span>
-                <span className="text-[10px] font-bold text-brand-accent/20">د.ع</span>
+                <span className="text-[10px] font-bold text-brand-muted/40">د.ع</span>
               </div>
             </div>
           </div>

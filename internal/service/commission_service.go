@@ -49,14 +49,14 @@ func (s *CommissionService) CalculateCommission(staffID string, saleAmount float
 	if err != nil {
 		return 0, err
 	}
-	if saleAmount < rule.MinAmount {
+	if saleAmount < float64(rule.MinAmount) {
 		return 0, nil
 	}
 	switch rule.Type {
 	case "percentage":
-		return saleAmount * rule.Value / 100, nil
+		return saleAmount * float64(rule.Value) / 100, nil
 	case "fixed":
-		return rule.Value, nil
+		return float64(rule.Value), nil
 	default:
 		return 0, fmt.Errorf("نوع عمولة غير صالح")
 	}
@@ -87,7 +87,7 @@ func (s *CommissionService) GetStaffPerformance(staffID, periodStart, periodEnd 
 	}
 
 	if perf.SalesCount > 0 {
-		perf.AvgSaleValue = perf.TotalSales / float64(perf.SalesCount)
+		perf.AvgSaleValue = perf.TotalSales / int64(perf.SalesCount)
 	}
 
 	payments, _ := s.repo.GetPaymentsByStaff(staffID)
@@ -130,7 +130,7 @@ func (s *CommissionService) GetAllStaffPerformance(periodStart, periodEnd string
 	result := make([]domain.StaffPerformance, 0, len(staffMap))
 	for _, perf := range staffMap {
 		if perf.SalesCount > 0 {
-			perf.AvgSaleValue = perf.TotalSales / float64(perf.SalesCount)
+			perf.AvgSaleValue = perf.TotalSales / int64(perf.SalesCount)
 		}
 		result = append(result, *perf)
 	}

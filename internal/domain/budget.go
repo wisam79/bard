@@ -6,11 +6,11 @@ type Budget struct {
 	ID          string    `gorm:"primaryKey" json:"id"`
 	Name        string    `json:"name"`
 	Category    string    `gorm:"index" json:"category"`
-	Amount      float64   `json:"amount"`
+	Amount  int64  `json:"amount"`
 	Period      string    `json:"period"`
 	StartDate   string    `json:"startDate"`
 	EndDate     string    `json:"endDate"`
-	SpentAmount float64   `gorm:"-" json:"spentAmount"`
+	SpentAmount  int64  `gorm:"-" json:"spentAmount"`
 	IsActive    bool      `gorm:"default:true" json:"isActive"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
@@ -30,10 +30,10 @@ type ExpenseApproval struct {
 type ApprovalWorkflow struct {
 	ID            string    `gorm:"primaryKey" json:"id"`
 	Name          string    `json:"name"`
-	MinAmount     float64   `json:"minAmount"`
-	MaxAmount     float64   `json:"maxAmount"`
+	MinAmount  int64  `json:"minAmount"`
+	MaxAmount  int64  `json:"maxAmount"`
 	RequiredLevel string    `json:"requiredLevel"`
-	IsActive      bool      `gorm:"default:true" json:"isActive"`
+	IsActive      *bool     `gorm:"default:true" json:"isActive"`
 	CreatedAt     time.Time `json:"createdAt"`
 	UpdatedAt     time.Time `json:"updatedAt"`
 }

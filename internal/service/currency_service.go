@@ -60,6 +60,9 @@ func (s *CurrencyService) Convert(amount float64, fromCode, toCode string) (floa
 	if err != nil {
 		return 0, nil, nil, fmt.Errorf("عملة الهدف غير صالحة")
 	}
+	if from.ExchangeRate == 0 {
+		return 0, nil, nil, fmt.Errorf("سعر الصرف للمصدر غير صالح")
+	}
 	baseAmount := amount / from.ExchangeRate
 	converted := baseAmount * to.ExchangeRate
 	return converted, from, to, nil
@@ -70,8 +73,8 @@ func (s *CurrencyService) RecordTransaction(saleID, fromCurrency, toCurrency str
 		SaleID:       saleID,
 		FromCurrency: fromCurrency,
 		ToCurrency:   toCurrency,
-		FromAmount:   fromAmount,
-		ToAmount:     toAmount,
+		FromAmount:   int64(fromAmount),
+		ToAmount:     int64(toAmount),
 		AppliedRate:  appliedRate,
 		StaffID:      staffID,
 		Timestamp:    time.Now().Unix(),

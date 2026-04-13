@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   cn,
   formatCurrency,
+  formatCurrencyCompact,
+  parseCurrencyInput,
   formatNumber,
   generateId,
   formatDate,
@@ -44,6 +46,61 @@ describe('formatCurrency', () => {
     const result = formatCurrency(1000);
     expect(result).toMatch(/١/);
   });
+
+  it('handles null/NaN gracefully', () => {
+    expect(formatCurrency(NaN)).toBe('0 د.ع');
+    expect(formatCurrency(null as unknown as number)).toBe('0 د.ع');
+  });
+
+  it('rounds floating point to integer', () => {
+    const result = formatCurrency(1500.7);
+    // Should display as 1501, no decimal places
+    expect(result).toContain('د.ع');
+  });
+});
+
+describe('formatCurrencyCompact', () => {
+  it('formats millions', () => {
+    expect(formatCurrencyCompact(1500000)).toContain('1.5M');
+  });
+
+  it('formats thousands', () => {
+    expect(formatCurrencyCompact(50000)).toContain('50K');
+  });
+
+  it('formats small amounts directly', () => {
+    expect(formatCurrencyCompact(500)).toContain('500');
+  });
+
+  it('handles negative amounts', () => {
+    expect(formatCurrencyCompact(-1500000)).toContain('-1.5M');
+  });
+
+  it('handles NaN', () => {
+    expect(formatCurrencyCompact(NaN)).toBe('0 د.ع');
+  });
+});
+
+describe('parseCurrencyInput', () => {
+  it('parses plain number', () => {
+    expect(parseCurrencyInput('1500')).toBe(1500);
+  });
+
+  it('strips commas', () => {
+    expect(parseCurrencyInput('1,500,000')).toBe(1500000);
+  });
+
+  it('strips currency symbols', () => {
+    expect(parseCurrencyInput('1500 د.ع')).toBe(1500);
+  });
+
+  it('returns 0 for invalid input', () => {
+    expect(parseCurrencyInput('abc')).toBe(0);
+  });
+
+  it('rounds float input', () => {
+    expect(parseCurrencyInput('1500.7')).toBe(1501);
+  });
 });
 
 describe('formatNumber', () => {
@@ -61,6 +118,10 @@ describe('formatNumber', () => {
     const result = formatNumber(1234.56);
     expect(result).toContain('١');
     expect(result).toContain('٢٣٤');
+  });
+
+  it('handles NaN gracefully', () => {
+    expect(formatNumber(NaN)).toBe('0');
   });
 });
 

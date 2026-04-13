@@ -11,6 +11,7 @@ interface PurchaseOrderState {
   currentPage: number;
   loading: boolean;
   error: string | null;
+  statusFilter: string;
 
   fetchOrders: (page: number, limit: number, status?: string) => Promise<void>;
   createOrder: (order: Partial<PurchaseOrder>) => Promise<void>;
@@ -26,9 +27,10 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
   currentPage: 1,
   loading: false,
   error: null,
+  statusFilter: '',
 
   fetchOrders: async (page, limit, status = '') => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, statusFilter: status });
     try {
       const res = await wailsApp.GetPurchaseOrders(page, limit, status);
       set({
@@ -39,7 +41,7 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
         loading: false,
       });
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'فشل في تحميل أوامر الشراء', loading: false });
+      set({ error: err instanceof Error ? err.message : (typeof err === 'string' ? err : 'فشل في تحميل أوامر الشراء'), loading: false });
     }
   },
 
@@ -51,9 +53,9 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
       if (!order.items) order.items = [];
       await wailsApp.CreatePurchaseOrder(token, order as PurchaseOrder);
       useActivityLog.getState().log('expense:create', `إنشاء أمر شراء لمورد`, `${order.supplierName} - ${order.total} د.ع`);
-      await get().fetchOrders(1, 20);
+      await get().fetchOrders(1, 20, get().statusFilter);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل في إنشاء أمر الشراء';
+      const msg = err instanceof Error ? err.message : (typeof err === 'string' ? err : 'فشل في إنشاء أمر الشراء');
       set({ error: msg, loading: false });
       throw new Error(msg);
     }
@@ -66,9 +68,9 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
       if (!token) throw new Error('Not authenticated');
       await wailsApp.UpdatePurchaseOrder(token, order);
       useActivityLog.getState().log('expense:create', `تحديث أمر شراء`, `${order.id.slice(0, 8)} - ${order.total} د.ع`);
-      await get().fetchOrders(get().currentPage, 20);
+      await get().fetchOrders(get().currentPage, 20, get().statusFilter);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل في تحديث أمر الشراء';
+      const msg = err instanceof Error ? err.message : (typeof err === 'string' ? err : 'فشل في تحديث أمر الشراء');
       set({ error: msg, loading: false });
       throw new Error(msg);
     }
@@ -81,9 +83,9 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
       if (!token) throw new Error('Not authenticated');
       await wailsApp.DeletePurchaseOrder(token, id);
       useActivityLog.getState().log('expense:create', `حذف أمر شراء`, `معرف ${id.slice(0, 8)}`);
-      await get().fetchOrders(get().currentPage, 20);
+      await get().fetchOrders(get().currentPage, 20, get().statusFilter);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل في حذف أمر الشراء';
+      const msg = err instanceof Error ? err.message : (typeof err === 'string' ? err : 'فشل في حذف أمر الشراء');
       set({ error: msg, loading: false });
       throw new Error(msg);
     }
@@ -96,9 +98,9 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>((set, get) => ({
       if (!token) throw new Error('Not authenticated');
       await wailsApp.ReceivePurchaseOrder(token, id);
       useActivityLog.getState().log('product:create', `استلام أمر شراء`, `معرف ${id.slice(0, 8)}`);
-      await get().fetchOrders(get().currentPage, 20);
+      await get().fetchOrders(get().currentPage, 20, get().statusFilter);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل في استلام أمر الشراء';
+      const msg = err instanceof Error ? err.message : (typeof err === 'string' ? err : 'فشل في استلام أمر الشراء');
       set({ error: msg, loading: false });
       throw new Error(msg);
     }

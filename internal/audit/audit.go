@@ -69,14 +69,21 @@ const (
 	EntityReport   = "REPORT"
 )
 
+// Repository defines the interface for audit log storage
+type Repository interface {
+	Save(ctx context.Context, log *AuditLog) error
+	GetRecent(ctx context.Context, limit int) ([]AuditLog, error)
+}
+
 // AuditService provides audit logging functionality
 type AuditService struct {
-	log *logger.Logger
+	repo Repository
+	log  *logger.Logger
 }
 
 // NewAuditService creates a new audit service
-func NewAuditService(log *logger.Logger) *AuditService {
-	return &AuditService{log: log}
+func NewAuditService(repo Repository, log *logger.Logger) *AuditService {
+	return &AuditService{repo: repo, log: log}
 }
 
 // LogAction logs an action to the audit trail
@@ -90,6 +97,29 @@ func (s *AuditService) LogAction(ctx context.Context, action, entityType, entity
 	)
 
 	s.log.Audit(action, staffID, details)
+
+	// Save to DB asynchronously to not block the current request
+	go func() {
+		// Create a background context since the original HTTP context might cancel
+		bgCtx := context.Background()
+		auditLog := &AuditLog{
+			ID:         generateID(),
+			Timestamp:  time.Now(),
+			StaffID:    staffID,
+			StaffName:  staffName,
+			Action:     action,
+			EntityType: entityType,
+			EntityID:   entityID,
+			Details:    details,
+			CreatedAt:  time.Now(),
+		}
+		
+		if s.repo != nil {
+			if err := s.repo.Save(bgCtx, auditLog); err != nil {
+				s.log.Error("Failed to save audit log to DB", "error", err, "action", action)
+			}
+		}
+	}()
 }
 
 // LogSaleAction logs a sale-related action
@@ -159,6 +189,8 @@ func generateID() string {
 
 func generateRandomSuffix(length int) string {
 	b := make([]byte, length)
-	_, _ = rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		return "00000000000000000000000000000000"[:length]
+	}
 	return hex.EncodeToString(b)[:length]
 }

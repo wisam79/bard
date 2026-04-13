@@ -5,6 +5,7 @@ import (
 	"bard/internal/logger"
 	"bard/internal/repository"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,12 +25,24 @@ func (s *BudgetService) GetBudgets() ([]domain.Budget, error) {
 	if err != nil {
 		return nil, err
 	}
+	
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	
 	for i := range budgets {
-		spent, err := s.repo.GetSpentForBudget(budgets[i].ID)
-		if err == nil {
-			budgets[i].SpentAmount = spent
-		}
+		wg.Add(1)
+		go func(index int) {
+			defer wg.Done()
+			spent, err := s.repo.GetSpentForBudget(budgets[index].ID)
+			if err == nil {
+				mu.Lock()
+			budgets[index].SpentAmount = int64(spent)
+				mu.Unlock()
+			}
+		}(i)
 	}
+	wg.Wait()
+	
 	return budgets, nil
 }
 
@@ -56,16 +69,16 @@ func (s *BudgetService) DeleteBudget(id string) error {
 func (s *BudgetService) CheckBudgetLimit(category string, amount float64) (bool, float64, error) {
 	budgets, err := s.repo.GetBudgets()
 	if err != nil {
-		return true, 0, nil
+		return false, 0, err
 	}
 	for _, b := range budgets {
 		if b.Category == category && b.IsActive {
 			spent, err := s.repo.GetSpentForBudget(b.ID)
 			if err != nil {
-				continue
+				return false, 0, err
 			}
-			remaining := b.Amount - spent
-			return amount <= remaining, remaining, nil
+			remaining := b.Amount - int64(spent)
+			return amount <= float64(remaining), float64(remaining), nil
 		}
 	}
 	return true, 0, nil
@@ -126,7 +139,7 @@ func (s *BudgetService) RequiresApproval(amount float64) (bool, *domain.Approval
 		return false, nil, err
 	}
 	for _, wf := range workflows {
-		if wf.IsActive && amount >= wf.MinAmount && (wf.MaxAmount == 0 || amount <= wf.MaxAmount) {
+		if wf.IsActive != nil && *wf.IsActive && amount >= float64(wf.MinAmount) && (wf.MaxAmount == 0 || amount <= float64(wf.MaxAmount)) {
 			return true, &wf, nil
 		}
 	}

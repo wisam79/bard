@@ -17,7 +17,7 @@ type LoyaltyRule struct {
 	ID              string    `gorm:"primaryKey" json:"id"`
 	Name            string    `json:"name"`
 	PointsPerAmount float64   `json:"pointsPerAmount"`
-	MinPurchase     float64   `json:"minPurchase"`
+	MinPurchase  int64  `json:"minPurchase"`
 	IsActive        bool      `gorm:"default:true" json:"isActive"`
 	CreatedAt       time.Time `json:"createdAt"`
 	UpdatedAt       time.Time `json:"updatedAt"`
@@ -40,7 +40,7 @@ type LoyaltyRedemption struct {
 	CustomerID  string    `gorm:"index" json:"customerId"`
 	Points      int       `json:"points"`
 	RewardType  string    `json:"rewardType"`
-	RewardValue float64   `json:"rewardValue"`
+	RewardValue  int64  `json:"rewardValue"`
 	SaleID      string    `json:"saleId,omitempty"`
 	StaffID     string    `json:"staffId,omitempty"`
 	Timestamp   int64     `json:"timestamp"`

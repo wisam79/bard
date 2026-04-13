@@ -89,8 +89,8 @@ func TestValidateProduct_EdgeCases(t *testing.T) {
 		// Edge cases
 		{"very long name", domain.Product{Name: string(make([]byte, 10000)), Barcode: "123", Price: 100}, false},
 		{"very long barcode", domain.Product{Name: "Product", Barcode: string(make([]byte, 1000)), Price: 100}, false},
-		{"max float price", domain.Product{Name: "Product", Barcode: "123", Price: 1e308}, false},
-		{"min positive price", domain.Product{Name: "Product", Barcode: "123", Price: 0.000001}, false},
+		{"max float price", domain.Product{Name: "Product", Barcode: "123", Price: int64(9999999)}, false},
+		{"min positive price", domain.Product{Name: "Product", Barcode: "123", Price: int64(0)}, false},
 	}
 
 	for _, tt := range tests {
@@ -169,7 +169,7 @@ func TestValidateSale_ItemsEdgeCases(t *testing.T) {
 
 		// Edge cases
 		{"very large quantity", domain.Sale{Items: []domain.SaleItem{{ProductID: "1", Price: 100, Quantity: 999999}}}, false},
-		{"very large price", domain.Sale{Items: []domain.SaleItem{{ProductID: "1", Price: 1e308, Quantity: 1}}}, false},
+		{"very large price", domain.Sale{Items: []domain.SaleItem{{ProductID: "1", Price: int64(9999999), Quantity: 1}}}, false},
 		{"many items", domain.Sale{Items: func() []domain.SaleItem {
 			items := make([]domain.SaleItem, 1000)
 			for i := range items {
@@ -250,7 +250,7 @@ func TestValidateSale_TotalCalculation(t *testing.T) {
 
 			var calculatedSubtotal float64
 			for _, item := range tt.sale.Items {
-				calculatedSubtotal += item.Total
+				calculatedSubtotal += float64(item.Total)
 			}
 
 			if calculatedSubtotal != tt.wantSubtotal {
@@ -314,7 +314,7 @@ func TestValidation_Integration(t *testing.T) {
 		expectedSubtotal := 350.0 // (100*2) + (50*3)
 		var actualSubtotal float64
 		for _, item := range sale.Items {
-			actualSubtotal += item.Total
+			actualSubtotal += float64(item.Total)
 		}
 
 		if actualSubtotal != expectedSubtotal {

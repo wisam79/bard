@@ -24,22 +24,37 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onClose, initialD
   const [products, setProducts] = useState<Product[]>([]);
   
   const [searchProduct, setSearchProduct] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // Fetch initial data (suppliers and products)
   useEffect(() => {
-    const fetchData = async () => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchProduct);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchProduct]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
       try {
-        const [sups, prods] = await Promise.all([
-          wailsApp.GetSuppliers(),
-          wailsApp.GetProducts(1, 100, '', ''), // Start with first page
-        ]);
-        setSuppliers(sups || []);
+        const prods = await wailsApp.GetProducts(1, 50, debouncedSearch, '');
         setProducts(prods?.data || []);
       } catch (error: unknown) {
-        setError(error instanceof Error ? error.message : 'تعذر تحميل الموردين والمنتجات.');
+        setError(error instanceof Error ? error.message : 'تعذر تحميل المنتجات.');
       }
     };
-    fetchData();
+    fetchProducts();
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      try {
+        const sups = await wailsApp.GetSuppliers();
+        setSuppliers(sups || []);
+      } catch (error: unknown) {
+        setError(error instanceof Error ? error.message : 'تعذر تحميل الموردين.');
+      }
+    };
+    fetchSuppliers();
   }, []);
 
   const total = items.reduce((sum, item) => sum + (item.total || 0), 0);
@@ -127,7 +142,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onClose, initialD
               const sup = suppliers.find(s => s.id === e.target.value);
               if (sup) setSupplierName(sup.name);
             }}
-            className="w-full bg-brand-dark/50 border border-brand-border/20 rounded-xl px-4 py-2 text-brand-accent focus:border-primary-500/50 outline-none"
+            className="w-full bg-brand-dark/50 border border-brand-border/35 rounded-xl px-4 py-2 text-brand-accent focus:border-primary-500/50 outline-none"
             required
           >
             <option value="">-- اختر المورد --</option>
@@ -136,24 +151,24 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onClose, initialD
         </div>
       </div>
 
-      <div className="border border-brand-border/20 rounded-2xl overflow-hidden bg-brand-dark/10">
-        <div className="p-4 border-b border-brand-border/10 flex items-center justify-between">
+      <div className="border border-brand-border/35 rounded-2xl overflow-hidden bg-brand-dark/25">
+        <div className="p-4 border-b border-brand-border/25 flex items-center justify-between">
             <h3 className="font-bold text-brand-accent text-sm">إضافة منتجات</h3>
             <div className="relative w-64">
-                <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-accent/40" />
+                <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted/60" />
                 <input 
                     type="text" 
                     placeholder="بحث في المنتجات..."
                     value={searchProduct}
                     onChange={(e) => setSearchProduct(e.target.value)}
-                    className="w-full bg-brand-surface border border-brand-border/20 rounded-lg py-1.5 pr-8 pl-3 text-xs text-brand-accent outline-none focus:border-primary-500/50"
+                    className="w-full bg-brand-surface border border-brand-border/35 rounded-lg py-1.5 pr-8 pl-3 text-xs text-brand-accent outline-none focus:border-primary-500/50"
                 />
             </div>
         </div>
 
         {searchProduct && (
-            <div className="max-h-40 overflow-y-auto bg-brand-surface/50 p-2 border-b border-brand-border/10">
-                {filteredProducts.slice(0,10).map(p => (
+            <div className="max-h-40 overflow-y-auto bg-brand-surface/50 p-2 border-b border-brand-border/25">
+                {products.slice(0,10).map(p => (
                     <div key={p.id} className="flex items-center justify-between p-2 hover:bg-brand-dark/40 rounded-lg cursor-pointer" onClick={() => { addItem(p); setSearchProduct(''); }}>
                         <div className="text-sm font-bold text-brand-accent">{p.name}</div>
                         <div className="text-xs text-brand-accent/50">{p.barcode} • {p.cost.toFixed(2)} د.ع</div>
@@ -164,13 +179,13 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onClose, initialD
 
         <div className="p-4 space-y-3 max-h-60 overflow-y-auto">
             {items.length === 0 ? (
-                <div className="text-center py-8 text-brand-accent/40 flex flex-col items-center">
+                <div className="text-center py-8 text-brand-muted/60 flex flex-col items-center">
                     <Package size={24} className="mb-2 opacity-30" />
                     <span className="text-sm font-bold">لم يتم إضافة منتجات بعد</span>
                 </div>
             ) : (
                 items.map((item, idx) => (
-                <div key={item.productId || `item-${idx}`} className="flex flex-wrap md:flex-nowrap items-center gap-3 bg-brand-surface p-3 rounded-xl border border-brand-border/10">
+                <div key={item.productId || `item-${idx}`} className="flex flex-wrap md:flex-nowrap items-center gap-3 bg-brand-surface p-3 rounded-xl border border-brand-border/25">
                     <div className="flex-1 min-w-[120px]">
                     <span className="text-sm font-bold text-brand-accent">{item.name}</span>
                     </div>
@@ -182,7 +197,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onClose, initialD
                         min={1}
                         value={item.qty || ''}
                         onChange={(e) => updateItem(idx, 'qty', Number(e.target.value))}
-                        className="w-20 bg-brand-dark/50 border border-brand-border/20 rounded-lg px-2 py-1.5 text-sm text-brand-accent outline-none text-center"
+                        className="w-20 bg-brand-dark/50 border border-brand-border/35 rounded-lg px-2 py-1.5 text-sm text-brand-accent outline-none text-center"
                     />
                     </div>
                     
@@ -194,7 +209,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onClose, initialD
                         step={0.01}
                         value={item.cost || ''}
                         onChange={(e) => updateItem(idx, 'cost', Number(e.target.value))}
-                        className="w-24 bg-brand-dark/50 border border-brand-border/20 rounded-lg px-2 py-1.5 text-sm text-brand-accent outline-none text-center"
+                        className="w-24 bg-brand-dark/50 border border-brand-border/35 rounded-lg px-2 py-1.5 text-sm text-brand-accent outline-none text-center"
                     />
                     </div>
 
@@ -214,13 +229,13 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ onClose, initialD
             )}
         </div>
         
-        <div className="bg-brand-dark/30 p-4 border-t border-brand-border/10 flex justify-between items-center">
+        <div className="bg-brand-dark/45 p-4 border-t border-brand-border/25 flex justify-between items-center">
             <span className="text-sm font-bold text-brand-accent/60">إجمالي الطلب</span>
             <span className="text-xl font-black text-primary-400">{total.toFixed(2)} د.ع</span>
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 pt-4 border-t border-brand-border/10">
+      <div className="flex justify-end gap-3 pt-4 border-t border-brand-border/25">
         <Button variant="ghost" type="button" onClick={onClose} disabled={loading}>
           إلغاء
         </Button>

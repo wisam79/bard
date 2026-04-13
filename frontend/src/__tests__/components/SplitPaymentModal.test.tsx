@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { SplitPaymentModal } from '@/components/features/SplitPaymentModal';
+import { formatNumber } from '@/utils';
 
 describe('SplitPaymentModal', () => {
   it('renders the modal with total amount', () => {
@@ -10,7 +11,7 @@ describe('SplitPaymentModal', () => {
 
   it('displays total amount formatted', () => {
     render(<SplitPaymentModal total={50000} onClose={vi.fn()} onConfirm={vi.fn()} />);
-    expect(screen.getByText('50,000')).toBeInTheDocument();
+    expect(screen.getByText(formatNumber(50000))).toBeInTheDocument();
   });
 
   it('renders cash slider', () => {
@@ -25,7 +26,7 @@ describe('SplitPaymentModal', () => {
 
   it('defaults cash to total amount', () => {
     render(<SplitPaymentModal total={100000} onClose={vi.fn()} onConfirm={vi.fn()} />);
-    expect(screen.getByText('100,000')).toBeInTheDocument();
+    expect(screen.getByText(formatNumber(100000))).toBeInTheDocument();
   });
 
   it('renders confirm button', () => {

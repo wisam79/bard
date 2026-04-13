@@ -58,13 +58,13 @@ func (e *AppError) ToUserMessage() string {
 
 // DashboardStats holds dashboard statistics
 type DashboardStats struct {
-	TodaySales     float64      `json:"todaySales"`
+	TodaySales  int64  `json:"todaySales"`
 	TodayOrders    int          `json:"todayOrders"`
-	MonthSales     float64      `json:"monthSales"`
+	MonthSales  int64  `json:"monthSales"`
 	MonthOrders    int          `json:"monthOrders"`
 	TotalProducts  int          `json:"totalProducts"`
 	TotalCustomers int          `json:"totalCustomers"`
-	TotalDebt      float64      `json:"totalDebt"`
+	TotalDebt  int64  `json:"totalDebt"`
 	LowStockCount  int          `json:"lowStockCount"`
 	TopProducts    []TopProduct `json:"topProducts"`
 	RecentSales    []Sale       `json:"recentSales"`
@@ -74,8 +74,8 @@ type DashboardStats struct {
 type TopProduct struct {
 	ProductID   string  `json:"productId"`
 	Name        string  `json:"name"`
-	TotalQty    float64 `json:"totalQty"`
-	TotalAmount float64 `json:"totalAmount"`
+	TotalQty  int64  `json:"totalQty"`
+	TotalAmount  int64  `json:"totalAmount"`
 }
 
 // DatabaseExport represents exported database data
@@ -91,9 +91,9 @@ type DatabaseExport struct {
 
 // InstallmentPlanCalculation represents calculation result
 type InstallmentPlanCalculation struct {
-	TotalAmount   float64 `json:"totalAmount"`
-	DownPayment   float64 `json:"downPayment"`
-	MonthlyAmount float64 `json:"monthlyAmount"`
+	TotalAmount  int64  `json:"totalAmount"`
+	DownPayment  int64  `json:"downPayment"`
+	MonthlyAmount  int64  `json:"monthlyAmount"`
 	Months        int     `json:"months"`
 	StartDate     string  `json:"startDate"`
 }

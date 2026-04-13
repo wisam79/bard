@@ -17,7 +17,7 @@ import (
 // TestProductService_GetAll tests getting all products
 func TestProductService_GetAll(t *testing.T) {
 	// Arrange
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -46,7 +46,7 @@ func TestProductService_GetAll(t *testing.T) {
 // TestProductService_Create tests creating a product
 func TestProductService_Create(t *testing.T) {
 	// Arrange
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -124,7 +124,7 @@ func TestProductService_Create_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mocks.MockProductRepository)
+			mockRepo := new(mocks.ProductRepository)
 			log := logger.New(logger.LevelInfo, false)
 			svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -145,7 +145,7 @@ func TestProductService_Create_Validation(t *testing.T) {
 // TestProductService_Update tests updating a product
 func TestProductService_Update(t *testing.T) {
 	// Arrange
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -174,7 +174,7 @@ func TestProductService_Update(t *testing.T) {
 // TestProductService_Delete tests deleting a product
 func TestProductService_Delete(t *testing.T) {
 	// Arrange
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -193,7 +193,7 @@ func TestProductService_Delete(t *testing.T) {
 // TestProductService_GetCategories tests getting categories
 func TestProductService_GetCategories(t *testing.T) {
 	// Arrange
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -214,7 +214,7 @@ func TestProductService_GetCategories(t *testing.T) {
 // TestProductService_GetStats tests getting product stats
 func TestProductService_GetStats(t *testing.T) {
 	// Arrange
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -240,7 +240,7 @@ func TestProductService_GetStats(t *testing.T) {
 // TestProductService_GetLowStock tests getting low stock products
 func TestProductService_GetLowStock(t *testing.T) {
 	// Arrange
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -263,7 +263,7 @@ func TestProductService_GetLowStock(t *testing.T) {
 // TestProductService_Search tests searching products
 func TestProductService_Search(t *testing.T) {
 	// Arrange
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewProductService(mockRepo, cache.NewProductCache(), log)
 

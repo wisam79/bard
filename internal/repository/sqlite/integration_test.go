@@ -13,6 +13,8 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+func boolPtr(b bool) *bool { return &b }
+
 func setupTestDB(t *testing.T) *gorm.DB {
 	t.Helper()
 	db, err := gorm.Open(sqlitedriver.Open(":memory:"), &gorm.Config{
@@ -68,7 +70,7 @@ func TestProductRepository_Integration_CreateAndGetByID(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "Test Product", result.Name)
 	assert.Equal(t, "123456", result.Barcode)
-	assert.Equal(t, float64(100), result.Price)
+	assert.Equal(t, int64(100), result.Price)
 	assert.Equal(t, float64(10), result.Stock)
 }
 
@@ -113,7 +115,7 @@ func TestProductRepository_Integration_Update(t *testing.T) {
 	result, err := repo.GetByID("prod-1")
 	require.NoError(t, err)
 	assert.Equal(t, "Updated Name", result.Name)
-	assert.Equal(t, float64(150), result.Price)
+	assert.Equal(t, int64(150), result.Price)
 }
 
 func TestProductRepository_Integration_Delete(t *testing.T) {
@@ -145,7 +147,7 @@ func TestProductRepository_Integration_GetAll_Pagination(t *testing.T) {
 			ID:       "prod-" + string(rune('0'+i)),
 			Name:     "Product " + string(rune('0'+i)),
 			Barcode:  "BC" + string(rune('0'+i)),
-			Price:    float64(i * 10),
+			Price:    int64(i * 10),
 			Stock:    float64(i),
 			Category: "Cat",
 		}))
@@ -264,7 +266,7 @@ func TestCustomerRepository_Integration_UpdateDebt(t *testing.T) {
 
 	result, err := repo.GetByID("cust-1")
 	require.NoError(t, err)
-	assert.Equal(t, float64(500), result.Debt)
+	assert.Equal(t, int64(500), result.Debt)
 }
 
 func TestStaffRepository_Integration_CRUD(t *testing.T) {
@@ -276,7 +278,7 @@ func TestStaffRepository_Integration_CRUD(t *testing.T) {
 		Username: "testuser",
 		Name:     "Test User",
 		Role:     "cashier",
-		IsActive: true,
+		IsActive: boolPtr(true),
 	}
 
 	require.NoError(t, repo.Create(staff))
@@ -380,7 +382,7 @@ func TestPurchaseOrderRepository_Integration_GetAll(t *testing.T) {
 			SupplierID:   "sup-1",
 			SupplierName: "Supplier",
 			Status:       status,
-			Total:        float64(i * 100),
+			Total:        int64(i * 100),
 		}))
 	}
 

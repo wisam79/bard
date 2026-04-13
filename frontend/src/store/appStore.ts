@@ -42,12 +42,20 @@ const savedAccent = (localStorage.getItem('accent-color') as AccentColor) || 'in
 const savedAnimations = localStorage.getItem('animations-enabled') !== 'false';
 const savedCompact = localStorage.getItem('compact-mode') === 'true';
 const savedBusinessMode = (localStorage.getItem('business-mode') as BusinessMode) || 'retail';
+const savedTheme = (localStorage.getItem('theme') as 'dark' | 'light') || 'dark';
 
 if (savedAccent !== 'indigo') {
   document.documentElement.setAttribute('data-accent', savedAccent);
 }
 if (savedBusinessMode !== 'retail') {
   document.documentElement.setAttribute('data-mode', savedBusinessMode);
+}
+if (savedTheme === 'light') {
+  document.documentElement.setAttribute('data-theme', 'light');
+  document.documentElement.classList.remove('dark');
+} else {
+  document.documentElement.setAttribute('data-theme', 'dark');
+  document.documentElement.classList.add('dark');
 }
 
 export const useAppStore = create<AppState>()((set, get) => ({
@@ -56,10 +64,11 @@ export const useAppStore = create<AppState>()((set, get) => ({
     set({ activeView: view });
   },
 
-  theme: 'dark',
+  theme: savedTheme,
   toggleTheme: () => {
     const newTheme = get().theme === 'dark' ? 'light' : 'dark';
     set({ theme: newTheme });
+    localStorage.setItem('theme', newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
     if (newTheme === 'dark') {
       document.documentElement.classList.add('dark');

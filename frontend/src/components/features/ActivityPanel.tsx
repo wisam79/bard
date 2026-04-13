@@ -16,7 +16,7 @@ const EntryRow: React.FC<{ entry: ActivityEntry }> = ({ entry }) => {
   });
 
   return (
-    <div className="flex items-start gap-3 py-3 px-1 border-b border-brand-border/10 last:border-0 group hover:bg-brand-dark/10 rounded-lg transition-colors">
+    <div className="flex items-start gap-3 py-3 px-1 border-b border-brand-border/25 last:border-0 group hover:bg-brand-dark/25 rounded-lg transition-colors">
       {/* Dot indicator */}
       <div className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${colorClass.replace('text-', 'bg-')}`} />
 
@@ -24,7 +24,7 @@ const EntryRow: React.FC<{ entry: ActivityEntry }> = ({ entry }) => {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className={`text-xs font-black ${colorClass}`}>{label}</span>
-          <span className="text-[10px] text-brand-accent/25 font-mono">{timeStr}</span>
+          <span className="text-[10px] text-brand-muted/45 font-mono">{timeStr}</span>
         </div>
         <p className="text-sm font-bold text-brand-accent/70 mt-0.5 truncate">
           {entry.label}
@@ -53,16 +53,16 @@ const ActivityPanel: React.FC<ActivityPanelProps> = ({
   const visibleEntries = entries.slice(0, maxVisible);
 
   return (
-    <div className={`bg-brand-surface rounded-2xl border border-brand-border/20 overflow-hidden ${className}`}>
+    <div className={`bg-brand-surface rounded-2xl border border-brand-border/35 overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-brand-border/15">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-brand-border/30">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-primary-500/15 flex items-center justify-center">
             <Activity size={16} className="text-primary-400" />
           </div>
           <div>
             <h3 className="font-black text-sm text-brand-accent">سجل النشاطات</h3>
-            <p className="text-[10px] text-brand-accent/30 font-bold">{entries.length} سجل</p>
+            <p className="text-[10px] text-brand-muted/50 font-bold">{entries.length} سجل</p>
           </div>
         </div>
 
@@ -89,8 +89,8 @@ const ActivityPanel: React.FC<ActivityPanelProps> = ({
 
       {/* Footer - show if more entries exist */}
       {entries.length > maxVisible && (
-        <div className="px-5 py-2.5 border-t border-brand-border/10 text-center">
-          <p className="text-[10px] text-brand-accent/25 font-bold">
+        <div className="px-5 py-2.5 border-t border-brand-border/25 text-center">
+          <p className="text-[10px] text-brand-muted/45 font-bold">
             +{entries.length - maxVisible} سجل آخر
           </p>
         </div>

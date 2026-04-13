@@ -40,15 +40,32 @@ const TAB_ITEMS: { id: SalesTab; label: string; icon: React.ReactNode }[] = [
   { id: 'delivery', label: 'التوصيل', icon: <Truck size={16} /> },
 ];
 
+import { useCart } from '@/hooks/useCart';
+
 const POSTab: React.FC = () => {
   const { notify } = useAppStore();
   const queryClient = useQueryClient();
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const {
+    cart,
+    setCart,
+    addToCart,
+    removeFromCart,
+    updateQty,
+    subtotal,
+    total,
+    discount,
+    setDiscount,
+    paymentMethod,
+    setPaymentMethod,
+    selectedCustomerName: customerName,
+    setSelectedCustomer,
+    clearCart
+  } = useCart();
+  
+  const setCustomerName = (name: string) => setSelectedCustomer('', name);
+
   const [selectedCategory, setSelectedCategory] = useState('الكل');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [customerName, setCustomerName] = useState('');
-  const [discount, setDiscount] = useState(0);
   const [lastSale, setLastSale] = useState<Sale | null>(null);
   const [showPrintReceipt, setShowPrintReceipt] = useState(false);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
@@ -69,58 +86,13 @@ const POSTab: React.FC = () => {
   });
 
   const handleProductFound = useCallback((product: Product) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, qty: item.qty + 1, total: (item.qty + 1) * item.product.price }
-            : item
-        );
-      }
-      return [...prev, { product, qty: 1, discount: 0, total: product.price }];
-    });
+    addToCart(product);
     notify(`تمت إضافة ${product.name}`, 'success');
-  }, [notify]);
+  }, [addToCart, notify]);
 
   const handleProductError = useCallback((error: string) => {
     notify(error, 'error');
   }, [notify]);
-
-  const addToCart = useCallback((product: Product) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, qty: item.qty + 1, total: (item.qty + 1) * item.product.price }
-            : item
-        );
-      }
-      return [...prev, { product, qty: 1, discount: 0, total: product.price }];
-    });
-  }, []);
-
-  const removeFromCart = useCallback((productId: string) => {
-    setCart((prev) => prev.filter((item) => item.product.id !== productId));
-  }, []);
-
-  const updateQty = useCallback((productId: string, qty: number) => {
-    if (qty <= 0) {
-      removeFromCart(productId);
-      return;
-    }
-    setCart((prev) =>
-      prev.map((item) =>
-        item.product.id === productId
-          ? { ...item, qty, total: qty * item.product.price }
-          : item
-      )
-    );
-  }, [removeFromCart]);
-
-  const subtotal = cart.reduce((sum, item) => sum + item.total, 0);
-  const total = subtotal - discount;
 
   const generateAndPrintReceipt = useCallback((sale: Sale) => {
     const receiptItems = sale.items?.map((item) => ({
@@ -189,7 +161,7 @@ const POSTab: React.FC = () => {
         createdAt: '',
         updatedAt: '',
       };
-      await wailsApp.CreateSale(saleData as Sale);
+      await wailsApp.CreateSale(useAuthStore.getState().token || '', saleData as Sale);
       const recentSales = await wailsApp.GetRecentSales(1);
       return recentSales[0] ?? {
         ...(saleData as Sale),
@@ -247,7 +219,7 @@ const POSTab: React.FC = () => {
             />
           </div>
           <button
-            className="h-14 bg-brand-surface/40 dark:bg-brand-dark/40 px-6 rounded-2xl border border-brand-border/20 text-brand-accent/70 font-black text-[11px] flex items-center gap-3 shadow-sm hover:bg-brand-border/20 transition-all active:scale-95 uppercase tracking-widest"
+            className="h-14 bg-brand-surface/40 dark:bg-brand-dark/40 px-6 rounded-2xl border border-brand-border/35 text-brand-accent/70 font-black text-[11px] flex items-center gap-3 shadow-sm hover:bg-brand-border/20 transition-all active:scale-95 uppercase tracking-widest"
             onClick={() => notify('سيتم تنفيذ اختيار العميل قريباً', 'info')}
           >
             <User size={18} className="text-primary-500" />
@@ -273,8 +245,8 @@ const POSTab: React.FC = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary-500/5 blur-[120px] rounded-full pointer-events-none" />
       </div>
 
-      <div className="w-[360px] bg-brand-surface/40 dark:bg-brand-dark/40 backdrop-blur-3xl border-r border-brand-border/20 flex flex-col shadow-[-10px_0_40px_rgba(0,0,0,0.05)] z-20 relative">
-        <div className="p-6 border-b border-brand-border/10 bg-brand-border/5">
+      <div className="w-[360px] bg-brand-surface/40 dark:bg-brand-dark/40 backdrop-blur-3xl border-r border-brand-border/35 flex flex-col shadow-[-10px_0_40px_rgba(0,0,0,0.05)] z-20 relative">
+        <div className="p-6 border-b border-brand-border/25 bg-brand-border/5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-primary-500/10 p-2.5 rounded-xl border border-primary-500/10">
@@ -282,7 +254,7 @@ const POSTab: React.FC = () => {
               </div>
               <div>
                 <h2 className="text-lg font-black text-brand-accent">السلة</h2>
-                <p className="text-[9px] font-black text-brand-accent/20 uppercase tracking-[0.2em] mt-0.5">Sale Engine</p>
+                <p className="text-[9px] font-black text-brand-muted/40 uppercase tracking-[0.2em] mt-0.5">Sale Engine</p>
               </div>
             </div>
             <div className="bg-primary-500 text-white text-[10px] font-black px-3 py-1.5 rounded-lg shadow-lg shadow-primary-500/20">
@@ -299,9 +271,9 @@ const POSTab: React.FC = () => {
           />
         </div>
 
-        <div className="p-6 bg-brand-border/5 backdrop-blur-md border-t border-brand-border/10 space-y-5">
+        <div className="p-6 bg-brand-border/5 backdrop-blur-md border-t border-brand-border/25 space-y-5">
           <div className="space-y-2.5">
-            <div className="flex items-center justify-between text-[10px] font-black text-brand-accent/30 uppercase tracking-widest">
+            <div className="flex items-center justify-between text-[10px] font-black text-brand-muted/50 uppercase tracking-widest">
               <span>المجموع الفرعي</span>
               <span>{subtotal.toLocaleString('ar-IQ')} د.ع</span>
             </div>
@@ -311,14 +283,14 @@ const POSTab: React.FC = () => {
                 <span>- {discount.toLocaleString('ar-IQ')} د.ع</span>
               </div>
             )}
-            <div className="pt-5 border-t border-brand-border/10">
+            <div className="pt-5 border-t border-brand-border/25">
               <div className="flex items-center justify-between">
-                <span className="text-brand-accent/30 font-black text-[10px] uppercase tracking-[0.2em]">الإجمالي النهائي</span>
+                <span className="text-brand-muted/50 font-black text-[10px] uppercase tracking-[0.2em]">الإجمالي النهائي</span>
                 <div className="text-right">
                   <span className="text-primary-500 font-black text-3xl tracking-tighter">
                     {total.toLocaleString('ar-IQ')}
                   </span>
-                  <span className="text-[10px] font-black text-brand-accent/20 mr-2 uppercase">د.ع</span>
+                  <span className="text-[10px] font-black text-brand-muted/40 mr-2 uppercase">د.ع</span>
                 </div>
               </div>
             </div>
@@ -360,9 +332,17 @@ const InvoicesTab: React.FC = () => {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [viewingSale, setViewingSale] = useState<Sale | null>(null);
   const [printData, setPrintData] = useState<ReceiptData | null>(null);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
   const { data: preferences } = useQuery<AppPreferences>({
     queryKey: ['preferences'],
@@ -370,8 +350,8 @@ const InvoicesTab: React.FC = () => {
   });
 
   const { data: salesData, isLoading } = useQuery<PaginatedSales>({
-    queryKey: ['sales', page, 20, searchQuery, statusFilter],
-    queryFn: () => wailsApp.GetSales(page, 20, searchQuery, statusFilter),
+    queryKey: ['sales', page, 20, debouncedSearchQuery, statusFilter],
+    queryFn: () => wailsApp.GetSales(page, 20, debouncedSearchQuery, statusFilter),
   });
 
   const returnMutation = useMutation({
@@ -420,7 +400,7 @@ const InvoicesTab: React.FC = () => {
   }, [generateReceiptData]);
 
   return (
-    <div className="p-6 h-full flex flex-col gap-6 relative overflow-hidden bg-brand-dark/20">
+    <div className="p-6 h-full flex flex-col gap-6 relative overflow-hidden bg-brand-dark/35">
       <PrintReceipt
         data={printData}
         paperSize={preferences?.thermalPaperSize as '58mm' | '80mm' || '80mm'}
@@ -439,7 +419,7 @@ const InvoicesTab: React.FC = () => {
               {stat.icon}
             </div>
             <div>
-              <p className="text-[10px] font-bold text-brand-accent/40 uppercase tracking-widest">{stat.label}</p>
+              <p className="text-[10px] font-bold text-brand-muted/60 uppercase tracking-widest">{stat.label}</p>
               <p className="text-lg font-black dark:text-white text-gray-900">{stat.value} <span className="text-[10px] opacity-50">{stat.suffix}</span></p>
             </div>
           </div>
@@ -453,14 +433,14 @@ const InvoicesTab: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-              className="input pr-10 bg-brand-dark/20 border-brand-border/20"
+              className="input pr-10 bg-brand-dark/35 border-brand-border/35"
               placeholder="بحث برقم الفاتورة أو اسم العميل..."
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="input bg-brand-dark/20 border-brand-border/20 w-full md:w-48 appearance-none"
+            className="input bg-brand-dark/35 border-brand-border/35 w-full md:w-48 appearance-none"
           >
             <option value="">جميع الحالات</option>
             <option value="completed">مكتملة</option>
@@ -476,33 +456,33 @@ const InvoicesTab: React.FC = () => {
               <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : salesData?.data?.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-brand-accent/30 space-y-4">
+            <div className="flex flex-col items-center justify-center h-full text-brand-muted/50 space-y-4">
               <FileText size={48} className="opacity-20" />
               <p className="font-bold">لا توجد فواتير مطابقة للبحث</p>
             </div>
           ) : (
             <table className="w-full text-right border-collapse">
               <thead>
-                <tr className="bg-brand-dark/30 border-b border-brand-border/30">
-                  <th className="py-4 px-6 text-[10px] font-black text-brand-accent/40 uppercase tracking-widest">رقم الفاتورة / العميل</th>
-                  <th className="py-4 px-6 text-[10px] font-black text-brand-accent/40 uppercase tracking-widest text-center">التاريخ</th>
-                  <th className="py-4 px-6 text-[10px] font-black text-brand-accent/40 uppercase tracking-widest text-center">الإجمالي</th>
-                  <th className="py-4 px-6 text-[10px] font-black text-brand-accent/40 uppercase tracking-widest text-center">الدفع</th>
-                  <th className="py-4 px-6 text-[10px] font-black text-brand-accent/40 uppercase tracking-widest text-center">الحالة</th>
-                  <th className="py-4 px-6 text-[10px] font-black text-brand-accent/40 uppercase tracking-widest text-center">إجراءات</th>
+                <tr className="bg-brand-dark/45 border-b border-brand-border/30">
+                  <th className="py-4 px-6 text-[10px] font-black text-brand-muted/60 uppercase tracking-widest">رقم الفاتورة / العميل</th>
+                  <th className="py-4 px-6 text-[10px] font-black text-brand-muted/60 uppercase tracking-widest text-center">التاريخ</th>
+                  <th className="py-4 px-6 text-[10px] font-black text-brand-muted/60 uppercase tracking-widest text-center">الإجمالي</th>
+                  <th className="py-4 px-6 text-[10px] font-black text-brand-muted/60 uppercase tracking-widest text-center">الدفع</th>
+                  <th className="py-4 px-6 text-[10px] font-black text-brand-muted/60 uppercase tracking-widest text-center">الحالة</th>
+                  <th className="py-4 px-6 text-[10px] font-black text-brand-muted/60 uppercase tracking-widest text-center">إجراءات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-border/10">
                 {salesData?.data?.map((sale: Sale) => (
-                  <tr key={sale.id} className="hover:bg-brand-dark/20 transition-colors group">
+                  <tr key={sale.id} className="hover:bg-brand-dark/35 transition-colors group">
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-brand-dark/40 flex items-center justify-center border border-brand-border/30">
-                          <FileText size={18} className="text-brand-accent/40" />
+                          <FileText size={18} className="text-brand-muted/60" />
                         </div>
                         <div>
                           <p className="text-xs font-mono font-bold dark:text-white text-gray-900 leading-none mb-1">#{sale.id.slice(0, 8)}</p>
-                          <p className="text-[10px] text-brand-accent/40 font-medium truncate max-w-[150px]">{sale.customerName || 'عميل نقدي'}</p>
+                          <p className="text-[10px] text-brand-muted/60 font-medium truncate max-w-[150px]">{sale.customerName || 'عميل نقدي'}</p>
                         </div>
                       </div>
                     </td>
@@ -513,7 +493,7 @@ const InvoicesTab: React.FC = () => {
                       </p>
                     </td>
                     <td className="py-4 px-6 text-center">
-                      <span className="text-[10px] font-black text-brand-accent/60 bg-brand-dark/40 px-3 py-1 rounded-full border border-brand-border/20 uppercase">
+                      <span className="text-[10px] font-black text-brand-accent/60 bg-brand-dark/40 px-3 py-1 rounded-full border border-brand-border/35 uppercase">
                         {paymentMethodLabels[sale.paymentMethod] || sale.paymentMethod}
                       </span>
                     </td>
@@ -524,7 +504,7 @@ const InvoicesTab: React.FC = () => {
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-center gap-2">
-                        <button onClick={() => setViewingSale(sale)} className="p-2 rounded-xl bg-brand-dark/40 border border-brand-border/30 text-brand-accent/40 hover:text-white hover:border-primary-500/50 hover:bg-primary-500/10 transition-all">
+                        <button onClick={() => setViewingSale(sale)} className="p-2 rounded-xl bg-brand-dark/40 border border-brand-border/30 text-brand-muted/60 hover:text-white hover:border-primary-500/50 hover:bg-primary-500/10 transition-all">
                           عرض
                         </button>
                         {sale.status === 'completed' && (
@@ -534,7 +514,7 @@ const InvoicesTab: React.FC = () => {
                                 returnMutation.mutate(sale.id);
                               }
                             }}
-                            className="p-2 rounded-xl bg-brand-dark/40 border border-brand-border/30 text-brand-accent/40 hover:text-red-400 hover:border-red-500/50 transition-all"
+                            className="p-2 rounded-xl bg-brand-dark/40 border border-brand-border/30 text-brand-muted/60 hover:text-red-400 hover:border-red-500/50 transition-all"
                           >
                             إرجاع
                           </button>
@@ -549,7 +529,7 @@ const InvoicesTab: React.FC = () => {
         </div>
 
         {salesData && salesData.totalPages > 1 && (
-          <div className="p-4 bg-brand-dark/20 border-t border-brand-border/30 flex items-center justify-center gap-4">
+          <div className="p-4 bg-brand-dark/35 border-t border-brand-border/30 flex items-center justify-center gap-4">
             <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="btn-secondary px-4 py-2 text-xs">السابق</button>
             <span className="text-xs font-bold text-brand-accent/50">صفحة {page} من {salesData.totalPages}</span>
             <button onClick={() => setPage(p => Math.min(salesData.totalPages || 1, p + 1))} disabled={page === salesData.totalPages} className="btn-secondary px-4 py-2 text-xs">التالي</button>
@@ -563,34 +543,34 @@ const InvoicesTab: React.FC = () => {
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-3">
                 <div>
-                  <p className="text-[10px] font-black text-brand-accent/30 uppercase tracking-widest mb-1">العميل</p>
+                  <p className="text-[10px] font-black text-brand-muted/50 uppercase tracking-widest mb-1">العميل</p>
                   <p className="text-sm font-bold dark:text-white text-gray-900">{viewingSale.customerName || 'عميل نقدي'}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-brand-accent/30 uppercase tracking-widest mb-1">البائع</p>
+                  <p className="text-[10px] font-black text-brand-muted/50 uppercase tracking-widest mb-1">البائع</p>
                   <p className="text-sm font-bold dark:text-white text-gray-900">{viewingSale.staffName || '-'}</p>
                 </div>
               </div>
               <div className="space-y-3">
                 <div>
-                  <p className="text-[10px] font-black text-brand-accent/30 uppercase tracking-widest mb-1">رقم الفاتورة</p>
+                  <p className="text-[10px] font-black text-brand-muted/50 uppercase tracking-widest mb-1">رقم الفاتورة</p>
                   <p className="text-sm font-mono font-bold dark:text-white text-gray-900">{viewingSale.id}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-brand-accent/30 uppercase tracking-widest mb-1">التاريخ</p>
+                  <p className="text-[10px] font-black text-brand-muted/50 uppercase tracking-widest mb-1">التاريخ</p>
                   <p className="text-sm font-bold dark:text-white text-gray-900">{viewingSale.date}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-brand-dark/30 rounded-2xl border border-brand-border/30 overflow-hidden">
+            <div className="bg-brand-dark/45 rounded-2xl border border-brand-border/30 overflow-hidden">
               <table className="w-full text-right">
                 <thead>
                   <tr className="bg-brand-dark/50 border-b border-brand-border/30">
-                    <th className="py-3 px-4 text-[10px] font-black text-brand-accent/40">الصنف</th>
-                    <th className="py-3 px-4 text-[10px] font-black text-brand-accent/40 text-center">الكمية</th>
-                    <th className="py-3 px-4 text-[10px] font-black text-brand-accent/40 text-center">السعر</th>
-                    <th className="py-3 px-4 text-[10px] font-black text-brand-accent/40 text-left">المجموع</th>
+                    <th className="py-3 px-4 text-[10px] font-black text-brand-muted/60">الصنف</th>
+                    <th className="py-3 px-4 text-[10px] font-black text-brand-muted/60 text-center">الكمية</th>
+                    <th className="py-3 px-4 text-[10px] font-black text-brand-muted/60 text-center">السعر</th>
+                    <th className="py-3 px-4 text-[10px] font-black text-brand-muted/60 text-left">المجموع</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-brand-border/10">
@@ -617,7 +597,7 @@ const InvoicesTab: React.FC = () => {
                   <span className="text-red-400">-{viewingSale.discount.toLocaleString('ar-IQ')} د.ع</span>
                 </div>
               )}
-              <div className="flex justify-between w-full max-w-xs pt-3 border-t border-brand-border/20">
+              <div className="flex justify-between w-full max-w-xs pt-3 border-t border-brand-border/35">
                 <span className="text-lg font-black dark:text-white text-gray-900">الإجمالي</span>
                 <span className="text-2xl font-black text-primary-400">{viewingSale.total.toLocaleString('ar-IQ')} <span className="text-sm">د.ع</span></span>
               </div>
@@ -671,11 +651,11 @@ const DeliveryTab: React.FC = () => {
   });
 
   return (
-    <div className="p-6 h-full flex flex-col gap-6 relative overflow-hidden bg-brand-dark/20">
+    <div className="p-6 h-full flex flex-col gap-6 relative overflow-hidden bg-brand-dark/35">
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
-          <button onClick={() => setActiveSubTab('orders')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeSubTab === 'orders' ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-accent/40 dark:text-white/30'}`}>طلبات التوصيل</button>
-          <button onClick={() => setActiveSubTab('drivers')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeSubTab === 'drivers' ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-accent/40 dark:text-white/30'}`}>السائقون</button>
+          <button onClick={() => setActiveSubTab('orders')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeSubTab === 'orders' ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-muted/60 dark:text-white/30'}`}>طلبات التوصيل</button>
+          <button onClick={() => setActiveSubTab('drivers')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeSubTab === 'drivers' ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-muted/60 dark:text-white/30'}`}>السائقون</button>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setShowOrderModal(true)} variant="secondary" className="flex items-center gap-2"><Plus size={16} /> طلب توصيل</Button>
@@ -686,21 +666,21 @@ const DeliveryTab: React.FC = () => {
       {activeSubTab === 'orders' && (
         <div className="bg-brand-surface border border-brand-border/30 rounded-3xl flex-1 overflow-auto p-4 space-y-3 shadow-2xl">
           {orders.map((o: DeliveryOrder) => (
-            <div key={o.id} className="bg-brand-dark/20 rounded-xl border border-brand-border/15 p-4">
+            <div key={o.id} className="bg-brand-dark/35 rounded-xl border border-brand-border/30 p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2"><MapPin size={14} className="text-blue-500" /><span className="font-semibold text-sm">{o.customerName}</span></div>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${deliveryStatusColors[o.status] || 'bg-gray-500/10 text-gray-500'}`}>{deliveryStatusLabels[o.status] || o.status}</span>
               </div>
-              <p className="text-xs text-brand-accent/40 mb-1">{o.address}</p>
+              <p className="text-xs text-brand-muted/60 mb-1">{o.address}</p>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-brand-accent/30">{o.customerPhone} {o.driverName && `• السائق: ${o.driverName}`}</span>
+                <span className="text-xs text-brand-muted/50">{o.customerPhone} {o.driverName && `• السائق: ${o.driverName}`}</span>
                 {o.status !== 'delivered' && o.status !== 'failed' && (
                   <Button onClick={() => updateStatusMutation.mutate({ id: o.id, status: o.status === 'pending' ? 'assigned' : o.status === 'assigned' ? 'in_transit' : 'delivered' })} size="sm" className="flex items-center gap-1"><CheckCircle size={12} /> تحديث</Button>
                 )}
               </div>
             </div>
           ))}
-          {orders.length === 0 && <p className="text-center text-brand-accent/30 py-8">لا توجد طلبات توصيل</p>}
+          {orders.length === 0 && <p className="text-center text-brand-muted/50 py-8">لا توجد طلبات توصيل</p>}
         </div>
       )}
 
@@ -708,10 +688,10 @@ const DeliveryTab: React.FC = () => {
         <div className="bg-brand-surface border border-brand-border/30 rounded-3xl flex-1 overflow-auto p-4 shadow-2xl">
           <div className="grid grid-cols-2 gap-3">
             {(drivers || []).map((d: DeliveryDriver) => (
-              <div key={d.id} className="bg-brand-dark/20 rounded-xl border border-brand-border/15 p-4 flex items-center justify-between">
+              <div key={d.id} className="bg-brand-dark/35 rounded-xl border border-brand-border/30 p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center"><User size={16} className="text-blue-500" /></div>
-                  <div><p className="font-semibold text-sm">{d.name}</p><p className="text-xs text-brand-accent/40 flex items-center gap-1"><Phone size={10} /> {d.phone}</p></div>
+                  <div><p className="font-semibold text-sm">{d.name}</p><p className="text-xs text-brand-muted/60 flex items-center gap-1"><Phone size={10} /> {d.phone}</p></div>
                 </div>
                 <button className="text-red-500/50 hover:text-red-500"><Trash2 size={14} /></button>
               </div>
@@ -722,19 +702,19 @@ const DeliveryTab: React.FC = () => {
 
       <Modal isOpen={showDriverModal} onClose={() => setShowDriverModal(false)} title="سائق جديد">
         <div className="space-y-4 p-4">
-          <div><label className="text-xs font-semibold mb-1 block">الاسم</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={driverForm.name} onChange={e => setDriverForm({ ...driverForm, name: e.target.value })} /></div>
-          <div><label className="text-xs font-semibold mb-1 block">الهاتف</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={driverForm.phone} onChange={e => setDriverForm({ ...driverForm, phone: e.target.value })} /></div>
-          <div><label className="text-xs font-semibold mb-1 block">رقم المركبة</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={driverForm.vehicleNo} onChange={e => setDriverForm({ ...driverForm, vehicleNo: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">الاسم</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/35 rounded-lg px-3 py-2 text-sm" value={driverForm.name} onChange={e => setDriverForm({ ...driverForm, name: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">الهاتف</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/35 rounded-lg px-3 py-2 text-sm" value={driverForm.phone} onChange={e => setDriverForm({ ...driverForm, phone: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">رقم المركبة</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/35 rounded-lg px-3 py-2 text-sm" value={driverForm.vehicleNo} onChange={e => setDriverForm({ ...driverForm, vehicleNo: e.target.value })} /></div>
           <Button onClick={() => createDriverMutation.mutate({ ...driverForm, id: '', isActive: true, createdAt: '', updatedAt: '' } as DeliveryDriver)} className="w-full">إضافة السائق</Button>
         </div>
       </Modal>
 
       <Modal isOpen={showOrderModal} onClose={() => setShowOrderModal(false)} title="طلب توصيل جديد">
         <div className="space-y-4 p-4">
-          <div><label className="text-xs font-semibold mb-1 block">اسم العميل</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={orderForm.customerName} onChange={e => setOrderForm({ ...orderForm, customerName: e.target.value })} /></div>
-          <div><label className="text-xs font-semibold mb-1 block">هاتف العميل</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={orderForm.customerPhone} onChange={e => setOrderForm({ ...orderForm, customerPhone: e.target.value })} /></div>
-          <div><label className="text-xs font-semibold mb-1 block">العنوان</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={orderForm.address} onChange={e => setOrderForm({ ...orderForm, address: e.target.value })} /></div>
-          <div><label className="text-xs font-semibold mb-1 block">رسوم التوصيل</label><input type="number" className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={orderForm.fee} onChange={e => setOrderForm({ ...orderForm, fee: parseFloat(e.target.value) || 0 })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">اسم العميل</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/35 rounded-lg px-3 py-2 text-sm" value={orderForm.customerName} onChange={e => setOrderForm({ ...orderForm, customerName: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">هاتف العميل</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/35 rounded-lg px-3 py-2 text-sm" value={orderForm.customerPhone} onChange={e => setOrderForm({ ...orderForm, customerPhone: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">العنوان</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/35 rounded-lg px-3 py-2 text-sm" value={orderForm.address} onChange={e => setOrderForm({ ...orderForm, address: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">رسوم التوصيل</label><input type="number" className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/35 rounded-lg px-3 py-2 text-sm" value={orderForm.fee} onChange={e => setOrderForm({ ...orderForm, fee: parseFloat(e.target.value) || 0 })} /></div>
           <Button onClick={() => createOrderMutation.mutate({ ...orderForm, id: '', saleId: '', status: 'pending', createdAt: '', updatedAt: '' } as DeliveryOrder)} className="w-full">إنشاء الطلب</Button>
         </div>
       </Modal>
@@ -748,7 +728,7 @@ const Sales: React.FC = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {activeTab !== 'pos' && (
-        <div className="flex items-center gap-1 p-2 px-6 bg-brand-surface/30 border-b border-brand-border/15">
+        <div className="flex items-center gap-1 p-2 px-6 bg-brand-surface/30 border-b border-brand-border/30">
           {TAB_ITEMS.map((tab) => (
             <button
               key={tab.id}
@@ -756,7 +736,7 @@ const Sales: React.FC = () => {
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
                 activeTab === tab.id
                   ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20'
-                  : 'text-brand-accent/40 dark:text-white/30 hover:bg-brand-surface/50 hover:text-brand-accent/70'
+                  : 'text-brand-muted/60 dark:text-white/30 hover:bg-brand-surface/50 hover:text-brand-accent/70'
               }`}
             >
               {tab.icon}
@@ -769,12 +749,12 @@ const Sales: React.FC = () => {
       <div className="flex-1 overflow-hidden relative">
         {activeTab === 'pos' && (
           <div className="h-full relative">
-            <div className="absolute top-4 right-4 z-30 flex items-center gap-1 bg-brand-surface/80 backdrop-blur-xl rounded-xl border border-brand-border/20 p-1">
+            <div className="absolute top-4 right-4 z-30 flex items-center gap-1 bg-brand-surface/80 backdrop-blur-xl rounded-xl border border-brand-border/35 p-1">
               {TAB_ITEMS.filter(t => t.id !== 'pos').map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black text-brand-accent/40 hover:text-primary-500 hover:bg-primary-500/10 transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black text-brand-muted/60 hover:text-primary-500 hover:bg-primary-500/10 transition-all"
                 >
                   {tab.icon}
                   {tab.label}

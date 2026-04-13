@@ -47,10 +47,11 @@ const Select: React.FC<SelectProps> = ({
         id={id}
         className={`
           w-full px-4 py-2.5 rounded-lg border transition-all duration-200
-          bg-brand-surface text-brand-accent
-          focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500
+          bg-brand-surface/70 dark:bg-white/[0.04] text-brand-accent dark:text-white/90
+          border-brand-border/50 dark:border-white/[0.1]
+          focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500
           disabled:opacity-50 disabled:cursor-not-allowed
-          ${error ? 'border-red-500/50' : 'border-brand-border/40'}
+          ${error ? 'border-rose-500/50' : 'border-brand-border/50 dark:border-white/[0.1]'}
           ${className}
         `}
         dir="rtl"

@@ -18,7 +18,7 @@ const CategoryBar: React.FC<CategoryBarProps> = ({
         className={`px-6 py-2 rounded-xl text-[11px] font-black transition-all duration-200 whitespace-nowrap border-2 snap-center uppercase tracking-widest ${
           selectedCategory === 'الكل'
             ? 'bg-primary-500 text-white border-primary-500 shadow-lg shadow-primary-500/30'
-            : 'bg-brand-surface/40 dark:bg-brand-dark/40 text-brand-accent/40 border-brand-border/20 hover:border-primary-500/20'
+            : 'bg-brand-surface/40 dark:bg-brand-dark/40 text-brand-muted/60 border-brand-border/35 hover:border-primary-500/20'
         }`}
       >
         الكل
@@ -30,7 +30,7 @@ const CategoryBar: React.FC<CategoryBarProps> = ({
           className={`px-6 py-2 rounded-xl text-[11px] font-black transition-all duration-200 whitespace-nowrap border-2 snap-center uppercase tracking-widest ${
             selectedCategory === cat
               ? 'bg-primary-500 text-white border-primary-500 shadow-lg shadow-primary-500/30'
-              : 'bg-brand-surface/40 dark:bg-brand-dark/40 text-brand-accent/40 border-brand-border/20 hover:border-primary-500/20'
+              : 'bg-brand-surface/40 dark:bg-brand-dark/40 text-brand-muted/60 border-brand-border/35 hover:border-primary-500/20'
           }`}
         >
           {cat}

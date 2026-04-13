@@ -19,8 +19,8 @@ type CurrencyTransaction struct {
 	SaleID       string    `gorm:"index" json:"saleId,omitempty"`
 	FromCurrency string    `json:"fromCurrency"`
 	ToCurrency   string    `json:"toCurrency"`
-	FromAmount   float64   `json:"fromAmount"`
-	ToAmount     float64   `json:"toAmount"`
+	FromAmount  int64  `json:"fromAmount"`
+	ToAmount  int64  `json:"toAmount"`
 	AppliedRate  float64   `json:"appliedRate"`
 	StaffID      string    `json:"staffId,omitempty"`
 	Timestamp    int64     `json:"timestamp"`

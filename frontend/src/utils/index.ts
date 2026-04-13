@@ -5,11 +5,44 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Format an integer monetary amount for display.
+ * Backend stores amounts as int64 (whole dinars for IQD).
+ * Use this everywhere you display a monetary value.
+ */
 export function formatCurrency(amount: number, currency = 'د.ع'): string {
-  return `${amount.toLocaleString('ar-IQ')} ${currency}`;
+  if (amount == null || isNaN(amount)) return `0 ${currency}`;
+  return `${Math.round(amount).toLocaleString('ar-IQ')} ${currency}`;
+}
+
+/**
+ * Format currency in a compact form for charts and tight spaces.
+ * e.g. 1,500,000 → "1.5M د.ع"
+ */
+export function formatCurrencyCompact(amount: number, currency = 'د.ع'): string {
+  if (amount == null || isNaN(amount)) return `0 ${currency}`;
+  const abs = Math.abs(amount);
+  const sign = amount < 0 ? '-' : '';
+  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(1)}M ${currency}`;
+  if (abs >= 1_000) return `${sign}${(abs / 1_000).toFixed(0)}K ${currency}`;
+  return `${sign}${abs} ${currency}`;
+}
+
+/**
+ * Parse a user-entered currency string back to an integer amount.
+ * Strips commas, Arabic numerals, and currency symbols.
+ */
+export function parseCurrencyInput(input: string): number {
+  // Remove currency symbols, commas, spaces, Arabic/Persian digits normalization
+  const cleaned = input
+    .replace(/[د.ع$€£¥,\s]/g, '')
+    .replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)));
+  const num = Number(cleaned);
+  return isNaN(num) ? 0 : Math.round(num);
 }
 
 export function formatNumber(num: number): string {
+  if (num == null || isNaN(num)) return '0';
   return num.toLocaleString('ar-IQ');
 }
 

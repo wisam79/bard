@@ -4,8 +4,9 @@ import (
 	"bard/internal/domain"
 	"bard/internal/logger"
 	"bard/internal/repository"
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,7 +25,11 @@ func generateGiftCardCode() string {
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	code := make([]byte, 12)
 	for i := range code {
-		code[i] = charset[rand.Intn(len(charset))]
+		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			panic(err)
+		}
+		code[i] = charset[n.Int64()]
 	}
 	return string(code[:4]) + "-" + string(code[4:8]) + "-" + string(code[8:12])
 }
@@ -66,14 +71,15 @@ func (s *GiftCardService) Redeem(code string, amount float64, saleID, staffID st
 	if !card.IsActive {
 		return fmt.Errorf("البطاقة غير مفعلة")
 	}
-	if card.Balance < amount {
+	intAmount := int64(amount)
+	if card.Balance < intAmount {
 		return fmt.Errorf("رصيد البطاقة غير كافٍ")
 	}
 	if card.ExpiresAt != nil && card.ExpiresAt.Before(time.Now()) {
 		return fmt.Errorf("البطاقة منتهية الصلاحية")
 	}
 
-	card.Balance -= amount
+	card.Balance -= intAmount
 	if card.Balance <= 0 {
 		card.IsActive = false
 	}
@@ -83,7 +89,7 @@ func (s *GiftCardService) Redeem(code string, amount float64, saleID, staffID st
 
 	tx := &domain.GiftCardTransaction{
 		GiftCardID: card.ID,
-		Amount:     amount,
+		Amount:     intAmount,
 		Type:       "redeem",
 		SaleID:     saleID,
 		StaffID:    staffID,
@@ -99,7 +105,7 @@ func (s *GiftCardService) TopUp(id string, amount float64, staffID string) error
 	if err != nil {
 		return err
 	}
-	card.Balance += amount
+	card.Balance += int64(amount)
 	card.IsActive = true
 	if err := s.repo.Update(card); err != nil {
 		return err
@@ -107,7 +113,7 @@ func (s *GiftCardService) TopUp(id string, amount float64, staffID string) error
 
 	tx := &domain.GiftCardTransaction{
 		GiftCardID: card.ID,
-		Amount:     amount,
+		Amount:     int64(amount),
 		Type:       "topup",
 		StaffID:    staffID,
 		Timestamp:  time.Now().Unix(),

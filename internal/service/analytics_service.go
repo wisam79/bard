@@ -36,7 +36,7 @@ func (s *AnalyticsService) GetInsights() ([]domain.AnalyticsInsight, error) {
 			Title:       "مخزون منخفض",
 			Description: fmt.Sprintf("يوجد %d منتج بكمية أقل من الحد الأدنى", len(lowStock)),
 			Severity:    "high",
-			Value:       float64(len(lowStock)),
+			Value:       int64(len(lowStock)),
 			Metric:      "low_stock_count",
 		})
 	}
@@ -61,7 +61,7 @@ func (s *AnalyticsService) GetSalesForecast(days int) ([]domain.SalesForecast, e
 		return nil, err
 	}
 
-	var totalSales float64
+	var totalSales int64
 	for _, sale := range sales {
 		if sale.Status == "completed" {
 			totalSales += sale.Total
@@ -70,7 +70,7 @@ func (s *AnalyticsService) GetSalesForecast(days int) ([]domain.SalesForecast, e
 
 	var dailyAvg float64
 	if len(sales) > 0 {
-		dailyAvg = totalSales / float64(len(sales))
+		dailyAvg = float64(totalSales) / float64(len(sales))
 	}
 
 	var forecasts []domain.SalesForecast
@@ -88,9 +88,9 @@ func (s *AnalyticsService) GetSalesForecast(days int) ([]domain.SalesForecast, e
 		variance := predicted * 0.2
 		forecasts = append(forecasts, domain.SalesForecast{
 			Date:       date,
-			Predicted:  math.Round(predicted),
-			LowerBound: math.Round(predicted - variance),
-			UpperBound: math.Round(predicted + variance),
+			Predicted:  int64(math.Round(predicted)),
+			LowerBound: int64(math.Round(predicted - variance)),
+			UpperBound: int64(math.Round(predicted + variance)),
 		})
 	}
 
@@ -109,7 +109,7 @@ func (s *AnalyticsService) GetProfitAnalysis(months int) ([]domain.ProfitAnalysi
 			continue
 		}
 
-		var revenue, cost float64
+		var revenue, cost int64
 		for _, sale := range sales {
 			if sale.Status == "completed" {
 				revenue += sale.Total
@@ -120,15 +120,15 @@ func (s *AnalyticsService) GetProfitAnalysis(months int) ([]domain.ProfitAnalysi
 		profit := revenue - cost
 		var margin float64
 		if revenue > 0 {
-			margin = (profit / revenue) * 100
+			margin = (float64(profit) / float64(revenue)) * 100
 		}
 
 		period := time.Now().AddDate(0, -i, 1).Format("2006-01")
 		profits = append(profits, domain.ProfitAnalysis{
 			Period:  period,
-			Revenue: math.Round(revenue),
-			Cost:    math.Round(cost),
-			Profit:  math.Round(profit),
+			Revenue: revenue,
+			Cost:    cost,
+			Profit:  profit,
 			Margin:  math.Round(margin*100) / 100,
 		})
 	}
@@ -196,7 +196,7 @@ func (s *AnalyticsService) DetectAnomalies() ([]domain.AnomalyDetection, error) 
 	todaySales, _ := s.saleRepo.GetByDateRange(today, today)
 	yesterdaySales, _ := s.saleRepo.GetByDateRange(yesterday, yesterday)
 
-	var todayTotal, yesterdayTotal float64
+	var todayTotal, yesterdayTotal int64
 	for _, s := range todaySales {
 		if s.Status == "completed" {
 			todayTotal += s.Total
@@ -209,7 +209,7 @@ func (s *AnalyticsService) DetectAnomalies() ([]domain.AnomalyDetection, error) 
 	}
 
 	if yesterdayTotal > 0 {
-		deviation := ((todayTotal - yesterdayTotal) / yesterdayTotal) * 100
+		deviation := ((float64(todayTotal) - float64(yesterdayTotal)) / float64(yesterdayTotal)) * 100
 		isAnomaly := math.Abs(deviation) > 50
 		if isAnomaly {
 			anomalies = append(anomalies, domain.AnomalyDetection{

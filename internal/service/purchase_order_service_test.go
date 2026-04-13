@@ -12,8 +12,8 @@ import (
 )
 
 func TestPurchaseOrderService_GetAll(t *testing.T) {
-	mockRepo := new(mocks.MockPurchaseOrderRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.PurchaseOrderRepository)
+	mockProductRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewPurchaseOrderService(mockRepo, mockProductRepo, log)
 
@@ -34,8 +34,8 @@ func TestPurchaseOrderService_GetAll(t *testing.T) {
 }
 
 func TestPurchaseOrderService_GetByID(t *testing.T) {
-	mockRepo := new(mocks.MockPurchaseOrderRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.PurchaseOrderRepository)
+	mockProductRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewPurchaseOrderService(mockRepo, mockProductRepo, log)
 
@@ -50,8 +50,8 @@ func TestPurchaseOrderService_GetByID(t *testing.T) {
 }
 
 func TestPurchaseOrderService_Create(t *testing.T) {
-	mockRepo := new(mocks.MockPurchaseOrderRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.PurchaseOrderRepository)
+	mockProductRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewPurchaseOrderService(mockRepo, mockProductRepo, log)
 
@@ -76,8 +76,8 @@ func TestPurchaseOrderService_Create(t *testing.T) {
 }
 
 func TestPurchaseOrderService_Create_WithReceivedStatus(t *testing.T) {
-	mockRepo := new(mocks.MockPurchaseOrderRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.PurchaseOrderRepository)
+	mockProductRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewPurchaseOrderService(mockRepo, mockProductRepo, log)
 
@@ -100,8 +100,8 @@ func TestPurchaseOrderService_Create_WithReceivedStatus(t *testing.T) {
 }
 
 func TestPurchaseOrderService_Update(t *testing.T) {
-	mockRepo := new(mocks.MockPurchaseOrderRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.PurchaseOrderRepository)
+	mockProductRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewPurchaseOrderService(mockRepo, mockProductRepo, log)
 
@@ -121,8 +121,8 @@ func TestPurchaseOrderService_Update(t *testing.T) {
 }
 
 func TestPurchaseOrderService_Delete(t *testing.T) {
-	mockRepo := new(mocks.MockPurchaseOrderRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.PurchaseOrderRepository)
+	mockProductRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewPurchaseOrderService(mockRepo, mockProductRepo, log)
 
@@ -135,8 +135,8 @@ func TestPurchaseOrderService_Delete(t *testing.T) {
 }
 
 func TestPurchaseOrderService_ReceiveOrder_AlreadyReceived(t *testing.T) {
-	mockRepo := new(mocks.MockPurchaseOrderRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.PurchaseOrderRepository)
+	mockProductRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewPurchaseOrderService(mockRepo, mockProductRepo, log)
 
@@ -157,8 +157,8 @@ func TestPurchaseOrderService_ReceiveOrder_AlreadyReceived(t *testing.T) {
 }
 
 func TestPurchaseOrderService_ReceiveOrder_EmptyOrder(t *testing.T) {
-	mockRepo := new(mocks.MockPurchaseOrderRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.PurchaseOrderRepository)
+	mockProductRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewPurchaseOrderService(mockRepo, mockProductRepo, log)
 
@@ -180,8 +180,8 @@ func TestPurchaseOrderService_ReceiveOrder_EmptyOrder(t *testing.T) {
 }
 
 func TestPurchaseOrderService_ReceiveOrder_Success(t *testing.T) {
-	mockRepo := new(mocks.MockPurchaseOrderRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.PurchaseOrderRepository)
+	mockProductRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewPurchaseOrderService(mockRepo, mockProductRepo, log)
 
@@ -203,8 +203,8 @@ func TestPurchaseOrderService_ReceiveOrder_Success(t *testing.T) {
 }
 
 func TestPurchaseOrderService_GetAll_Pagination(t *testing.T) {
-	mockRepo := new(mocks.MockPurchaseOrderRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.PurchaseOrderRepository)
+	mockProductRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewPurchaseOrderService(mockRepo, mockProductRepo, log)
 

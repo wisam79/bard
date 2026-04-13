@@ -55,14 +55,14 @@ const StoreSettings: React.FC<StoreSettingsProps> = ({ formData, setFormData, on
       </div>
 
       <div className="pt-8 border-t border-brand-border/30 space-y-4">
-        <div className="flex items-center justify-between p-6 bg-brand-dark/20 rounded-2xl border border-brand-border/20">
+        <div className="flex items-center justify-between p-6 bg-brand-dark/35 rounded-2xl border border-brand-border/35">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center text-primary-400">
               <Lock size={20} />
             </div>
             <div>
               <p className="text-sm font-bold dark:text-white text-gray-900">إلزامية تسجيل الشفت</p>
-              <p className="text-xs text-brand-accent/40 font-medium">منع عمليات البيع بدون شفت مفتوح</p>
+              <p className="text-xs text-brand-muted/60 font-medium">منع عمليات البيع بدون شفت مفتوح</p>
             </div>
           </div>
           <button

@@ -26,11 +26,11 @@ type TaxReport struct {
 	TaxName      string  `json:"taxName"`
 	TaxCode      string  `json:"taxCode"`
 	TaxRate      float64 `json:"taxRate"`
-	TotalSales   float64 `json:"totalSales"`
-	TotalTax     float64 `json:"totalTax"`
-	TotalReturns float64 `json:"totalReturns"`
-	ReturnTax    float64 `json:"returnTax"`
-	NetTax       float64 `json:"netTax"`
+	TotalSales  int64  `json:"totalSales"`
+	TotalTax  int64  `json:"totalTax"`
+	TotalReturns  int64  `json:"totalReturns"`
+	ReturnTax  int64  `json:"returnTax"`
+	NetTax  int64  `json:"netTax"`
 	PeriodStart  string  `json:"periodStart"`
 	PeriodEnd    string  `json:"periodEnd"`
 }

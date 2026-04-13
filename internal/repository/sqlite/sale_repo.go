@@ -228,7 +228,7 @@ func (r *saleRepository) GetTopProducts(limit int, startDate, endDate string) ([
 
 func (r *saleRepository) GetTodayStats() (float64, int, error) {
 	today := time.Now().Format("2006-01-02")
-	var total float64
+	var total int64
 	var count int64
 
 	err := r.db.Model(&domain.Sale{}).
@@ -236,7 +236,7 @@ func (r *saleRepository) GetTodayStats() (float64, int, error) {
 		Select("COALESCE(SUM(total), 0), COUNT(*)").
 		Row().Scan(&total, &count)
 
-	return total, int(count), err
+	return float64(total), int(count), err
 }
 
 func (r *saleRepository) GetMonthStats() (float64, int, error) {
@@ -244,7 +244,7 @@ func (r *saleRepository) GetMonthStats() (float64, int, error) {
 	startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 	endOfMonth := startOfMonth.AddDate(0, 1, -1)
 
-	var total float64
+	var total int64
 	var count int64
 
 	err := r.db.Model(&domain.Sale{}).
@@ -254,7 +254,7 @@ func (r *saleRepository) GetMonthStats() (float64, int, error) {
 		Select("COALESCE(SUM(total), 0), COUNT(*)").
 		Row().Scan(&total, &count)
 
-	return total, int(count), err
+	return float64(total), int(count), err
 }
 
 func (r *saleRepository) ProcessReturnWithStockUpdate(originalSaleID string) (*domain.Sale, error) {
@@ -276,7 +276,7 @@ func (r *saleRepository) ProcessReturnWithStockUpdate(originalSaleID string) (*d
 		Note:          "إرجاع - " + original.ID,
 	}
 
-	var total float64
+	var total int64
 	for _, item := range original.Items {
 		returnItem := domain.SaleItem{
 			ProductID: item.ProductID,
@@ -368,21 +368,22 @@ func (r *saleRepository) ProcessPartialReturnWithStockUpdate(originalSaleID stri
 		Note:          "إرجاع جزئي - " + original.ID,
 	}
 
-	var returnTotal float64
+	var returnTotal int64
 	for _, ri := range returnItems {
 		orig := originalByProduct[ri.ProductID]
-		unitPrice := orig.Total / orig.Quantity
+		unitPrice := float64(orig.Total) / orig.Quantity
+		itemTotal := int64(math.Round(unitPrice * ri.Qty))
 		returnItem := domain.SaleItem{
 			SaleID:    returnSale.ID,
 			ProductID: orig.ProductID,
 			Name:      orig.Name,
 			Price:     orig.Price,
 			Quantity:  ri.Qty,
-			Total:     -(unitPrice * ri.Qty),
+			Total:     -itemTotal,
 			Cost:      orig.Cost,
 		}
 		returnSale.Items = append(returnSale.Items, returnItem)
-		returnTotal += unitPrice * ri.Qty
+		returnTotal += itemTotal
 	}
 
 	returnSale.Subtotal = -returnTotal
@@ -412,10 +413,10 @@ func (r *saleRepository) ProcessPartialReturnWithStockUpdate(originalSaleID stri
 		}
 
 		if original.CustomerID != "" && original.Total != 0 {
-			absTotal := math.Abs(original.Total)
+			absTotal := math.Abs(float64(original.Total))
 			if absTotal > 0.001 {
-				ratio := returnTotal / absTotal
-				debtReduction := original.Total * ratio
+				ratio := float64(returnTotal) / absTotal
+				debtReduction := int64(math.Round(float64(original.Total) * ratio))
 				switch original.PaymentMethod {
 				case "credit":
 					if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
@@ -429,7 +430,7 @@ func (r *saleRepository) ProcessPartialReturnWithStockUpdate(originalSaleID stri
 					}
 				case "split":
 					if creditAmount, ok := original.SplitDetails["credit"]; ok && creditAmount > 0 {
-						creditReduction := creditAmount * ratio
+						creditReduction := int64(math.Round(float64(creditAmount) * ratio))
 						if err := tx.Model(&domain.Customer{}).Where("id = ?", original.CustomerID).
 							UpdateColumn("debt", gorm.Expr("debt - ?", creditReduction)).Error; err != nil {
 							return err

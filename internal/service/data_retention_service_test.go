@@ -13,8 +13,8 @@ import (
 )
 
 func TestNewDataRetentionService(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockFinanceRepo := new(mocks.MockFinanceRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockFinanceRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 
 	svc := NewDataRetentionService(mockSaleRepo, mockFinanceRepo, log, 365)
@@ -24,8 +24,8 @@ func TestNewDataRetentionService(t *testing.T) {
 }
 
 func TestDataRetentionService_GetRetentionSummary(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockFinanceRepo := new(mocks.MockFinanceRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockFinanceRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewDataRetentionService(mockSaleRepo, mockFinanceRepo, log, 365)
 
@@ -51,8 +51,8 @@ func TestDataRetentionService_GetRetentionSummary(t *testing.T) {
 }
 
 func TestDataRetentionService_GetRetentionSummary_RepoError(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockFinanceRepo := new(mocks.MockFinanceRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockFinanceRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewDataRetentionService(mockSaleRepo, mockFinanceRepo, log, 30)
 
@@ -66,8 +66,8 @@ func TestDataRetentionService_GetRetentionSummary_RepoError(t *testing.T) {
 }
 
 func TestDataRetentionService_CleanupOldData(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockFinanceRepo := new(mocks.MockFinanceRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockFinanceRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewDataRetentionService(mockSaleRepo, mockFinanceRepo, log, 365)
 

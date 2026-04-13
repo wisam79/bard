@@ -29,9 +29,12 @@ func (s *PurchaseOrderService) GetAll(page, limit int, status string) (*domain.P
 		return nil, err
 	}
 
-	totalPages := int(total) / limit
-	if int(total)%limit > 0 {
-		totalPages++
+	var totalPages int
+	if limit > 0 {
+		totalPages = int(total) / limit
+		if int(total)%limit > 0 {
+			totalPages++
+		}
 	}
 
 	return &domain.PaginatedResponse[domain.PurchaseOrder]{
@@ -113,12 +116,12 @@ func (s *PurchaseOrderService) HandleReceivedOrder(order *domain.PurchaseOrder) 
 			}
 		}
 
-		newTotalCost := (float64(product.Stock) * product.Cost) + (item.Qty * item.Cost)
-		newTotalStock := float64(product.Stock) + item.Qty
+		newTotalCost := (int64(product.Stock) * product.Cost) + (int64(item.Qty) * item.Cost)
+		newTotalStock := product.Stock + item.Qty
 
-		var newCost float64
+		var newCost int64
 		if newTotalStock > 0 {
-			newCost = newTotalCost / newTotalStock
+			newCost = newTotalCost / int64(newTotalStock)
 		} else {
 			newCost = item.Cost
 		}

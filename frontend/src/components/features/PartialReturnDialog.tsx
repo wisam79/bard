@@ -136,17 +136,17 @@ const PartialReturnDialog: React.FC<PartialReturnDialogProps> = ({
       }
     >
       {/* Sale info header */}
-      <div className="flex items-center justify-between mb-4 p-3 rounded-xl bg-brand-dark/20 border border-brand-border/20">
+      <div className="flex items-center justify-between mb-4 p-3 rounded-xl bg-brand-dark/35 border border-brand-border/35">
         <div>
-          <p className="text-xs text-brand-accent/40 font-bold">رقم الفاتورة</p>
+          <p className="text-xs text-brand-muted/60 font-bold">رقم الفاتورة</p>
           <p className="text-sm font-black text-brand-accent">{sale.id.slice(0, 8)}...</p>
         </div>
         <div>
-          <p className="text-xs text-brand-accent/40 font-bold">التاريخ</p>
+          <p className="text-xs text-brand-muted/60 font-bold">التاريخ</p>
           <p className="text-sm font-bold text-brand-accent">{sale.date}</p>
         </div>
         <div>
-          <p className="text-xs text-brand-accent/40 font-bold">الإجمالي</p>
+          <p className="text-xs text-brand-muted/60 font-bold">الإجمالي</p>
           <p className="text-sm font-black text-green-400">{sale.total.toFixed(2)}</p>
         </div>
       </div>
@@ -162,9 +162,9 @@ const PartialReturnDialog: React.FC<PartialReturnDialogProps> = ({
       {/* Items list */}
       {returnableItems.length === 0 ? (
         <div className="text-center py-12">
-          <Package size={40} className="mx-auto mb-3 text-brand-accent/20" />
-          <p className="text-brand-accent/40 font-bold">لا توجد عناصر قابلة للإرجاع</p>
-          <p className="text-brand-accent/25 text-sm mt-1">تم إرجاع جميع عناصر هذه الفاتورة مسبقاً</p>
+          <Package size={40} className="mx-auto mb-3 text-brand-muted/40" />
+          <p className="text-brand-muted/60 font-bold">لا توجد عناصر قابلة للإرجاع</p>
+          <p className="text-brand-muted/45 text-sm mt-1">تم إرجاع جميع عناصر هذه الفاتورة مسبقاً</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -178,13 +178,13 @@ const PartialReturnDialog: React.FC<PartialReturnDialogProps> = ({
                 className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
                   isSelected
                     ? 'bg-red-500/5 border-red-500/30'
-                    : 'bg-brand-dark/10 border-brand-border/15 hover:border-brand-border/30'
+                    : 'bg-brand-dark/25 border-brand-border/30 hover:border-brand-border/30'
                 }`}
               >
                 {/* Item info */}
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm text-brand-accent truncate">{item.name}</p>
-                  <p className="text-xs text-brand-accent/40 mt-0.5">
+                  <p className="text-xs text-brand-muted/60 mt-0.5">
                     السعر: {item.price.toFixed(2)} • متاح: {item.maxQty}
                   </p>
                 </div>
@@ -194,14 +194,14 @@ const PartialReturnDialog: React.FC<PartialReturnDialogProps> = ({
                   <button
                     onClick={() => updateQty(item.productId, -1)}
                     disabled={qty <= 0}
-                    className="w-8 h-8 rounded-lg bg-brand-dark/30 flex items-center justify-center transition-all hover:bg-brand-dark/50 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-8 h-8 rounded-lg bg-brand-dark/45 flex items-center justify-center transition-all hover:bg-brand-dark/50 disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <Minus size={14} className="text-brand-accent/60" />
                   </button>
 
                   <span
                     className={`w-10 text-center font-black text-sm ${
-                      isSelected ? 'text-red-400' : 'text-brand-accent/30'
+                      isSelected ? 'text-red-400' : 'text-brand-muted/50'
                     }`}
                   >
                     {qty}
@@ -210,7 +210,7 @@ const PartialReturnDialog: React.FC<PartialReturnDialogProps> = ({
                   <button
                     onClick={() => updateQty(item.productId, 1)}
                     disabled={qty >= item.maxQty}
-                    className="w-8 h-8 rounded-lg bg-brand-dark/30 flex items-center justify-center transition-all hover:bg-brand-dark/50 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-8 h-8 rounded-lg bg-brand-dark/45 flex items-center justify-center transition-all hover:bg-brand-dark/50 disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <Plus size={14} className="text-brand-accent/60" />
                   </button>

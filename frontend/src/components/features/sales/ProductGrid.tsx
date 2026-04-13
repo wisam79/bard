@@ -26,14 +26,14 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, addToCart }) => {
             disabled={outOfStock}
             aria-label={`إضافة ${product.name}`}
             data-testid={`product-card-${product.id}`}
-            className={`group relative aspect-square bg-brand-surface/20 dark:bg-brand-dark/20 backdrop-blur-md rounded-2xl p-4 border border-brand-border/20 flex flex-col items-center justify-between text-center transition-all duration-200 hover:shadow-xl hover:border-primary-500/30 hover:-translate-y-1 active:scale-95 ${
+            className={`group relative aspect-square bg-brand-surface/35 dark:bg-brand-dark/35 backdrop-blur-md rounded-2xl p-4 border border-brand-border/35 flex flex-col items-center justify-between text-center transition-all duration-200 hover:shadow-xl hover:border-primary-500/30 hover:-translate-y-1 active:scale-95 ${
               outOfStock ? 'opacity-40 grayscale cursor-not-allowed' : ''
             }`}
           >
             {/* Top Badge: Stock Level - Subtle */}
-            <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-brand-dark/10 border border-brand-border/10">
+            <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-brand-dark/25 border border-brand-border/25">
                <div className={`w-1.5 h-1.5 rounded-full ${outOfStock ? 'bg-rose-500' : isLowStock ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-               <span className={`text-[9px] font-black uppercase tracking-widest ${isLowStock ? 'text-amber-500' : 'text-brand-accent/40'}`}>
+               <span className={`text-[9px] font-black uppercase tracking-widest ${isLowStock ? 'text-amber-500' : 'text-brand-muted/60'}`}>
                  {product.stock}
                </span>
             </div>
@@ -54,7 +54,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, addToCart }) => {
                 <span className="text-sm font-black text-primary-500 dark:text-primary-400">
                   {product.price.toLocaleString('ar-IQ')}
                 </span>
-                <span className="text-[8px] font-bold text-brand-accent/20 uppercase tracking-tighter">د.ع</span>
+                <span className="text-[8px] font-bold text-brand-muted/40 uppercase tracking-tighter">د.ع</span>
               </div>
             </div>
           </button>

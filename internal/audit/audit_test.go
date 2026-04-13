@@ -9,7 +9,7 @@ import (
 
 func TestNewAuditService(t *testing.T) {
 	log := logger.New(logger.LevelInfo, false)
-	service := audit.NewAuditService(log)
+	service := audit.NewAuditService(nil, log)
 	
 	if service == nil {
 		t.Fatal("NewAuditService returned nil")
@@ -79,7 +79,7 @@ func TestAuditEntityTypeConstants(t *testing.T) {
 
 func TestLogAction(t *testing.T) {
 	log := logger.New(logger.LevelInfo, false)
-	service := audit.NewAuditService(log)
+	service := audit.NewAuditService(nil, log)
 	ctx := context.Background()
 	
 	// Should not panic
@@ -98,7 +98,7 @@ func TestLogAction(t *testing.T) {
 
 func TestLogSaleAction(t *testing.T) {
 	log := logger.New(logger.LevelInfo, false)
-	service := audit.NewAuditService(log)
+	service := audit.NewAuditService(nil, log)
 	ctx := context.Background()
 	
 	service.LogSaleAction(
@@ -115,7 +115,7 @@ func TestLogSaleAction(t *testing.T) {
 
 func TestLogProductAction(t *testing.T) {
 	log := logger.New(logger.LevelInfo, false)
-	service := audit.NewAuditService(log)
+	service := audit.NewAuditService(nil, log)
 	ctx := context.Background()
 	
 	service.LogProductAction(
@@ -132,7 +132,7 @@ func TestLogProductAction(t *testing.T) {
 
 func TestLogCustomerAction(t *testing.T) {
 	log := logger.New(logger.LevelInfo, false)
-	service := audit.NewAuditService(log)
+	service := audit.NewAuditService(nil, log)
 	ctx := context.Background()
 	
 	service.LogCustomerAction(
@@ -149,7 +149,7 @@ func TestLogCustomerAction(t *testing.T) {
 
 func TestLogStaffAction(t *testing.T) {
 	log := logger.New(logger.LevelInfo, false)
-	service := audit.NewAuditService(log)
+	service := audit.NewAuditService(nil, log)
 	ctx := context.Background()
 	
 	service.LogStaffAction(
@@ -166,7 +166,7 @@ func TestLogStaffAction(t *testing.T) {
 
 func TestLogSettingsAction(t *testing.T) {
 	log := logger.New(logger.LevelInfo, false)
-	service := audit.NewAuditService(log)
+	service := audit.NewAuditService(nil, log)
 	ctx := context.Background()
 	
 	service.LogSettingsAction(
@@ -182,7 +182,7 @@ func TestLogSettingsAction(t *testing.T) {
 
 func TestLogLoginAction(t *testing.T) {
 	log := logger.New(logger.LevelInfo, false)
-	service := audit.NewAuditService(log)
+	service := audit.NewAuditService(nil, log)
 	ctx := context.Background()
 	
 	t.Run("successful login", func(t *testing.T) {
@@ -198,7 +198,7 @@ func TestLogLoginAction(t *testing.T) {
 
 func TestLogSensitiveAction(t *testing.T) {
 	log := logger.New(logger.LevelInfo, false)
-	service := audit.NewAuditService(log)
+	service := audit.NewAuditService(nil, log)
 	ctx := context.Background()
 	
 	service.LogSensitiveAction(
@@ -216,7 +216,7 @@ func TestLogSensitiveAction(t *testing.T) {
 
 func TestLogChanges(t *testing.T) {
 	log := logger.New(logger.LevelInfo, false)
-	service := audit.NewAuditService(log)
+	service := audit.NewAuditService(nil, log)
 	ctx := context.Background()
 	
 	type Product struct {
@@ -244,7 +244,7 @@ func TestLogChanges(t *testing.T) {
 
 func TestLogChangesWithNilValues(t *testing.T) {
 	log := logger.New(logger.LevelInfo, false)
-	service := audit.NewAuditService(log)
+	service := audit.NewAuditService(nil, log)
 	ctx := context.Background()
 	
 	// Should not panic with nil values
@@ -264,7 +264,7 @@ func TestLogChangesWithNilValues(t *testing.T) {
 
 func TestAuditServiceConcurrentLogging(t *testing.T) {
 	log := logger.New(logger.LevelInfo, false)
-	service := audit.NewAuditService(log)
+	service := audit.NewAuditService(nil, log)
 	ctx := context.Background()
 	
 	done := make(chan bool)
@@ -325,7 +325,7 @@ func TestAuditActionCoverage(t *testing.T) {
 	}
 	
 	log := logger.New(logger.LevelInfo, false)
-	service := audit.NewAuditService(log)
+	service := audit.NewAuditService(nil, log)
 	ctx := context.Background()
 	
 	for _, tc := range testCases {

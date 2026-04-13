@@ -473,6 +473,18 @@ func (r *stockAdjustmentRepository) CreateAdjustment(adj *domain.StockAdjustment
 	return r.db.Create(adj).Error
 }
 
+func (r *stockAdjustmentRepository) CreateAdjustmentWithStockUpdate(adj *domain.StockAdjustment, product *domain.Product) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(adj).Error; err != nil {
+			return err
+		}
+		if err := tx.Save(product).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 func (r *stockAdjustmentRepository) GetAdjustments(page, limit int, adjType string) ([]domain.StockAdjustment, int64, error) {
 	var adjs []domain.StockAdjustment
 	var total int64
@@ -488,6 +500,18 @@ func (r *stockAdjustmentRepository) GetAdjustments(page, limit int, adjType stri
 
 func (r *stockAdjustmentRepository) CreateWasteRecord(record *domain.WasteRecord) error {
 	return r.db.Create(record).Error
+}
+
+func (r *stockAdjustmentRepository) CreateWasteRecordWithStockUpdate(record *domain.WasteRecord, product *domain.Product) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(record).Error; err != nil {
+			return err
+		}
+		if err := tx.Save(product).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (r *stockAdjustmentRepository) GetWasteRecords(page, limit int, wasteType string) ([]domain.WasteRecord, int64, error) {

@@ -31,7 +31,7 @@ func (s *StockAdjustmentService) CreateAdjustment(productID, adjType, reason str
 
 	qtyBefore := product.Stock
 	delta := newQty - qtyBefore
-	costImpact := delta * product.Cost
+	costImpact := int64(delta) * product.Cost
 
 	adj := &domain.StockAdjustment{
 		ID:          uuid.New().String(),
@@ -48,12 +48,8 @@ func (s *StockAdjustmentService) CreateAdjustment(productID, adjType, reason str
 		CreatedAt:   time.Now(),
 	}
 
-	if err := s.adjustRepo.CreateAdjustment(adj); err != nil {
-		return err
-	}
-
 	product.Stock = newQty
-	if err := s.productRepo.Update(product); err != nil {
+	if err := s.adjustRepo.CreateAdjustmentWithStockUpdate(adj, product); err != nil {
 		return err
 	}
 
@@ -80,7 +76,7 @@ func (s *StockAdjustmentService) CreateWasteRecord(productID, wasteType, reason 
 		}
 	}
 
-	costLoss := qty * product.Cost
+	costLoss := int64(qty) * product.Cost
 	record := &domain.WasteRecord{
 		ProductID:   productID,
 		ProductName: product.Name,
@@ -94,12 +90,8 @@ func (s *StockAdjustmentService) CreateWasteRecord(productID, wasteType, reason 
 		CreatedAt:   time.Now(),
 	}
 
-	if err := s.adjustRepo.CreateWasteRecord(record); err != nil {
-		return err
-	}
-
 	product.Stock -= qty
-	if err := s.productRepo.Update(product); err != nil {
+	if err := s.adjustRepo.CreateWasteRecordWithStockUpdate(record, product); err != nil {
 		return err
 	}
 
@@ -126,19 +118,23 @@ func (s *StockAdjustmentService) GetStockVarianceReport() ([]domain.StockVarianc
 		if p.Stock <= 0 {
 			continue
 		}
+		
+		physicalQty := p.Stock
+		variance := p.Stock - physicalQty
 		var variancePct float64
 		if p.Stock > 0 {
-			variancePct = 0
+			variancePct = (variance / p.Stock) * 100
 		}
+		costImpact := int64(variance) * p.Cost
 
 		reports = append(reports, domain.StockVarianceReport{
 			ProductID:   p.ID,
 			ProductName: p.Name,
 			SystemQty:   p.Stock,
-			PhysicalQty: p.Stock,
-			Variance:    0,
+			PhysicalQty: physicalQty,
+			Variance:    variance,
 			VariancePct: variancePct,
-			CostImpact:  0,
+			CostImpact:  costImpact,
 		})
 	}
 	return reports, nil

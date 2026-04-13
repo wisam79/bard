@@ -13,11 +13,17 @@ import (
 )
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════════════════════════════
+
+func boolPtr(b bool) *bool { return &b }
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Product Service - Comprehensive Integration Tests
 // ═══════════════════════════════════════════════════════════════════════════════
 
 func TestProductService_FullCRUDLifecycle(t *testing.T) {
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -61,7 +67,7 @@ func TestProductService_FullCRUDLifecycle(t *testing.T) {
 }
 
 func TestProductService_GetAllWithPagination(t *testing.T) {
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -96,7 +102,7 @@ func TestProductService_GetAllWithPagination(t *testing.T) {
 }
 
 func TestProductService_GetByBarcode(t *testing.T) {
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -118,7 +124,7 @@ func TestProductService_GetByBarcode(t *testing.T) {
 }
 
 func TestProductService_GetByBarcode_NotFound(t *testing.T) {
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -132,7 +138,7 @@ func TestProductService_GetByBarcode_NotFound(t *testing.T) {
 }
 
 func TestProductService_GetCategories_Sorted(t *testing.T) {
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -149,7 +155,7 @@ func TestProductService_GetCategories_Sorted(t *testing.T) {
 }
 
 func TestProductService_GetStats_ProfitCalculation(t *testing.T) {
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -166,12 +172,12 @@ func TestProductService_GetStats_ProfitCalculation(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, float64(1000), result.TotalStock)
-	assert.Equal(t, float64(50000), result.Profit)
+	assert.Equal(t, int64(50000), result.Profit)
 	mockRepo.AssertExpectations(t)
 }
 
 func TestProductService_GetLowStock_BelowThreshold(t *testing.T) {
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -194,7 +200,7 @@ func TestProductService_GetLowStock_BelowThreshold(t *testing.T) {
 }
 
 func TestProductService_Search_CaseInsensitive(t *testing.T) {
-	mockRepo := new(mocks.MockProductRepository)
+	mockRepo := new(mocks.ProductRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewProductService(mockRepo, cache.NewProductCache(), log)
 
@@ -217,7 +223,7 @@ func TestProductService_Search_CaseInsensitive(t *testing.T) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 func TestCustomerService_FullCRUDLifecycle(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -257,7 +263,7 @@ func TestCustomerService_FullCRUDLifecycle(t *testing.T) {
 }
 
 func TestCustomerService_GetAll_WithSearch(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -277,7 +283,7 @@ func TestCustomerService_GetAll_WithSearch(t *testing.T) {
 }
 
 func TestCustomerService_GetByPhone(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -294,12 +300,12 @@ func TestCustomerService_GetByPhone(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "1234567890", result.Phone)
-	assert.Equal(t, float64(500), result.Debt)
+	assert.Equal(t, int64(500), result.Debt)
 	mockRepo.AssertExpectations(t)
 }
 
 func TestCustomerService_GetTop(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -324,7 +330,7 @@ func TestCustomerService_GetTop(t *testing.T) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 func TestStaffService_FullCRUDLifecycle(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewStaffService(mockRepo, log)
 
@@ -367,7 +373,7 @@ func TestStaffService_FullCRUDLifecycle(t *testing.T) {
 }
 
 func TestStaffService_Authenticate_Success(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewStaffService(mockRepo, log)
 
@@ -376,7 +382,7 @@ func TestStaffService_Authenticate_Success(t *testing.T) {
 		Username: "admin",
 		Name:     "Admin User",
 		Role:     "admin",
-		IsActive: true,
+		IsActive: boolPtr(true),
 	}
 
 	mockRepo.On("Authenticate", "admin", "password123").Return(expectedStaff, nil)
@@ -390,7 +396,7 @@ func TestStaffService_Authenticate_Success(t *testing.T) {
 }
 
 func TestStaffService_Authenticate_Failure(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewStaffService(mockRepo, log)
 
@@ -404,7 +410,7 @@ func TestStaffService_Authenticate_Failure(t *testing.T) {
 }
 
 func TestStaffService_GetAll(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewStaffService(mockRepo, log)
 
@@ -428,7 +434,7 @@ func TestStaffService_GetAll(t *testing.T) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 func TestShiftService_StartShift_Success(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewShiftService(mockRepo, log)
 
@@ -445,7 +451,7 @@ func TestShiftService_StartShift_Success(t *testing.T) {
 }
 
 func TestShiftService_StartShift_DuplicatePrevention(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewShiftService(mockRepo, log)
 
@@ -465,7 +471,7 @@ func TestShiftService_StartShift_DuplicatePrevention(t *testing.T) {
 }
 
 func TestShiftService_CloseShift_Success(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewShiftService(mockRepo, log)
 
@@ -484,13 +490,13 @@ func TestShiftService_CloseShift_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, shift)
-	assert.Equal(t, float64(1500), shift.EndCash)
+	assert.Equal(t, int64(1500), shift.EndCash)
 	assert.Equal(t, "closed", shift.Status)
 	mockRepo.AssertExpectations(t)
 }
 
 func TestShiftService_GetShifts_WithPagination(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewShiftService(mockRepo, log)
 
@@ -510,7 +516,7 @@ func TestShiftService_GetShifts_WithPagination(t *testing.T) {
 }
 
 func TestShiftService_AddCashMovement(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewShiftService(mockRepo, log)
 
@@ -523,7 +529,7 @@ func TestShiftService_AddCashMovement(t *testing.T) {
 }
 
 func TestShiftService_GetCashMovements(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewShiftService(mockRepo, log)
 
@@ -546,7 +552,7 @@ func TestShiftService_GetCashMovements(t *testing.T) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 func TestSupplierService_FullCRUDLifecycle(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewSupplierService(mockRepo, log)
 
@@ -584,7 +590,7 @@ func TestSupplierService_FullCRUDLifecycle(t *testing.T) {
 }
 
 func TestSupplierService_GetAll(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := service.NewSupplierService(mockRepo, log)
 

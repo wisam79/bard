@@ -39,7 +39,7 @@ const Input: React.FC<InputProps> = ({
     <div className="relative">
       {icon && (
         <div
-          className={`absolute ${onIconClick ? 'cursor-pointer' : 'pointer-events-none'} left-3 top-1/2 -translate-y-1/2 text-brand-accent/25 dark:text-white/20`}
+          className={`absolute ${onIconClick ? 'cursor-pointer' : 'pointer-events-none'} left-3 top-1/2 -translate-y-1/2 text-brand-muted/50 dark:text-white/30`}
           onClick={onIconClick}
         >
           {icon}
@@ -59,15 +59,15 @@ const Input: React.FC<InputProps> = ({
         id={id}
         className={`
           w-full px-4 py-3 rounded-xl border transition-all duration-300
-          bg-brand-surface/50 dark:bg-white/[0.03] text-brand-accent dark:text-white/90
-          placeholder-brand-accent/25 dark:placeholder-white/10
-          focus:outline-none focus:ring-2 focus:ring-primary-500/25 focus:border-primary-500/50
-          focus:bg-brand-surface/70 dark:focus:bg-white/[0.05]
+          bg-brand-surface/60 dark:bg-white/[0.04] text-brand-accent dark:text-white/90
+          placeholder-brand-muted/40 dark:placeholder-white/20
+          focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500/55
+          focus:bg-brand-surface/80 dark:focus:bg-white/[0.06]
           disabled:opacity-40 disabled:cursor-not-allowed
           ${icon ? 'pl-10' : ''}
           ${error
-            ? 'border-rose-500/40 focus:ring-rose-500/25'
-            : 'border-brand-border/30 dark:border-white/[0.06] focus:border-primary-500/50'
+            ? 'border-rose-500/45 focus:ring-rose-500/30'
+            : 'border-brand-border/45 dark:border-white/[0.1] focus:border-primary-500/55'
           }
           ${className}
         `}

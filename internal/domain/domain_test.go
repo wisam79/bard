@@ -106,7 +106,7 @@ func TestDashboardStats(t *testing.T) {
 		MonthOrders:    300,
 		TotalProducts:  500,
 		TotalCustomers: 200,
-		TotalDebt:      5000.0,
+		TotalDebt: 5000,
 		LowStockCount:  15,
 		TopProducts: []domain.TopProduct{
 			{ProductID: "p1", Name: "Product 1", TotalQty: 100, TotalAmount: 5000},
@@ -119,7 +119,7 @@ func TestDashboardStats(t *testing.T) {
 	}
 	
 	if stats.TodaySales != 1000.0 {
-		t.Errorf("Expected TodaySales 1000.0, got %f", stats.TodaySales)
+		t.Errorf("Expected TodaySales 1000.0, got %d", stats.TodaySales)
 	}
 	
 	if len(stats.TopProducts) != 2 {
@@ -136,7 +136,7 @@ func TestTopProduct(t *testing.T) {
 		ProductID:   "prod-1",
 		Name:        "Test Product",
 		TotalQty:    150.0,
-		TotalAmount: 7500.0,
+		TotalAmount: 7500,
 	}
 	
 	if product.ProductID != "prod-1" {
@@ -144,7 +144,7 @@ func TestTopProduct(t *testing.T) {
 	}
 	
 	if product.TotalQty != 150.0 {
-		t.Errorf("Expected TotalQty 150.0, got %f", product.TotalQty)
+		t.Errorf("Expected TotalQty 150.0, got %d", product.TotalQty)
 	}
 }
 
@@ -216,15 +216,15 @@ func TestDatabaseExport(t *testing.T) {
 
 func TestInstallmentPlanCalculation(t *testing.T) {
 	calc := domain.InstallmentPlanCalculation{
-		TotalAmount:   1200.0,
+		TotalAmount: 1200,
 		DownPayment:   200.0,
-		MonthlyAmount: 100.0,
+		MonthlyAmount: 100,
 		Months:        10,
 		StartDate:     "2024-01-01",
 	}
 	
 	if calc.TotalAmount != 1200.0 {
-		t.Errorf("Expected TotalAmount 1200.0, got %f", calc.TotalAmount)
+		t.Errorf("Expected TotalAmount 1200.0, got %d", calc.TotalAmount)
 	}
 	
 	if calc.Months != 10 {

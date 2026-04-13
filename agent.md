@@ -1,133 +1,223 @@
-# AI AGENT STRICT DIRECTIVES: Bard POS v3.0 - Wails Desktop Application
+# AI AGENT STRICT DIRECTIVES: Bard POS v3.2 - Wails Desktop Application
 
-## 0. CORE DIRECTIVE (ANTI-HALLUCINATION PROTOCOL)
-
-### 0.1 NO ASSUMPTIONS
-- **You are an expert Wails v2 Developer** with deep knowledge of Go, React/TypeScript, and SQLite
-- **If unsure about ANY API, package, or structure:** STOP and ask the user for clarification
-- **NEVER hallucinate:** Do not invent Wails APIs, Go packages, or project structures
-
-### 0.2 TECHNOLOGY BOUNDARIES
-- **NO Web APIs:** This is a NATIVE desktop application
-  - ❌ NO `window.localStorage`, `IndexedDB`, `sessionStorage`
-  - ❌ NO `fetch`, `axios`, REST APIs for local data
-  - ❌ NO `window.print()` - use Go-based printing
-- **NO Partial Code:** ALWAYS output FULL functions/components. NEVER use placeholders like `// ... rest of code`
-
-### 0.3 PROJECT CONTEXT
-- **Application:** Bard POS v3.0 (Stable Release)
-- **Type:** Offline-first Point of Sale & Inventory Management
-- **Architecture:** Clean Architecture (Domain → Repository → Service → Handler)
-- **Database:** SQLite stored in `%APPDATA%/BardPOS/bard.db`
-- **Languages:** Arabic (default) + English
-- **Test Coverage:** 400+ tests (ALL MUST PASS)
+**Version:** 3.2.0  
+**Last Updated:** April 13, 2026  
+**Maintained By:** Bard POS Development Team  
+**Status:** Production Stable
 
 ---
 
-## 1. TECH STACK LOCK-IN
+## 0. CORE DIRECTIVE (READ FIRST)
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| **Framework** | Wails v2 | 2.11.0+ |
-| **Backend** | Go | 1.24.0+ |
-| **Frontend** | React 18 + TypeScript | 5.x (Vite) |
-| **Database** | SQLite | glebarez/gorm |
-| **ORM** | GORM | 1.31.1+ |
-| **State** | Zustand | Latest |
-| **Query** | TanStack Query | Latest |
-| **Styling** | Tailwind CSS | 3.x |
-| **Testing** | Vitest + Playwright | Latest |
+### 0.1 You Are Building A Production POS System
+- **This is NOT a toy project** - Real businesses depend on this for daily operations
+- **Every line of code affects real money** - Financial calculations MUST be precise
+- **Offline-first architecture** - No internet required, all data is local
+- **Arabic-first, RTL by default** - Iraqi market, Arabic numerals, Hijri dates
 
-### 1.1 Project Structure (FIXED)
+### 0.2 Anti-Hallucination Protocol (ZERO TOLERANCE)
+```
+❌ NEVER invent Wails APIs, Go packages, or project structures
+❌ NEVER assume database schemas or field names
+❌ NEVER create placeholder code or "// ... rest of implementation"
+✅ ALWAYS verify imports, types, and function signatures exist
+✅ ASK the user if unsure about ANY implementation detail
+✅ READ existing code before making changes
+```
+
+### 0.3 Technology Boundaries (HARD RULES)
+
+**This is a NATIVE desktop application, NOT a web app:**
+
+| ❌ NEVER Use | ✅ Use Instead |
+|--------------|----------------|
+| `window.localStorage` | Go services + SQLite |
+| `IndexedDB` | SQLite database |
+| `fetch()` / `axios` | Wails bindings (`@/wailsjs/go/...`) |
+| `window.print()` | Go-based `PrintReceipt` component |
+| REST API calls | Direct Wails function calls |
+| `any` type in TypeScript | Specific Go-mirrored types |
+
+---
+
+## 1. TECH STACK (LOCKED VERSIONS)
+
+| Layer | Technology | Version | Purpose |
+|-------|-----------|---------|---------|
+| **Framework** | Wails v2 | 2.11.0+ | Desktop app framework |
+| **Backend** | Go | 1.24.0+ | Business logic layer |
+| **Frontend** | React 18 + TypeScript | 5.x (Vite) | UI layer |
+| **Database** | SQLite | glebarez/sqlite | Local data storage |
+| **ORM** | GORM | 1.31.1+ | Database abstraction |
+| **State** | Zustand | Latest | Client state management |
+| **Query** | TanStack Query | Latest | Server state caching |
+| **Styling** | Tailwind CSS | 3.x | Utility-first CSS |
+| **Testing** | Vitest + Playwright | Latest | Unit + E2E tests |
+| **Icons** | Lucide React | Latest | Icon library |
+| **Charts** | Recharts | Latest | Data visualization |
+
+### 1.1 Project Structure (ENFORCED)
+
 ```
 bard/
-├── main.go                      # Wails bootstrap
+├── main.go                          # Wails bootstrap + DI setup
+├── go.mod / go.sum                  # Go dependencies
+├── wails.json                       # Wails configuration
 ├── internal/
-│   ├── domain/                  # Entities (Product, Sale, Customer, etc.)
-│   ├── repository/              # Interfaces + SQLite implementation
-│   ├── service/                 # Business logic
-│   ├── handler/                 # Wails bindings (App struct)
-│   ├── middleware/              # Auth, Rate limiting, RBAC
-│   ├── crypto/                  # AES-256-GCM encryption
-│   ├── cache/                   # In-memory caching with TTL
-│   ├── audit/                   # Audit trail logging
-│   └── logger/                  # Structured logging
+│   ├── domain/                      # Pure domain models (NO dependencies)
+│   │   ├── product.go              # Product, Category, StockMovement
+│   │   ├── sale.go                 # Sale, SaleItem, InstallmentPlan
+│   │   ├── customer.go             # Customer, Supplier, Payment
+│   │   ├── staff.go                # Staff, AppPreferences, ActivityLog
+│   │   ├── finance.go              # Expense, Discount, Shift, PurchaseOrder
+│   │   └── common.go               # AppError, DashboardStats, PaginatedResponse
+│   ├── repository/                  # Data access layer
+│   │   ├── interfaces.go           # ALL repository interfaces
+│   │   └── sqlite/                 # SQLite implementations
+│   │       ├── db.go               # Database initialization + seeding
+│   │       ├── repos.go            # Core repositories (Customer, Staff, Finance, Settings)
+│   │       ├── product_repo.go     # Product CRUD
+│   │       ├── sale_repo.go        # Sale CRUD + returns
+│   │       └── [feature]_repo.go   # Feature-specific repositories
+│   ├── service/                     # Business logic layer
+│   │   ├── services.go             # Core services (Product, Sale, Customer, Staff, etc.)
+│   │   ├── [feature]_service.go    # Feature services
+│   │   ├── validator.go            # Validation functions
+│   │   └── *_test.go               # Service tests
+│   ├── handler/                     # Wails API bindings
+│   │   └── app.go                  # App struct (ALL bound methods)
+│   ├── middleware/                  # HTTP + app middleware
+│   │   ├── auth.go                 # Session management + RBAC
+│   │   └── middleware.go           # Rate limiting, activity logging
+│   ├── crypto/                      # Encryption utilities
+│   │   ├── crypto.go               # AES-256-GCM encryptor
+│   │   └── key_manager.go          # Key generation + storage
+│   ├── cache/                       # In-memory caching
+│   │   └── cache.go                # TTL-based cache with cleanup
+│   ├── audit/                       # Audit trail logging
+│   │   └── audit.go                # Audit service + constants
+│   ├── logger/                      # Structured logging
+│   │   └── logger.go               # Multi-level logger
+│   └── errors/                      # Error handling
+│       └── errors.go               # Unified error types
 ├── frontend/
 │   ├── src/
-│   │   ├── components/          # UI + Feature components
-│   │   ├── pages/               # Dashboard, Sales, Products, etc.
-│   │   ├── store/               # Zustand stores
-│   │   ├── hooks/               # Custom hooks (useCart, etc.)
-│   │   ├── services/            # API wrappers
-│   │   ├── types/               # TypeScript types
-│   │   └── i18n/                # Arabic/English translations
-│   └── tests/e2e/               # Playwright tests
-└── docs/                        # Documentation
+│   │   ├── components/
+│   │   │   ├── ui/                 # Reusable UI components
+│   │   │   ├── features/           # Feature-specific components
+│   │   │   └── layout/             # App shell (Sidebar, MainLayout)
+│   │   ├── pages/                  # Route-level components
+│   │   ├── store/                  # Zustand stores
+│   │   ├── hooks/                  # Custom React hooks
+│   │   ├── services/               # API service wrappers
+│   │   ├── types/                  # TypeScript types (mirror Go)
+│   │   ├── i18n/                   # Arabic/English translations
+│   │   ├── lib/                    # Utilities + Wails bindings
+│   │   ├── __tests__/              # Unit tests
+│   │   └── main.tsx                # React entry point
+│   └── tests/e2e/                  # Playwright E2E tests
+├── pkg/utils/                       # Shared utilities
+│   └── password.go                 # Bcrypt password hashing
+├── docs/                            # Documentation
+└── build/                           # Build output
+```
+
+### 1.2 Key Dependencies
+
+**Go Modules (`go.mod`):**
+```go
+github.com/wailsapp/wails/v2 v2.11.0    // Desktop framework
+github.com/glebarez/sqlite v1.11.0       // SQLite driver
+gorm.io/gorm v1.31.1                     // ORM
+github.com/google/uuid v1.6.0            // UUID generation
+golang.org/x/crypto v0.46.0              // bcrypt + encryption
+github.com/stretchr/testify v1.11.1      // Testing framework
+```
+
+**Frontend Dependencies (`package.json`):**
+```json
+"@tanstack/react-query": "Latest",      // Server state
+"zustand": "Latest",                     // Client state
+"lucide-react": "Latest",               // Icons
+"recharts": "Latest",                   // Charts
+"i18next": "Latest",                    // Internationalization
+"@fontsource/rubik": "^5.2.8"           // Arabic font
 ```
 
 ---
 
-## 2. STRICT BACKEND RULES (GO)
+## 2. BACKEND DEVELOPMENT RULES (GO)
 
-### 2.1 Context Management (CRITICAL)
+### 2.1 Context Management (CRITICAL - WILL CRASH IF WRONG)
+
+**The App struct MUST store context from Startup:**
+
 ```go
-// ✅ CORRECT: Store context on startup
 type App struct {
-    ctx context.Context
-    // ... other fields
+    ctx context.Context  // ← MUST store this
+    // ... other service fields
 }
 
 func (a *App) Startup(ctx context.Context) {
-    a.ctx = ctx  // MUST store this
+    a.ctx = ctx  // ← Store context IMMEDIATELY
     a.log.Info("Application started")
 }
 
-// ✅ CORRECT: Use saved context for Wails runtime
-func (a *App) OpenFileDialog() (string, error) {
+// ✅ CORRECT: Use stored context
+func (a *App) ShowFileDialog() (string, error) {
     dialog, err := runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
         Title: "Select File",
     })
     return dialog, err
 }
 
-// ❌ WRONG: Do NOT use context.Background() for Wails runtime
+// ❌ WRONG: NEVER use context.Background() for Wails runtime
 func (a *App) BadExample() {
-    dialog, err := runtime.OpenFileDialog(context.Background(), ...)  // NEVER DO THIS
+    // This WILL CRASH because context.Background() has no Wails runtime
+    dialog, err := runtime.OpenFileDialog(context.Background(), ...)
 }
 ```
 
-### 2.2 Return Signatures (MANDATORY)
+### 2.2 Method Signatures (MANDATORY)
+
+**EVERY method exposed to frontend MUST return `(data, error)`:**
+
 ```go
-// ✅ CORRECT: Every bound method returns (data, error)
+// ✅ CORRECT signatures
 func (a *App) GetProducts(page, limit int, search, category string) (*domain.PaginatedProducts, error)
 func (a *App) CreateSale(sale domain.Sale) error
 func (a *App) Login(username, password string) (*domain.Staff, error)
+func (a *App) DeleteProduct(id string) error  // error-only is OK
 
-// ❌ WRONG: NEVER return only error or only data
-func (a *App) BadExample1() { /* no return */ }
-func (a *App) BadExample2() (*domain.Product, /* no error */) { }
+// ❌ WRONG: Missing error return
+func (a *App) BadExample1() { /* no return values */ }
+func (a *App) BadExample2() *domain.Product { /* no error return */ }
 ```
 
-### 2.3 Error Handling (CRITICAL)
+### 2.3 Error Handling (NEVER PANIC)
+
+**Use explicit error returns, NEVER panic or log.Fatal:**
+
 ```go
-// ✅ CORRECT: Return explicit errors
+// ✅ CORRECT: Return errors explicitly
 func (s *SaleService) Create(sale *domain.Sale) error {
     if err := ValidateSale(sale); err != nil {
         return err  // Return validation error
     }
-    if err := s.saleRepo.Create(sale); err != nil {
-        return errors.Wrap(domain.ModuleSales, err, "Failed to create sale")
+    if err := s.saleRepo.CreateSaleWithStockUpdate(sale); err != nil {
+        return apperrors.Wrap(domain.ModuleSales, err, "Failed to create sale")
     }
     return nil
 }
 
-// ❌ WRONG: NEVER use panic or log.Fatal
+// ❌ WRONG: NEVER panic or use log.Fatal (WILL CRASH APP)
 func (s *Service) BadExample() {
-    panic("something went wrong")  // WILL CRASH THE APP
-    log.Fatal("error")             // WILL CRASH THE APP
+    panic("something went wrong")   // ← CRASHES desktop app
+    log.Fatal("error")              // ← CRASHES desktop app
+    log.Panic("error")              // ← CRASHES desktop app
 }
 
-// ✅ CORRECT: Use domain-specific errors
+// ✅ CORRECT: Use unified error types
 return &domain.AppError{
     Module:  domain.ModuleSales,
     Code:    "INSUFFICIENT_STOCK",
@@ -136,216 +226,518 @@ return &domain.AppError{
 }
 ```
 
-### 2.4 Database Rules
+### 2.4 Database Operations (TRANSACTIONS + SAFETY)
+
+**Use transactions for multi-table operations:**
+
 ```go
-// ✅ CORRECT: Use transactions for data consistency
+// ✅ CORRECT: Transactional sale creation
 func (s *SaleService) Create(sale *domain.Sale) error {
-    return s.db.Transaction(func(tx *gorm.DB) error {
-        // 1. Check stock
+    // Repository handles: stock check → deduct → create sale → update debt
+    return s.saleRepo.CreateSaleWithStockUpdate(sale)
+}
+
+// Inside repository:
+func (r *saleRepository) CreateSaleWithStockUpdate(sale *domain.Sale) error {
+    return r.db.Transaction(func(tx *gorm.DB) error {
+        // 1. Check stock availability
+        for _, item := range sale.Items {
+            var product domain.Product
+            if err := tx.First(&product, "id = ?", item.ProductID).Error; err != nil {
+                return err
+            }
+            if product.Stock < item.Quantity {
+                return apperrors.NewInsufficientStockError(product.Name, product.Stock)
+            }
+        }
+        
         // 2. Deduct stock
-        // 3. Create sale
-        // 4. Update customer debt (if credit)
-        // All or nothing
+        for _, item := range sale.Items {
+            err := tx.Model(&domain.Product{}).
+                Where("id = ? AND stock >= ?", item.ProductID, item.Quantity).
+                UpdateColumn("stock", gorm.Expr("stock - ?", item.Quantity)).Error
+            if err != nil {
+                return err
+            }
+        }
+        
+        // 3. Create sale record
+        if err := tx.Create(sale).Error; err != nil {
+            return err
+        }
+        
+        return nil  // Commits transaction
     })
 }
 
-// ✅ CORRECT: Use parameterized queries
+// ✅ CORRECT: Parameterized queries (prevent SQL injection)
 db.Where("id = ?", productID).First(&product)
 db.Where("name LIKE ?", "%"+search+"%").Find(&products)
 
-// ❌ WRONG: NEVER use string concatenation for SQL
-db.Where("id = " + productID)  // SQL INJECTION RISK
+// ❌ WRONG: String concatenation (SQL INJECTION RISK)
+db.Where("id = " + productID).First(&product)  // NEVER DO THIS
+db.Where("name = '" + name + "'").Find(&products)  // NEVER DO THIS
 ```
 
-### 2.5 Business Logic Boundaries
+### 2.5 Validation (INPUT SANITIZATION)
+
+**Validate ALL inputs in service layer:**
+
 ```go
-// ✅ CORRECT: Complex calculations in Go
-func (s *SaleService) CalculateInstallmentPlan(total, downPayment float64, months int) (*domain.InstallmentPlan, error) {
-    remaining := total - downPayment
-    monthlyAmount := math.Round(remaining/float64(months)*100) / 100
-    // ... calculation logic
-    return plan, nil
+// ✅ CORRECT: Comprehensive validation
+func ValidateProduct(p *domain.Product) error {
+    p.Name = strings.TrimSpace(p.Name)
+    p.Barcode = strings.TrimSpace(p.Barcode)
+    
+    if p.Name == "" {
+        return errors.NewValidationError(domain.ModuleProduct, "name", "اسم المنتج مطلوب")
+    }
+    if p.Barcode == "" {
+        return errors.NewValidationError(domain.ModuleProduct, "barcode", "الباركود مطلوب")
+    }
+    if len(p.Barcode) > 100 {
+        return errors.NewValidationError(domain.ModuleProduct, "barcode", "الباركود طويل جداً")
+    }
+    if p.Price < 0 {
+        return errors.NewValidationError(domain.ModuleProduct, "price", "السعر لا يمكن أن يكون سالباً")
+    }
+    if p.Cost < 0 {
+        return errors.NewValidationError(domain.ModuleProduct, "cost", "التكلفة لا يمكن أن تكون سالبة")
+    }
+    if p.Stock < 0 {
+        return errors.NewValidationError(domain.ModuleProduct, "stock", "المخزون لا يمكن أن يكون سالباً")
+    }
+    return nil
 }
 
-// ❌ WRONG: Do NOT put business logic in frontend
-// Frontend only displays results, Go calculates them
+// ❌ WRONG: No validation
+func (s *ProductService) Create(product *domain.Product) error {
+    return s.repo.Create(product)  // ← Accepts invalid data
+}
+```
+
+### 2.6 Search Input Sanitization
+
+**ALWAYS sanitize search inputs to prevent SQL injection:**
+
+```go
+// ✅ CORRECT: Sanitize search inputs
+func sanitizeSearch(s string) string {
+    s = strings.TrimSpace(s)
+    s = strings.ReplaceAll(s, "%", "")      // Remove SQL wildcards
+    s = strings.ReplaceAll(s, "_", "")      // Remove single-char wildcard
+    s = strings.ReplaceAll(s, "\\", "")     // Remove escape chars
+    if len(s) > 100 {
+        s = s[:100]  // Limit length
+    }
+    return s
+}
+
+func (s *ProductService) GetAll(page, limit int, search, category string) (*domain.PaginatedProducts, error) {
+    search = sanitizeSearch(search)
+    category = sanitizeSearch(category)
+    
+    return s.repo.GetAll(page, limit, search, category)
+}
+```
+
+### 2.7 Business Logic Boundaries
+
+**Complex calculations in Go, NOT frontend:**
+
+```go
+// ✅ CORRECT: Installment calculation in Go
+func (s *SaleService) CalculateInstallmentPlan(total, downPayment float64, months int) (*domain.InstallmentPlan, error) {
+    if months <= 0 || total <= 0 {
+        return nil, &domain.AppError{
+            Module:  domain.ModuleSales,
+            Code:    "INVALID_PARAMS",
+            Message: "المعاملات المدخلة غير صحيحة",
+        }
+    }
+    if downPayment < 0 {
+        return nil, &domain.AppError{
+            Module:  domain.ModuleSales,
+            Code:    "INVALID_DOWN_PAYMENT",
+            Message: "الدفعة المقدمة لا يمكن أن تكون سالبة",
+        }
+    }
+    
+    remaining := total - downPayment
+    if remaining <= 0 {
+        return nil, &domain.AppError{
+            Module:  domain.ModuleSales,
+            Code:    "INVALID_DOWN_PAYMENT",
+            Message: "الدفعة المقدمة لا يمكن أن تتجاوز الإجمالي",
+        }
+    }
+    
+    // Round to 2 decimal places
+    monthlyAmount := math.Round(remaining/float64(months)*100) / 100
+    startDate := time.Now()
+    
+    schedule := make([]domain.Installment, months)
+    for i := 0; i < months; i++ {
+        dueDate := startDate.AddDate(0, i+1, 0)
+        amount := monthlyAmount
+        if i == months-1 {
+            // Last payment gets remainder to avoid rounding errors
+            amount = remaining - (monthlyAmount * float64(months-1))
+        }
+        schedule[i] = domain.Installment{
+            Number:  i + 1,
+            DueDate: dueDate.Format("2006-01-02"),
+            Amount:  math.Round(amount*100) / 100,
+            Status:  "pending",
+        }
+    }
+    
+    return &domain.InstallmentPlan{
+        TotalAmount: total,
+        DownPayment: downPayment,
+        Months:      months,
+        StartDate:   startDate.Format("2006-01-02"),
+        Schedule:    schedule,
+    }, nil
+}
+
+// ❌ WRONG: Calculation in frontend TypeScript
+const monthlyAmount = total / months;  // ← Should be in Go
 ```
 
 ---
 
-## 3. STRICT FRONTEND RULES (TYPESCRIPT + REACT)
+## 3. FRONTEND DEVELOPMENT RULES (TYPESCRIPT + REACT)
 
-### 3.1 Wails Bridge Communication
+### 3.1 Wails Bridge Communication (ONLY WAY TO CALL BACKEND)
+
+**Use ONLY auto-generated Wails bindings:**
+
 ```typescript
-// ✅ CORRECT: Use ONLY auto-generated bindings
-import { GetProducts, CreateSale } from '@/wailsjs/go/main/App';
+// ✅ CORRECT: Import from wailsjs/go
+import { GetProducts, CreateSale, DeleteProduct } from '@/wailsjs/go/main/App';
 
 async function loadProducts() {
-    try {
-        const result = await GetProducts(1, 20, '', '');
-        return result;
-    } catch (error) {
-        console.error('Failed to load products:', error);
-        throw error;
-    }
+  try {
+    const result = await GetProducts(1, 20, '', '');
+    return result;
+  } catch (error) {
+    console.error('Failed to load products:', error);
+    throw error;
+  }
 }
 
-// ❌ WRONG: NEVER use fetch/axios for backend calls
+// ❌ WRONG: NO fetch/axios for local data
 async function BadExample() {
-    const response = await fetch('/api/products');  // DOES NOT EXIST
+  const response = await fetch('/api/products');  // ← NO REST API exists
+  const data = await axios.get('/products');      // ← NO HTTP server
 }
 ```
 
-### 3.2 Async/Await Protocol
+### 3.2 Async/Await Protocol (ALWAYS TRY/CATCH)
+
+**EVERY backend call MUST be wrapped in try/catch:**
+
 ```typescript
-// ✅ CORRECT: Every backend call in try/catch
+// ✅ CORRECT: Comprehensive error handling
 async function createSale(sale: Sale) {
-    try {
-        await CreateSale(sale);
-        showToast('تمت العملية بنجاح');
-    } catch (error) {
-        const appError = error as AppError;
-        showToast(appError.message || 'حدث خطأ');
-        throw error;  // Re-throw for caller handling
-    }
+  try {
+    await CreateSale(sale);
+    notify('تمت عملية البيع بنجاح', 'success');
+    queryClient.invalidateQueries({ queryKey: ['sales'] });
+  } catch (error) {
+    const appError = error as AppError;
+    // Show user-friendly Arabic message
+    notify(appError.message || 'حدث خطأ', 'error');
+    console.error('Sale creation failed:', appError);
+    throw error;  // Re-throw for caller handling
+  }
 }
 
-// ❌ WRONG: NEVER call backend without error handling
+// ✅ CORRECT: Using React Query with error handling
+const { data, isLoading, error } = useQuery({
+  queryKey: ['products', page, search],
+  queryFn: () => GetProducts(page, 20, search, ''),
+  staleTime: 1000 * 60 * 5,  // 5 minutes
+  retry: 1,
+});
+
+if (error) {
+  return <ErrorDisplay message={(error as AppError).message} />;
+}
+
+// ❌ WRONG: No error handling
 async function BadExample() {
-    await CreateSale(sale);  // No try/catch
+  await CreateSale(sale);  // ← Silent failure
 }
 ```
 
-### 3.3 State Management (Zustand)
+### 3.3 State Management (Zustand - DUMB VIEW PATTERN)
+
+**Frontend handles UI state, Go handles business logic:**
+
 ```typescript
-// ✅ CORRECT: Frontend is a "dumb view"
-const useCartStore = create((set, get) => ({
-    cart: [] as CartItem[],
-    addToCart: (product: Product) => {
-        // Simple state update
-        set((state) => ({
-            cart: [...state.cart, { product, qty: 1 }]
-        }));
-    },
-    // Complex calculations in Go, not here
+// ✅ CORRECT: Simple state updates, no business logic
+const useCartStore = create<CartState>((set, get) => ({
+  cart: [] as CartItem[],
+  addToCart: (product: Product) => {
+    set((state) => ({
+      cart: [...state.cart, { product, qty: 1, discount: 0, total: product.price }]
+    }));
+  },
+  removeFromCart: (productId: string) => {
+    set((state) => ({
+      cart: state.cart.filter(item => item.product.id !== productId)
+    }));
+  },
 }));
 
-// ❌ WRONG: Do NOT put business logic in stores
+// ❌ WRONG: Business logic in frontend store
 const BadStore = create(() => ({
-    calculateTax: (amount) => amount * 0.15,  // Should be in Go
+  calculateTax: (amount: number) => amount * 0.15,  // ← Should be in Go
+  calculateDiscount: (total: number) => { /* complex logic */ },  // ← Should be in Go
+  validateSale: (cart: CartItem[]) => { /* validation */ },  // ← Should be in Go
 }));
 ```
 
-### 3.4 Native App Styling
-```css
-/* ✅ CORRECT: Prevent text selection */
-* {
-    user-select: none;
-    -webkit-user-select: none;
+### 3.4 Permission Checks (RBAC)
+
+**Check permissions before showing sensitive actions:**
+
+```typescript
+// ✅ CORRECT: Use auth store permission helpers
+import { useAuthStore } from '@/store/authStore';
+
+function ProductActions() {
+  const canDelete = useAuthStore(state => state.can('delete:product'));
+  const canEdit = useAuthStore(state => state.can('edit:product'));
+  
+  return (
+    <div>
+      {canEdit && <EditButton />}
+      {canDelete && <DeleteButton />}
+    </div>
+  );
 }
 
-/* ✅ CORRECT: Disable context menu */
-.no-context-menu {
-    context-menu: none;
+// Backend ALSO checks permissions (defense in depth)
+func (a *App) DeleteProduct(token string, id string) error {
+  if err := a.checkPermission(token, middleware.PermDeleteProduct); err != nil {
+    return err  // Returns FORBIDDEN error
+  }
+  return a.products.Delete(id)
 }
 
-/* ✅ CORRECT: RTL support */
-[dir="rtl"] {
-    direction: rtl;
-    text-align: right;
+// ❌ WRONG: No permission check
+function BadExample() {
+  return <DeleteButton onClick={handleDelete} />;  // ← Anyone can delete
 }
 ```
 
-### 3.5 TypeScript Types
+### 3.5 TypeScript Types (EXACT Go Mirrors)
+
+**Types MUST match Go domain structs exactly:**
+
 ```typescript
-// ✅ CORRECT: Mirror Go domain types exactly
-interface Product {
-    id: string;
-    name: string;
-    barcode: string;
-    price: number;
-    cost: number;
-    stock: number;
-    minStock: number;
-    category: string;
-    createdAt: string;
-    updatedAt: string;
+// ✅ CORRECT: Matches Go domain.Product exactly
+export interface Product {
+  id: string;           // UUID string
+  name: string;
+  barcode: string;
+  price: number;        // float64 in Go
+  cost: number;         // float64 in Go
+  stock: number;        // float64 in Go
+  minStock: number;     // float64 in Go
+  category: string;
+  image?: string;
+  supplier?: string;
+  wholesalePrice: number;
+  description?: string;
+  customDetails?: Record<string, unknown>;
+  createdAt: string;    // time.Time in Go (ISO 8601)
+  updatedAt: string;
 }
 
-// ❌ WRONG: Do NOT use 'any'
+// ❌ WRONG: Using 'any' or missing fields
 interface BadProduct {
-    id: any;  // Should be string
-    price: any;  // Should be number
+  id: any;          // ← Should be string
+  price: any;       // ← Should be number
+  // Missing required fields
+}
+
+// ❌ WRONG: Inconsistent naming
+interface WrongProduct {
+  ID: string;       // ← Should be id (camelCase in TS)
+  Name: string;     // ← Should be name
+}
+```
+
+### 3.6 React Component Patterns
+
+**Use functional components with proper loading/error states:**
+
+```typescript
+// ✅ CORRECT: Complete component pattern
+function Products() {
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['products', page, search],
+    queryFn: () => GetProducts(page, 20, search, ''),
+  });
+
+  if (isLoading) {
+    return <Skeleton count={10} />;
+  }
+
+  if (error) {
+    return <ErrorDisplay message={(error as AppError).message} />;
+  }
+
+  return (
+    <div>
+      <ProductGrid products={data?.data || []} />
+      <Pagination 
+        currentPage={page} 
+        totalPages={data?.totalPages || 1}
+        onPageChange={setPage}
+      />
+    </div>
+  );
+}
+
+// ❌ WRONG: No loading/error states
+function BadExample() {
+  const { data } = useQuery(...);
+  return <ProductGrid products={data.data} />;  // ← Crashes if loading/error
+}
+```
+
+### 3.7 RTL Support (ARABIC-FIRST)
+
+**RTL by default, Arabic translations for all UI:**
+
+```typescript
+// ✅ CORRECT: Use i18n for all text
+import { useTranslation } from 'react-i18next';
+
+function Dashboard() {
+  const { t } = useTranslation();
+  
+  return (
+    <div dir="rtl" className="text-right">
+      <h1>{t('dashboard.title')}</h1>
+      <p>{t('dashboard.description')}</p>
+    </div>
+  );
+}
+
+// CSS: RTL enforced
+// index.css:
+// * { direction: rtl; text-align: right; }
+// body { font-family: 'Yamamah', 'Rubik', sans-serif; }
+
+// ❌ WRONG: Hardcoded English text
+function BadExample() {
+  return <h1>Dashboard</h1>;  // ← Should be Arabic: لوحة التحكم
 }
 ```
 
 ---
 
-## 4. CODE GENERATION PROTOCOL (STEP-BY-STEP)
+## 4. FEATURE IMPLEMENTATION WORKFLOW
 
-### 4.1 Feature Request Workflow
-When user requests a feature (e.g., "Add Purchase Order screen"):
+### 4.1 Step-by-Step Process (NEVER SKIP STEPS)
 
-#### Step 1: Plan (REQUIRED)
+**When adding ANY new feature, follow this exact order:**
+
+```
+Step 1: PLAN (Document before coding)
+  ✓ Identify domain entities needed
+  ✓ List repository methods
+  ✓ Define service functions
+  ✓ Plan handler methods
+  ✓ Design frontend components
+  ✓ Write test scenarios
+
+Step 2: BACKEND FIRST (Go - Domain Layer)
+  ✓ Add entity to internal/domain/[feature].go
+  ✓ Include GORM tags (primaryKey, index, etc.)
+  ✓ Add JSON tags for serialization
+  ✓ Write godoc comments
+
+Step 3: BACKEND (Repository Layer)
+  ✓ Add interface to internal/repository/interfaces.go
+  ✓ Implement in internal/repository/sqlite/[feature]_repo.go
+  ✓ Handle errors with handleDBError()
+  ✓ Use transactions for multi-table operations
+
+Step 4: BACKEND (Service Layer)
+  ✓ Create service in internal/service/[feature]_service.go
+  ✓ Add validation in validator.go
+  ✓ Include error handling
+  ✓ Add logging (s.log.Info/Error)
+
+Step 5: BACKEND (Handler Layer)
+  ✓ Add method to internal/handler/app.go
+  ✓ Include permission checks
+  ✓ Return (data, error) signature
+  ✓ Store context if using Wails runtime
+
+Step 6: REGENERATE WAILS BINDINGS
+  ⚠️ Run: wails generate module
+  This updates frontend/wailsjs/go/ files
+
+Step 7: FRONTEND (Types)
+  ✓ Add TypeScript type to frontend/src/types/index.ts
+  ✓ Match Go struct exactly (camelCase)
+  ✓ Export type for use across app
+
+Step 8: FRONTEND (Components)
+  ✓ Create component in frontend/src/components/features/[feature]/
+  ✓ Use React Query for data fetching
+  ✓ Add loading/skeleton states
+  ✓ Add error states with Arabic messages
+  ✓ Include try/catch on all Wails calls
+
+Step 9: FRONTEND (Integration)
+  ✓ Add route/page if needed
+  ✓ Update navigation/sidebar
+  ✓ Add Arabic translations to i18n
+  ✓ Test permission checks
+
+Step 10: TESTS (MANDATORY)
+  ✓ Backend: Service tests (internal/service/[feature]_test.go)
+  ✓ Backend: Repository tests if complex
+  ✓ Frontend: Component tests (frontend/src/__tests__/)
+  ✓ E2E: Critical workflow test (frontend/tests/e2e/)
+```
+
+### 4.2 Example: Adding "Discounts" Feature
+
 ```markdown
 **Plan:**
-1. Backend:
-   - Add PurchaseOrder entity to `internal/domain/purchase_order.go`
-   - Add repository interface to `internal/repository/interfaces.go`
-   - Implement repository in `internal/repository/sqlite/purchase_order_repo.go`
-   - Add service layer in `internal/service/purchase_order_service.go`
-   - Add handler methods to `internal/handler/app.go`
+1. Domain: Discount entity (already exists in domain/finance.go)
+2. Repository: CRUD methods in finance_repository
+3. Service: Validation + business logic
+4. Handler: GetDiscounts, CreateDiscount, UpdateDiscount, DeleteDiscount
+5. Frontend: Types, Discounts page, form component
+6. Tests: Service validation, component rendering
 
-2. Frontend:
-   - Add TypeScript types to `frontend/src/types/index.ts`
-   - Add service wrapper to `frontend/src/services/purchaseOrderService.ts`
-   - Create page component `frontend/src/pages/PurchaseOrders.tsx`
-   - Add route to `frontend/src/App.tsx`
-
-3. Tests:
-   - Add service tests
-   - Add component tests
-   - Add E2E tests
-```
-
-#### Step 2: Backend First (MANDATORY)
-```go
-// Write ALL Go code first
-// Include:
-// - Domain entity
-// - Repository interface + implementation
-// - Service layer
-// - Handler (bound method)
-// - Error handling
-// - Validation
-// - Transaction safety
-```
-
-#### Step 3: Generate Bindings (REMINDER)
-```bash
-# Remind user to run:
-wails generate module
-```
-
-#### Step 4: Frontend Second
-```typescript
-// Write TypeScript code
-// Import ONLY from wailsjs/go/...
-// Include:
-// - Types
-// - Service wrapper
-// - Component
-// - Error handling
-// - Loading states
-// - Arabic translations
-```
-
-#### Step 5: Tests (REQUIRED)
-```go
-// Add tests for:
-// - Service layer
-// - Validation
-// - Edge cases
+**Implementation Order:**
+1. ✓ Check if Discount entity exists → Yes (domain/finance.go)
+2. ✓ Add repository interface methods → internal/repository/interfaces.go
+3. ✓ Implement repository → internal/repository/sqlite/finance_repo.go
+4. ✓ Create service → internal/service/finance_service.go (already exists)
+5. ✓ Add validation → ValidateDiscount() in validator.go
+6. ✓ Add handler methods → internal/handler/app.go
+7. ✓ Run `wails generate module`
+8. ✓ Add TypeScript type → frontend/src/types/index.ts
+9. ✓ Create Discounts page → frontend/src/pages/Discounts.tsx
+10. ✓ Add to routes → frontend/src/App.tsx
+11. ✓ Add translations → frontend/src/i18n/index.ts
+12. ✓ Write tests → internal/service/finance_service_test.go
 ```
 
 ---

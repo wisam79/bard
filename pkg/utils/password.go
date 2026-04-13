@@ -20,5 +20,5 @@ func CheckPassword(password, hash string) bool {
 }
 
 func IsHashed(password string) bool {
-	return len(password) > 0 && (password[:4] == "$2a$" || password[:4] == "$2b$" || password[:4] == "$2y$")
+	return len(password) >= 4 && (password[:4] == "$2a$" || password[:4] == "$2b$" || password[:4] == "$2y$")
 }

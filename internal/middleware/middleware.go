@@ -47,12 +47,17 @@ func (rl *RateLimiter) Allow(identifier string) (bool, time.Duration) {
 
 	info, exists := rl.attempts[identifier]
 	if !exists {
+		rl.attempts[identifier] = &attemptInfo{
+			count:       1,
+			lastAttempt: time.Now(),
+		}
 		return true, 0
 	}
 
 	// Check if window has expired first - reset attempts if so
 	if time.Since(info.lastAttempt) > rl.window {
-		delete(rl.attempts, identifier)
+		info.count = 1
+		info.lastAttempt = time.Now()
 		return true, 0
 	}
 
@@ -65,6 +70,8 @@ func (rl *RateLimiter) Allow(identifier string) (bool, time.Duration) {
 		return false, rl.lockout
 	}
 
+	info.count++
+	info.lastAttempt = time.Now()
 	return true, 0
 }
 

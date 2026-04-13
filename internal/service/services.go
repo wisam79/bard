@@ -2,6 +2,7 @@ package service
 
 import (
 	"bard/internal/cache"
+	"bard/internal/crypto"
 	"bard/internal/domain"
 	"bard/internal/errors"
 	"bard/internal/logger"
@@ -77,7 +78,11 @@ func (s *ProductService) Update(product *domain.Product) error {
 	}
 	product.UpdatedAt = time.Now()
 	s.log.Info("Updating product", "id", product.ID)
-	return s.repo.Update(product)
+	err := s.repo.Update(product)
+	if err == nil {
+		s.cache.InvalidateProduct(product.ID)
+	}
+	return err
 }
 
 func (s *ProductService) Delete(id string) error {
@@ -121,10 +126,16 @@ func NewCustomerService(repo repository.CustomerRepository, cache *cache.Custome
 	return &CustomerService{repo: repo, cache: cache, log: log}
 }
 
+type cachedCustomerList struct {
+	Data  []domain.Customer
+	Total int64
+}
+
 func (s *CustomerService) GetAll(page, limit int, search string) ([]domain.Customer, int64, error) {
 	search = sanitizeSearch(search)
 	if cached, ok := s.cache.GetCustomerList(page, limit, search); ok {
-		return cached.([]domain.Customer), 0, nil
+		c := cached.(cachedCustomerList)
+		return c.Data, c.Total, nil
 	}
 
 	result, total, err := s.repo.GetAll(page, limit, search)
@@ -132,7 +143,7 @@ func (s *CustomerService) GetAll(page, limit int, search string) ([]domain.Custo
 		return nil, 0, err
 	}
 
-	s.cache.SetCustomerList(page, limit, search, result)
+	s.cache.SetCustomerList(page, limit, search, cachedCustomerList{Data: result, Total: total})
 	return result, total, nil
 }
 
@@ -310,12 +321,13 @@ func (s *StaffService) UpdatePassword(id, oldPassword, newPassword string) error
 
 // SettingsService handles settings business logic
 type SettingsService struct {
-	repo repository.SettingsRepository
-	log  *logger.Logger
+	repo      repository.SettingsRepository
+	encryptor *crypto.Encryptor
+	log       *logger.Logger
 }
 
-func NewSettingsService(repo repository.SettingsRepository, log *logger.Logger) *SettingsService {
-	return &SettingsService{repo: repo, log: log}
+func NewSettingsService(repo repository.SettingsRepository, encryptor *crypto.Encryptor, log *logger.Logger) *SettingsService {
+	return &SettingsService{repo: repo, encryptor: encryptor, log: log}
 }
 
 func (s *SettingsService) GetPreferences() (*domain.AppPreferences, error) {
@@ -337,3 +349,4 @@ func (s *SettingsService) ExportDatabase() (*domain.DatabaseExport, error) {
 func (s *SettingsService) ImportDatabase(data *domain.DatabaseExport) error {
 	return s.repo.ImportDatabase(data)
 }
+

@@ -1,6 +1,10 @@
 package repository
 
-import "bard/internal/domain"
+import (
+	"time"
+
+	"bard/internal/domain"
+)
 
 // PartialReturnItem specifies which item and how much to return
 type PartialReturnItem struct {
@@ -54,6 +58,16 @@ type CustomerRepository interface {
 	UpdateDebt(id string, amount float64) error
 	UpdateInstallmentDebt(id string, amount float64) error
 	GetTop(limit int) ([]domain.Customer, error)
+}
+
+// SessionRepository manages user sessions
+type SessionRepository interface {
+	CreateSession(session *domain.Session) error
+	GetSessionByTokenHash(tokenHash string) (*domain.Session, error)
+	UpdateLastActive(id string, activeTime time.Time) error
+	DeleteSession(id string) error
+	DeleteSessionByTokenHash(tokenHash string) error
+	CleanExpiredSessions() error
 }
 
 // StaffRepository defines the interface for staff data operations
@@ -235,8 +249,10 @@ type WalletRepository interface {
 // StockAdjustmentRepository defines the interface for stock adjustment operations
 type StockAdjustmentRepository interface {
 	CreateAdjustment(adj *domain.StockAdjustment) error
+	CreateAdjustmentWithStockUpdate(adj *domain.StockAdjustment, product *domain.Product) error
 	GetAdjustments(page, limit int, adjType string) ([]domain.StockAdjustment, int64, error)
 	CreateWasteRecord(record *domain.WasteRecord) error
+	CreateWasteRecordWithStockUpdate(record *domain.WasteRecord, product *domain.Product) error
 	GetWasteRecords(page, limit int, wasteType string) ([]domain.WasteRecord, int64, error)
 	GetWasteSummary(startDate, endDate string) ([]domain.WasteRecord, error)
 }

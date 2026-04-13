@@ -11,7 +11,7 @@ type StockAdjustment struct {
 	QtyAfter    float64   `json:"qtyAfter"`
 	Delta       float64   `json:"delta"`
 	Reason      string    `json:"reason"`
-	CostImpact  float64   `json:"costImpact"`
+	CostImpact  int64  `json:"costImpact"`
 	StaffID     string    `json:"staffId"`
 	StaffName   string    `json:"staffName"`
 	Note        string    `json:"note,omitempty"`
@@ -24,7 +24,7 @@ type WasteRecord struct {
 	ProductName string    `json:"productName"`
 	Qty         float64   `json:"qty"`
 	WasteType   string    `json:"wasteType"`
-	CostLoss    float64   `json:"costLoss"`
+	CostLoss  int64  `json:"costLoss"`
 	Reason      string    `json:"reason"`
 	StaffID     string    `json:"staffId"`
 	StaffName   string    `json:"staffName"`
@@ -39,5 +39,5 @@ type StockVarianceReport struct {
 	PhysicalQty float64 `json:"physicalQty"`
 	Variance    float64 `json:"variance"`
 	VariancePct float64 `json:"variancePct"`
-	CostImpact  float64 `json:"costImpact"`
+	CostImpact  int64  `json:"costImpact"`
 }

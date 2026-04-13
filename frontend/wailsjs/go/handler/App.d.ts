@@ -28,7 +28,7 @@ export function ChangePassword(arg1:string,arg2:string,arg3:string):Promise<void
 
 export function CheckBudgetLimit(arg1:string,arg2:number):Promise<boolean>;
 
-export function CloseShift(arg1:string,arg2:number):Promise<domain.Shift>;
+export function CloseShift(arg1:string,arg2:string,arg3:number):Promise<domain.Shift>;
 
 export function CompleteKitchenOrder(arg1:string,arg2:string):Promise<void>;
 
@@ -124,7 +124,7 @@ export function DeleteCommissionRule(arg1:string,arg2:string):Promise<void>;
 
 export function DeleteCurrency(arg1:string,arg2:string):Promise<void>;
 
-export function DeleteCustomer(arg1:string):Promise<void>;
+export function DeleteCustomer(arg1:string,arg2:string):Promise<void>;
 
 export function DeleteCustomerSegment(arg1:string,arg2:string):Promise<void>;
 
@@ -386,7 +386,7 @@ export function StartKioskSession(arg1:string):Promise<domain.KioskSession>;
 
 export function StartKitchenOrder(arg1:string,arg2:string):Promise<void>;
 
-export function StartShift(arg1:string,arg2:string,arg3:number):Promise<domain.Shift>;
+export function StartShift(arg1:string,arg2:string,arg3:string,arg4:number):Promise<domain.Shift>;
 
 export function TopUpGiftCard(arg1:string,arg2:string,arg3:number):Promise<void>;
 

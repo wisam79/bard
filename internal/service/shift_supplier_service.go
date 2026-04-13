@@ -39,7 +39,7 @@ func (s *ShiftService) StartShift(staffID, staffName string, startCash float64) 
 		StaffID:   staffID,
 		StaffName: staffName,
 		StartTime: time.Now().Unix(),
-		StartCash: startCash,
+		StartCash: int64(startCash),
 		Status:    "active",
 		CreatedAt: time.Now(),
 	}
@@ -55,7 +55,7 @@ func (s *ShiftService) CloseShift(shiftID string, endCash float64) (*domain.Shif
 	}
 
 	shift.EndTime = time.Now().Unix()
-	shift.EndCash = endCash
+	shift.EndCash = int64(endCash)
 	shift.Status = "closed"
 
 	s.log.Info("Closing shift", "shiftID", shiftID)
@@ -76,7 +76,7 @@ func (s *ShiftService) AddCashMovement(shiftID, staffID, movementType, reason st
 	movement := &domain.CashMovement{
 		ShiftID:   shiftID,
 		Type:      movementType,
-		Amount:    amount,
+		Amount:    int64(amount),
 		Reason:    reason,
 		StaffID:   staffID,
 		Timestamp: time.Now().Unix(),

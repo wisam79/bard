@@ -22,7 +22,7 @@ const ProductStats: React.FC<ProductStatsProps> = ({ productsData }) => {
             {stat.icon}
           </div>
           <div>
-            <p className="text-[10px] font-bold text-brand-accent/40 uppercase tracking-widest">{stat.label}</p>
+            <p className="text-[10px] font-bold text-brand-muted/60 uppercase tracking-widest">{stat.label}</p>
             <p className="text-lg font-black dark:text-white text-gray-900">{stat.value} <span className="text-[10px] opacity-50">{stat.suffix}</span></p>
           </div>
         </div>

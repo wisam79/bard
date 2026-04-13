@@ -6,6 +6,7 @@ import (
 
 	"bard/internal/audit"
 	"bard/internal/cache"
+	"bard/internal/crypto"
 	"bard/internal/domain"
 	"bard/internal/logger"
 	"bard/internal/middleware"
@@ -13,47 +14,95 @@ import (
 	"bard/internal/service"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-func newTestApp() (*App, *middleware.AuthMiddleware) {
+func newTestEncryptor(t *testing.T) *crypto.Encryptor {
+	t.Helper()
+	key := make([]byte, 32)
+	enc, err := crypto.NewEncryptor(key)
+	if err != nil {
+		t.Fatalf("failed to create test encryptor: %v", err)
+	}
+	return enc
+}
+
+type fakeSessionRepo struct {
+	sessions map[string]*domain.Session
+}
+func (f *fakeSessionRepo) CreateSession(session *domain.Session) error {
+	f.sessions[session.TokenHash] = session
+	return nil
+}
+func (f *fakeSessionRepo) GetSessionByTokenHash(hash string) (*domain.Session, error) {
+	if s, ok := f.sessions[hash]; ok {
+		return s, nil
+	}
+	return nil, nil // error not strict for tests
+}
+func (f *fakeSessionRepo) UpdateLastActive(id string, activeTime time.Time) error { return nil }
+func (f *fakeSessionRepo) DeleteSession(id string) error { return nil }
+func (f *fakeSessionRepo) DeleteSessionByTokenHash(hash string) error {
+	delete(f.sessions, hash)
+	return nil
+}
+func (f *fakeSessionRepo) CleanExpiredSessions() error { return nil }
+
+func newTestApp(t *testing.T) (*App, *middleware.AuthMiddleware) {
+	t.Helper()
 	log := logger.New(logger.LevelInfo, false)
 	rateLimiter := middleware.NewRateLimiter(5, 15*time.Minute, 30*time.Minute)
-	authMiddleware := middleware.NewAuthMiddleware(log, rateLimiter)
 
-	mockProductRepo := new(mocks.MockProductRepository)
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockCustomerRepo := new(mocks.MockCustomerRepository)
-	mockStaffRepo := new(mocks.MockStaffRepository)
-	mockFinanceRepo := new(mocks.MockFinanceRepository)
-	mockSettingsRepo := new(mocks.MockSettingsRepository)
-	mockStatsRepo := new(mocks.MockStatsRepository)
-	mockShiftRepo := new(mocks.MockShiftRepository)
-	mockSupplierRepo := new(mocks.MockSupplierRepository)
-	mockPORespo := new(mocks.MockPurchaseOrderRepository)
+	mockProductRepo := new(mocks.ProductRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockCustomerRepo := new(mocks.CustomerRepository)
+	mockStaffRepo := new(mocks.StaffRepository)
+	
+	fsr := &fakeSessionRepo{sessions: make(map[string]*domain.Session)}
+
+	// Since we need to know the Staff Role, cache staff object during CreateSession via the tests
+	mockStaffRepo.On("GetByID", mock.Anything).Return(func(id string) *domain.Staff {
+		active := true
+		for _, s := range fsr.sessions {
+			if s.StaffID == id {
+				return &domain.Staff{ID: id, Role: s.StaffRole, IsActive: &active}
+			}
+		}
+		return &domain.Staff{ID: id, IsActive: &active}
+	}, nil)
+
+	authMiddleware := middleware.NewAuthMiddleware(log, rateLimiter, fsr, mockStaffRepo)
+
+	mockFinanceRepo := new(mocks.FinanceRepository)
+	mockSettingsRepo := new(mocks.SettingsRepository)
+	mockStatsRepo := new(mocks.StatsRepository)
+	mockShiftRepo := new(mocks.ShiftRepository)
+	mockSupplierRepo := new(mocks.SupplierRepository)
+	mockPORespo := new(mocks.PurchaseOrderRepository)
 
 	productSvc := service.NewProductService(mockProductRepo, cache.NewProductCache(), log)
 	saleSvc := service.NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 	customerSvc := service.NewCustomerService(mockCustomerRepo, cache.NewCustomerCache(), log)
 	staffSvc := service.NewStaffService(mockStaffRepo, log)
 	financeSvc := service.NewFinanceService(mockFinanceRepo, log)
-	settingsSvc := service.NewSettingsService(mockSettingsRepo, log)
-	statsSvc := service.NewStatsService(mockStatsRepo, log)
+	settingsSvc := service.NewSettingsService(mockSettingsRepo, newTestEncryptor(t), log)
+	statsSvc := service.NewStatsService(mockStatsRepo, cache.NewDashboardCache(), log)
 	shiftSvc := service.NewShiftService(mockShiftRepo, log)
 	supplierSvc := service.NewSupplierService(mockSupplierRepo, log)
 	poSvc := service.NewPurchaseOrderService(mockPORespo, mockProductRepo, log)
-	auditSvc := audit.NewAuditService(log)
+	auditSvc := audit.NewAuditService(nil, log)
 
-	mockLoyaltyRepo := new(mocks.MockLoyaltyRepository)
-	mockNotificationRepo := new(mocks.MockNotificationRepository)
-	mockBranchRepo := new(mocks.MockBranchRepository)
-	mockKitRepo := new(mocks.MockKitRepository)
-	mockRecurringRepo := new(mocks.MockRecurringInvoiceRepository)
-	mockGiftCardRepo := new(mocks.MockGiftCardRepository)
-	mockKitchenRepo := new(mocks.MockKitchenRepository)
-	mockWalletRepo := new(mocks.MockWalletRepository)
-	mockStockAdjRepo := new(mocks.MockStockAdjustmentRepository)
+	mockLoyaltyRepo := new(mocks.LoyaltyRepository)
+	mockNotificationRepo := new(mocks.NotificationRepository)
+	mockBranchRepo := new(mocks.BranchRepository)
+	mockKitRepo := new(mocks.KitRepository)
+	mockRecurringRepo := new(mocks.RecurringInvoiceRepository)
+	mockGiftCardRepo := new(mocks.GiftCardRepository)
+	mockKitchenRepo := new(mocks.KitchenRepository)
+	mockWalletRepo := new(mocks.WalletRepository)
+	mockStockAdjRepo := new(mocks.StockAdjustmentRepository)
 
-	loyaltySvc := service.NewLoyaltyService(mockLoyaltyRepo, log)
+	loyaltySvc := service.NewLoyaltyService(mockLoyaltyRepo, mockCustomerRepo, log)
 	notificationSvc := service.NewNotificationService(mockNotificationRepo, log)
 	branchSvc := service.NewBranchService(mockBranchRepo, log)
 	kitSvc := service.NewKitService(mockKitRepo, log)
@@ -64,16 +113,16 @@ func newTestApp() (*App, *middleware.AuthMiddleware) {
 	walletSvc := service.NewWalletService(mockWalletRepo, log)
 	stockAdjSvc := service.NewStockAdjustmentService(mockStockAdjRepo, mockProductRepo, log)
 
-	mockCurrencyRepo := new(mocks.MockCurrencyRepository)
-	mockMessagingRepo := new(mocks.MockMessagingRepository)
-	mockCommissionRepo := new(mocks.MockCommissionRepository)
-	mockSegmentRepo := new(mocks.MockSegmentRepository)
-	mockTaxRepo := new(mocks.MockTaxRepository)
-	mockKioskRepo := new(mocks.MockKioskRepository)
-	mockDeliveryRepo := new(mocks.MockDeliveryRepository)
-	mockReorderRepo := new(mocks.MockReorderRepository)
-	mockBudgetRepo := new(mocks.MockBudgetRepository)
-	mockReportBuilderRepo := new(mocks.MockReportBuilderRepository)
+	mockCurrencyRepo := new(mocks.CurrencyRepository)
+	mockMessagingRepo := new(mocks.MessagingRepository)
+	mockCommissionRepo := new(mocks.CommissionRepository)
+	mockSegmentRepo := new(mocks.SegmentRepository)
+	mockTaxRepo := new(mocks.TaxRepository)
+	mockKioskRepo := new(mocks.KioskRepository)
+	mockDeliveryRepo := new(mocks.DeliveryRepository)
+	mockReorderRepo := new(mocks.ReorderRepository)
+	mockBudgetRepo := new(mocks.BudgetRepository)
+	mockReportBuilderRepo := new(mocks.ReportBuilderRepository)
 
 	currencySvc := service.NewCurrencyService(mockCurrencyRepo, log)
 	messagingSvc := service.NewMessagingService(mockMessagingRepo, log)
@@ -100,7 +149,7 @@ func newTestApp() (*App, *middleware.AuthMiddleware) {
 }
 
 func TestApp_checkPermission_NoSession(t *testing.T) {
-	app, _ := newTestApp()
+	app, _ := newTestApp(t)
 
 	err := app.checkPermission("nonexistent-token", middleware.PermCreateProduct)
 
@@ -111,7 +160,7 @@ func TestApp_checkPermission_NoSession(t *testing.T) {
 }
 
 func TestApp_checkPermission_InsufficientRole(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	cashier := &domain.Staff{
 		ID:       "staff-1",
@@ -130,7 +179,7 @@ func TestApp_checkPermission_InsufficientRole(t *testing.T) {
 }
 
 func TestApp_checkPermission_AdminHasAllPerms(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	admin := &domain.Staff{
 		ID:       "staff-1",
@@ -157,7 +206,7 @@ func TestApp_checkPermission_AdminHasAllPerms(t *testing.T) {
 }
 
 func TestApp_checkPermission_CashierLimitedPerms(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	cashier := &domain.Staff{
 		ID:       "staff-1",
@@ -197,7 +246,7 @@ func TestApp_checkPermission_CashierLimitedPerms(t *testing.T) {
 }
 
 func TestApp_checkPermission_ManagerHasBroadPerms(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	manager := &domain.Staff{
 		ID:       "staff-1",
@@ -227,7 +276,7 @@ func TestApp_checkPermission_ManagerHasBroadPerms(t *testing.T) {
 }
 
 func TestApp_requireAdmin_RejectsNonAdmin(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	cashier := &domain.Staff{
 		ID:       "staff-1",
@@ -246,7 +295,7 @@ func TestApp_requireAdmin_RejectsNonAdmin(t *testing.T) {
 }
 
 func TestApp_requireAdmin_AcceptsAdmin(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	admin := &domain.Staff{
 		ID:       "staff-1",
@@ -262,7 +311,7 @@ func TestApp_requireAdmin_AcceptsAdmin(t *testing.T) {
 }
 
 func TestApp_requireAdmin_RejectsManager(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	manager := &domain.Staff{
 		ID:       "staff-1",
@@ -278,7 +327,7 @@ func TestApp_requireAdmin_RejectsManager(t *testing.T) {
 }
 
 func TestApp_requireAdmin_RejectsNoSession(t *testing.T) {
-	app, _ := newTestApp()
+	app, _ := newTestApp(t)
 
 	err := app.requireAdmin("fake-token")
 
@@ -289,7 +338,7 @@ func TestApp_requireAdmin_RejectsNoSession(t *testing.T) {
 }
 
 func TestApp_CreateProduct_RequiresPermission(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	cashier := &domain.Staff{
 		ID:       "staff-1",
@@ -314,7 +363,7 @@ func TestApp_CreateProduct_RequiresPermission(t *testing.T) {
 }
 
 func TestApp_DeleteProduct_RequiresPermission(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	cashier := &domain.Staff{
 		ID:       "staff-1",
@@ -333,7 +382,7 @@ func TestApp_DeleteProduct_RequiresPermission(t *testing.T) {
 }
 
 func TestApp_GetStaff_RequiresManageStaff(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	cashier := &domain.Staff{
 		ID:       "staff-1",
@@ -350,7 +399,7 @@ func TestApp_GetStaff_RequiresManageStaff(t *testing.T) {
 }
 
 func TestApp_ResetDatabase_RequiresAdmin(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	manager := &domain.Staff{
 		ID:       "staff-1",
@@ -369,7 +418,7 @@ func TestApp_ResetDatabase_RequiresAdmin(t *testing.T) {
 }
 
 func TestApp_ExportDatabase_RequiresExportPerm(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	cashier := &domain.Staff{
 		ID:       "staff-1",
@@ -386,7 +435,7 @@ func TestApp_ExportDatabase_RequiresExportPerm(t *testing.T) {
 }
 
 func TestApp_ReceivePurchaseOrder_RequiresPerm(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	cashier := &domain.Staff{
 		ID:       "staff-1",
@@ -405,7 +454,7 @@ func TestApp_ReceivePurchaseOrder_RequiresPerm(t *testing.T) {
 }
 
 func TestApp_CreateExpense_RequiresFinancePerm(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	cashier := &domain.Staff{
 		ID:       "staff-1",
@@ -463,9 +512,9 @@ func TestMiddleware_GetRolePermissions_CashierCannotManageStaff(t *testing.T) {
 }
 
 func TestApp_Login_RateLimiting(t *testing.T) {
-	app, _ := newTestApp()
+	app, _ := newTestApp(t)
 
-	mockStaffRepo := new(mocks.MockStaffRepository)
+	mockStaffRepo := new(mocks.StaffRepository)
 	app.staff = service.NewStaffService(mockStaffRepo, app.log)
 
 	mockStaffRepo.On("Authenticate", "admin", "wrong").Return((*domain.Staff)(nil), &domain.AppError{
@@ -487,7 +536,7 @@ func TestApp_Login_RateLimiting(t *testing.T) {
 }
 
 func TestApp_Logout_DestroysSession(t *testing.T) {
-	app, authMiddleware := newTestApp()
+	app, authMiddleware := newTestApp(t)
 
 	admin := &domain.Staff{
 		ID:       "staff-1",

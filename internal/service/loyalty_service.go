@@ -11,12 +11,13 @@ import (
 )
 
 type LoyaltyService struct {
-	repo repository.LoyaltyRepository
-	log  *logger.Logger
+	repo         repository.LoyaltyRepository
+	customerRepo repository.CustomerRepository
+	log          *logger.Logger
 }
 
-func NewLoyaltyService(repo repository.LoyaltyRepository, log *logger.Logger) *LoyaltyService {
-	return &LoyaltyService{repo: repo, log: log}
+func NewLoyaltyService(repo repository.LoyaltyRepository, customerRepo repository.CustomerRepository, log *logger.Logger) *LoyaltyService {
+	return &LoyaltyService{repo: repo, customerRepo: customerRepo, log: log}
 }
 
 func (s *LoyaltyService) GetTiers() ([]domain.LoyaltyTier, error) {
@@ -60,7 +61,7 @@ func (s *LoyaltyService) CalculatePoints(customerID string, amount float64) (int
 	if err != nil {
 		return 0, nil
 	}
-	if amount < rule.MinPurchase {
+	if amount < float64(rule.MinPurchase) {
 		return 0, nil
 	}
 	points := int(math.Floor(amount * rule.PointsPerAmount))
@@ -83,16 +84,38 @@ func (s *LoyaltyService) AwardPoints(customerID, saleID string, points int) erro
 	if err := s.repo.CreateTransaction(tx); err != nil {
 		return err
 	}
+
+	// Update customer points
+	customer, err := s.customerRepo.GetByID(customerID)
+	if err == nil {
+		s.customerRepo.UpdateFields(customerID, map[string]interface{}{
+			"points": customer.Points + points,
+		})
+	}
+
 	s.log.Info("Loyalty points awarded", "customer", customerID, "points", points)
 	return nil
 }
 
 func (s *LoyaltyService) RedeemPoints(customerID string, points int, rewardType string, rewardValue float64, staffID string) error {
+	customer, err := s.customerRepo.GetByID(customerID)
+	if err != nil {
+		return err
+	}
+
+	if customer.Points < points {
+		return &domain.AppError{
+			Module:  domain.ModuleStaff,
+			Code:    "INSUFFICIENT_POINTS",
+			Message: "نقاط العميل غير كافية لإتمام عملية الاستبدال",
+		}
+	}
+
 	redemption := &domain.LoyaltyRedemption{
 		CustomerID:  customerID,
 		Points:      points,
 		RewardType:  rewardType,
-		RewardValue: rewardValue,
+		RewardValue: int64(rewardValue),
 		StaffID:     staffID,
 		Timestamp:   time.Now().Unix(),
 		CreatedAt:   time.Now(),
@@ -109,7 +132,14 @@ func (s *LoyaltyService) RedeemPoints(customerID string, points int, rewardType 
 		Timestamp:   time.Now().Unix(),
 		CreatedAt:   time.Now(),
 	}
-	return s.repo.CreateTransaction(tx)
+	if err := s.repo.CreateTransaction(tx); err != nil {
+		return err
+	}
+
+	// Update customer points
+	return s.customerRepo.UpdateFields(customerID, map[string]interface{}{
+		"points": customer.Points - points,
+	})
 }
 
 func (s *LoyaltyService) GetTransactions(customerID string) ([]domain.LoyaltyTransaction, error) {

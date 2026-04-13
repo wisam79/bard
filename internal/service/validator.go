@@ -64,7 +64,7 @@ func ValidateSale(s *domain.Sale) error {
 		if item.ProductID == "" {
 			return errors.NewValidationError(domain.ModuleSales, "items", "Product ID is missing for item")
 		}
-		s.Items[i].Total = float64(item.Quantity) * item.Price
+		s.Items[i].Total = int64(float64(item.Quantity) * float64(item.Price))
 	}
 	if s.Discount < 0 {
 		return errors.NewValidationError(domain.ModuleSales, "discount", "Discount cannot be negative")

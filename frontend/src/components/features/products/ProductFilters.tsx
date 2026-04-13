@@ -21,7 +21,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
   return (
     <div className="p-4 border-b border-brand-border/30 flex flex-col md:flex-row gap-4 items-center">
       <div className="relative flex-1 w-full">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-accent/30" />
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-muted/50" />
         <input
           type="text"
           value={searchQuery}
@@ -29,7 +29,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
             setSearchQuery(e.target.value);
             onFilterChange();
           }}
-          className="input pr-10 bg-brand-dark/20 border-brand-border/20 focus:bg-brand-dark/40"
+          className="input pr-10 bg-brand-dark/35 border-brand-border/35 focus:bg-brand-dark/40"
           placeholder="بحث باسم المنتج أو الباركود..."
         />
       </div>
@@ -40,7 +40,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
             setSelectedCategory(e.target.value);
             onFilterChange();
           }}
-          className="input bg-brand-dark/20 border-brand-border/20 w-full md:w-48"
+          className="input bg-brand-dark/35 border-brand-border/35 w-full md:w-48"
         >
           <option value="الكل">كل الفئات</option>
           {categories?.map((cat) => (

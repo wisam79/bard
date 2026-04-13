@@ -42,9 +42,11 @@ func (s *ReorderService) CreateRule(rule *domain.ReorderRule) error {
 	rule.CreatedAt = time.Now()
 	rule.UpdatedAt = time.Now()
 	p, err := s.prodRepo.GetByID(rule.ProductID)
-	if err == nil {
-		rule.ProductName = p.Name
+	if err != nil {
+		return fmt.Errorf("المنتج غير موجود: %w", err)
 	}
+	rule.ProductName = p.Name
+	
 	s.log.Info("Reorder rule created", "product", rule.ProductID)
 	return s.repo.CreateRule(rule)
 }

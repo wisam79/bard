@@ -7,14 +7,14 @@ type Product struct {
 	ID             string                 `gorm:"primaryKey" json:"id"`
 	Name           string                 `json:"name"`
 	Barcode        string                 `gorm:"uniqueIndex" json:"barcode"`
-	Price          float64                `json:"price"`
-	Cost           float64                `json:"cost"`
+	Price  int64  `json:"price"`
+	Cost  int64  `json:"cost"`
 	Stock          float64                `json:"stock"`
 	MinStock       float64                `json:"minStock"`
 	Category       string                 `gorm:"index" json:"category"`
 	Image          string                 `json:"image,omitempty"`
 	Supplier       string                 `json:"supplier,omitempty"`
-	WholesalePrice float64                `json:"wholesalePrice"`
+	WholesalePrice  int64  `json:"wholesalePrice"`
 	Description    string                 `json:"description,omitempty"`
 	CustomDetails  map[string]interface{} `gorm:"serializer:json" json:"customDetails,omitempty"`
 	CreatedAt      time.Time              `json:"createdAt"`
@@ -38,9 +38,9 @@ type CategoryField struct {
 // ProductStats holds inventory statistics
 type ProductStats struct {
 	TotalStock float64 `json:"totalStock"`
-	TotalValue float64 `json:"totalValue"`
-	TotalCost  float64 `json:"totalCost"`
-	Profit     float64 `json:"profit"`
+	TotalValue  int64  `json:"totalValue"`
+	TotalCost  int64  `json:"totalCost"`
+	Profit  int64  `json:"profit"`
 }
 
 // PaginatedProducts holds paginated product list

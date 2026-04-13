@@ -11,16 +11,16 @@ type Sale struct {
 	StaffName       string             `json:"staffName"`
 	Date            string             `gorm:"index" json:"date"`
 	Timestamp       int64              `gorm:"index" json:"timestamp"`
-	Subtotal        float64            `json:"subtotal"`
-	Discount        float64            `json:"discount"`
-	VAT             float64            `json:"vat"`
-	Total           float64            `json:"total"`
-	TotalCost       float64            `json:"totalCost"`
+	Subtotal  int64  `json:"subtotal"`
+	Discount  int64  `json:"discount"`
+	VAT  int64  `json:"vat"`
+	Total  int64  `json:"total"`
+	TotalCost  int64  `json:"totalCost"`
 	PaymentMethod   string             `json:"paymentMethod"`
 	Status          string             `gorm:"index" json:"status"`
 	ItemsCount      float64            `json:"itemsCount"`
 	Items           []SaleItem         `gorm:"foreignKey:SaleID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"items"`
-	SplitDetails    map[string]float64 `gorm:"serializer:json" json:"splitDetails,omitempty"`
+	SplitDetails    map[string]int64 `gorm:"serializer:json" json:"splitDetails,omitempty"`
 	InstallmentPlan *InstallmentPlan   `gorm:"serializer:json" json:"installmentPlan,omitempty"`
 	Note            string             `json:"note,omitempty"`
 	PointsAwarded   int                `json:"pointsAwarded"`
@@ -34,18 +34,18 @@ type SaleItem struct {
 	SaleID      string  `gorm:"index" json:"-"`
 	ProductID   string  `json:"id"`
 	Name        string  `json:"name"`
-	Price       float64 `json:"price"`
+	Price  int64  `json:"price"`
 	Quantity    float64 `json:"qty"`
-	Total       float64 `json:"total"`
-	Cost        float64 `json:"cost"`
-	Discount    float64 `json:"discount,omitempty"`
+	Total  int64  `json:"total"`
+	Cost  int64  `json:"cost"`
+	Discount  int64  `json:"discount,omitempty"`
 	ReturnedQty float64 `json:"returnedQty"`
 }
 
 // InstallmentPlan represents a payment plan
 type InstallmentPlan struct {
-	TotalAmount float64       `json:"totalAmount"`
-	DownPayment float64       `json:"downPayment"`
+	TotalAmount  int64  `json:"totalAmount"`
+	DownPayment  int64  `json:"downPayment"`
 	Months      int           `json:"months"`
 	StartDate   string        `json:"startDate"`
 	Schedule    []Installment `json:"schedule"`
@@ -55,7 +55,7 @@ type InstallmentPlan struct {
 type Installment struct {
 	Number  int     `json:"number"`
 	DueDate string  `json:"dueDate"`
-	Amount  float64 `json:"amount"`
+	Amount  int64  `json:"amount"`
 	Status  string  `json:"status"`
 	PaidAt  int64   `json:"paidAt,omitempty"`
 }
@@ -63,13 +63,13 @@ type Installment struct {
 // ParkedSale represents a saved cart
 type ParkedSale struct {
 	ID           uint      `gorm:"primaryKey;autoIncrement" json:"id"`
-	ItemsJSON    string    `json:"items_json"`
-	CustomerName string    `json:"customer_name"`
-	CustomerID   string    `json:"customer_id"`
+	ItemsJSON    string    `json:"itemsJson"`
+	CustomerName string    `json:"customerName"`
+	CustomerID   string    `json:"customerId"`
 	Note         string    `json:"note"`
-	Total        float64   `json:"total"`
-	ItemsCount   float64   `json:"items_count"`
-	CreatedAt    time.Time `json:"created_at"`
+	Total  int64  `json:"total"`
+	ItemsCount   float64   `json:"itemsCount"`
+	CreatedAt    time.Time `json:"createdAt"`
 }
 
 // PaginatedSales holds paginated sale list
@@ -84,7 +84,7 @@ type PaginatedSales struct {
 // InvoiceStats holds invoice statistics
 type InvoiceStats struct {
 	Count   int64   `json:"count"`
-	Total   float64 `json:"total"`
-	Pending float64 `json:"pending"`
+	Total  int64  `json:"total"`
+	Pending  int64  `json:"pending"`
 	Returns int64   `json:"returns"`
 }

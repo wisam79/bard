@@ -75,7 +75,7 @@ const StaffSettings: React.FC<StaffSettingsProps> = ({ staffs, setEditingStaff, 
         ))}
 
         {staffs.length === 0 && !isLoading && (
-          <div className="col-span-full py-12 text-center text-brand-accent/60 font-medium bg-brand-dark/20 rounded-2xl border border-dashed border-brand-border">
+          <div className="col-span-full py-12 text-center text-brand-accent/60 font-medium bg-brand-dark/35 rounded-2xl border border-dashed border-brand-border">
             لم يتم إضافة موظفين بعد
           </div>
         )}

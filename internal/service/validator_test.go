@@ -194,9 +194,9 @@ func TestValidateSale(t *testing.T) {
 			// Verify total calculation when valid
 			if err == nil && len(s.Items) > 0 {
 				item := s.Items[0]
-				expectedTotal := item.Price * item.Quantity
-				if item.Total != expectedTotal {
-					t.Errorf("item.Total = %f, want %f", item.Total, expectedTotal)
+				expectedTotal := float64(item.Price) * item.Quantity
+				if float64(item.Total) != expectedTotal {
+					t.Errorf("item.Total = %d, want %f", item.Total, expectedTotal)
 				}
 			}
 		})

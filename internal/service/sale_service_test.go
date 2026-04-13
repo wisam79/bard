@@ -13,9 +13,9 @@ import (
 )
 
 func TestSaleService_GetAll(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
-	mockCustomerRepo := new(mocks.MockCustomerRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockProductRepo := new(mocks.ProductRepository)
+	mockCustomerRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
@@ -40,9 +40,9 @@ func TestSaleService_GetAll(t *testing.T) {
 }
 
 func TestSaleService_GetByID(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
-	mockCustomerRepo := new(mocks.MockCustomerRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockProductRepo := new(mocks.ProductRepository)
+	mockCustomerRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
@@ -53,14 +53,14 @@ func TestSaleService_GetByID(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "test-id", result.ID)
-	assert.Equal(t, float64(150), result.Total)
+	assert.Equal(t, int64(150), result.Total)
 	mockSaleRepo.AssertExpectations(t)
 }
 
 func TestSaleService_GetByID_NotFound(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
-	mockCustomerRepo := new(mocks.MockCustomerRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockProductRepo := new(mocks.ProductRepository)
+	mockCustomerRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
@@ -135,8 +135,8 @@ func TestSaleService_CalculateInstallmentPlan(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, result)
 				assert.Equal(t, tt.months, len(result.Schedule))
-				assert.Equal(t, tt.total, result.TotalAmount)
-				assert.Equal(t, tt.downPayment, result.DownPayment)
+				assert.Equal(t, int64(tt.total), result.TotalAmount)
+				assert.Equal(t, int64(tt.downPayment), result.DownPayment)
 			}
 		})
 	}
@@ -160,9 +160,9 @@ func TestSaleService_CalculateInstallmentPlan_Rounding(t *testing.T) {
 }
 
 func TestSaleService_GetParkedSales(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
-	mockCustomerRepo := new(mocks.MockCustomerRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockProductRepo := new(mocks.ProductRepository)
+	mockCustomerRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
@@ -180,9 +180,9 @@ func TestSaleService_GetParkedSales(t *testing.T) {
 }
 
 func TestSaleService_ParkSale(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
-	mockCustomerRepo := new(mocks.MockCustomerRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockProductRepo := new(mocks.ProductRepository)
+	mockCustomerRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
@@ -203,9 +203,9 @@ func TestSaleService_ParkSale(t *testing.T) {
 }
 
 func TestSaleService_DeleteParkedSale(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
-	mockCustomerRepo := new(mocks.MockCustomerRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockProductRepo := new(mocks.ProductRepository)
+	mockCustomerRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
@@ -218,9 +218,9 @@ func TestSaleService_DeleteParkedSale(t *testing.T) {
 }
 
 func TestSaleService_GetRecent(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
-	mockCustomerRepo := new(mocks.MockCustomerRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockProductRepo := new(mocks.ProductRepository)
+	mockCustomerRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
@@ -240,9 +240,9 @@ func TestSaleService_GetRecent(t *testing.T) {
 }
 
 func TestSaleService_Create_Validation(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
-	mockCustomerRepo := new(mocks.MockCustomerRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockProductRepo := new(mocks.ProductRepository)
+	mockCustomerRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
@@ -255,9 +255,9 @@ func TestSaleService_Create_Validation(t *testing.T) {
 }
 
 func TestSaleService_ProcessReturn(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
-	mockCustomerRepo := new(mocks.MockCustomerRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockProductRepo := new(mocks.ProductRepository)
+	mockCustomerRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 
@@ -275,9 +275,9 @@ func TestSaleService_ProcessReturn(t *testing.T) {
 }
 
 func TestSaleService_ProcessPartialReturn_EmptyItems(t *testing.T) {
-	mockSaleRepo := new(mocks.MockSaleRepository)
-	mockProductRepo := new(mocks.MockProductRepository)
-	mockCustomerRepo := new(mocks.MockCustomerRepository)
+	mockSaleRepo := new(mocks.SaleRepository)
+	mockProductRepo := new(mocks.ProductRepository)
+	mockCustomerRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSaleService(mockSaleRepo, mockProductRepo, mockCustomerRepo, cache.NewSaleCache(), log)
 

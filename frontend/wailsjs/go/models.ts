@@ -206,7 +206,7 @@ export namespace domain {
 	    minAmount: number;
 	    maxAmount: number;
 	    requiredLevel: string;
-	    isActive: boolean;
+	    isActive?: boolean;
 	    // Go type: time
 	    createdAt: any;
 	    // Go type: time
@@ -1033,7 +1033,7 @@ export namespace domain {
 	    name: string;
 	    role: string;
 	    phone?: string;
-	    isActive: boolean;
+	    isActive?: boolean;
 	    mustChangePassword: boolean;
 	    token?: string;
 	    // Go type: time
@@ -2349,14 +2349,14 @@ export namespace domain {
 	}
 	export class ParkedSale {
 	    id: number;
-	    items_json: string;
-	    customer_name: string;
-	    customer_id: string;
+	    itemsJson: string;
+	    customerName: string;
+	    customerId: string;
 	    note: string;
 	    total: number;
-	    items_count: number;
+	    itemsCount: number;
 	    // Go type: time
-	    created_at: any;
+	    createdAt: any;
 	
 	    static createFrom(source: any = {}) {
 	        return new ParkedSale(source);
@@ -2365,13 +2365,13 @@ export namespace domain {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
-	        this.items_json = source["items_json"];
-	        this.customer_name = source["customer_name"];
-	        this.customer_id = source["customer_id"];
+	        this.itemsJson = source["itemsJson"];
+	        this.customerName = source["customerName"];
+	        this.customerId = source["customerId"];
 	        this.note = source["note"];
 	        this.total = source["total"];
-	        this.items_count = source["items_count"];
-	        this.created_at = this.convertValues(source["created_at"], null);
+	        this.itemsCount = source["itemsCount"];
+	        this.createdAt = this.convertValues(source["createdAt"], null);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

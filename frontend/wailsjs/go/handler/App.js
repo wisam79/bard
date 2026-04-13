@@ -54,8 +54,8 @@ export function CheckBudgetLimit(arg1, arg2) {
   return window['go']['handler']['App']['CheckBudgetLimit'](arg1, arg2);
 }
 
-export function CloseShift(arg1, arg2) {
-  return window['go']['handler']['App']['CloseShift'](arg1, arg2);
+export function CloseShift(arg1, arg2, arg3) {
+  return window['go']['handler']['App']['CloseShift'](arg1, arg2, arg3);
 }
 
 export function CompleteKitchenOrder(arg1, arg2) {
@@ -246,8 +246,8 @@ export function DeleteCurrency(arg1, arg2) {
   return window['go']['handler']['App']['DeleteCurrency'](arg1, arg2);
 }
 
-export function DeleteCustomer(arg1) {
-  return window['go']['handler']['App']['DeleteCustomer'](arg1);
+export function DeleteCustomer(arg1, arg2) {
+  return window['go']['handler']['App']['DeleteCustomer'](arg1, arg2);
 }
 
 export function DeleteCustomerSegment(arg1, arg2) {
@@ -770,8 +770,8 @@ export function StartKitchenOrder(arg1, arg2) {
   return window['go']['handler']['App']['StartKitchenOrder'](arg1, arg2);
 }
 
-export function StartShift(arg1, arg2, arg3) {
-  return window['go']['handler']['App']['StartShift'](arg1, arg2, arg3);
+export function StartShift(arg1, arg2, arg3, arg4) {
+  return window['go']['handler']['App']['StartShift'](arg1, arg2, arg3, arg4);
 }
 
 export function TopUpGiftCard(arg1, arg2, arg3) {

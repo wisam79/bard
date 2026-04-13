@@ -77,12 +77,12 @@ func (r *PurchaseOrderRepository) CreateWithStockUpdate(order *domain.PurchaseOr
 				}
 			}
 
-			newTotalCost := (product.Stock * product.Cost) + (item.Qty * item.Cost)
+			newTotalCost := (int64(product.Stock) * product.Cost) + (int64(item.Qty) * item.Cost)
 			newTotalStock := product.Stock + item.Qty
 
-			var newCost float64
+			var newCost int64
 			if newTotalStock > 0 {
-				newCost = newTotalCost / newTotalStock
+				newCost = newTotalCost / int64(newTotalStock)
 			} else {
 				newCost = item.Cost
 			}
@@ -155,12 +155,12 @@ func (r *PurchaseOrderRepository) ReceiveWithStockUpdate(id string) error {
 				}
 			}
 
-			newTotalCost := (product.Stock * product.Cost) + (item.Qty * item.Cost)
+			newTotalCost := (int64(product.Stock) * product.Cost) + (int64(item.Qty) * item.Cost)
 			newTotalStock := product.Stock + item.Qty
 
-			var newCost float64
+			var newCost int64
 			if newTotalStock > 0 {
-				newCost = newTotalCost / newTotalStock
+				newCost = newTotalCost / int64(newTotalStock)
 			} else {
 				newCost = item.Cost
 			}

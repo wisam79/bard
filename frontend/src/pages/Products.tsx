@@ -141,7 +141,7 @@ const ProductsTab: React.FC = () => {
   };
 
   return (
-    <div className="p-6 h-full flex flex-col gap-6 relative overflow-hidden bg-brand-dark/20">
+    <div className="p-6 h-full flex flex-col gap-6 relative overflow-hidden bg-brand-dark/35">
       <BarcodeLabelsPrint isOpen={showBarcodeLabels} onClose={() => setShowBarcodeLabels(false)} />
 
       <Modal
@@ -292,7 +292,7 @@ const InventoryTab: React.FC = () => {
   );
 
   return (
-    <div className="p-6 h-full flex flex-col gap-6 relative overflow-hidden bg-brand-dark/20 animate-fade-in">
+    <div className="p-6 h-full flex flex-col gap-6 relative overflow-hidden bg-brand-dark/35 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-brand-accent">المخزون والمشتريات</h1>
@@ -305,19 +305,19 @@ const InventoryTab: React.FC = () => {
         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-4 bg-brand-surface p-4 rounded-2xl border border-brand-border/20">
+      <div className="flex flex-col sm:flex-row items-center gap-4 bg-brand-surface p-4 rounded-2xl border border-brand-border/35">
         <div className="relative flex-1">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-accent/30" size={18} />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted/50" size={18} />
           <input
             type="text"
             placeholder="بحث عن أمر شراء أو مورد..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-brand-dark/50 border border-brand-border/20 rounded-xl py-2.5 pr-10 pl-4 text-brand-accent focus:outline-none focus:border-primary-500/50 transition-colors"
+            className="w-full bg-brand-dark/50 border border-brand-border/35 rounded-xl py-2.5 pr-10 pl-4 text-brand-accent focus:outline-none focus:border-primary-500/50 transition-colors"
           />
         </div>
 
-        <div className="flex bg-brand-dark/30 rounded-lg p-1">
+        <div className="flex bg-brand-dark/45 rounded-lg p-1">
           {inventoryFilters.map((f) => (
             <button
               key={f.id}
@@ -325,7 +325,7 @@ const InventoryTab: React.FC = () => {
               className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${
                 filter === f.id
                   ? 'bg-brand-surface text-brand-accent shadow-sm'
-                  : 'text-brand-accent/40 hover:text-brand-accent/70'
+                  : 'text-brand-muted/60 hover:text-brand-accent/70'
               }`}
             >
               {f.label}
@@ -334,7 +334,7 @@ const InventoryTab: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-brand-surface border border-brand-border/20 rounded-2xl overflow-auto flex-1 shadow-xl custom-scrollbar">
+      <div className="bg-brand-surface border border-brand-border/35 rounded-2xl overflow-auto flex-1 shadow-xl custom-scrollbar">
         {loading && orders.length === 0 ? (
           <div className="p-8 text-center text-brand-accent/50 text-sm font-bold">جاري التحميل...</div>
         ) : filteredOrders.length === 0 ? (
@@ -352,7 +352,7 @@ const InventoryTab: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-right">
               <thead>
-                <tr className="bg-brand-dark/20 border-b border-brand-border/15">
+                <tr className="bg-brand-dark/35 border-b border-brand-border/30">
                   <th className="py-4 px-6 text-sm font-black text-brand-accent/50">رقم الأمر</th>
                   <th className="py-4 px-6 text-sm font-black text-brand-accent/50">المورد</th>
                   <th className="py-4 px-6 text-sm font-black text-brand-accent/50">التاريخ</th>
@@ -363,7 +363,7 @@ const InventoryTab: React.FC = () => {
               </thead>
               <tbody>
                 {filteredOrders.map((order) => (
-                  <tr key={order.id} className="border-b border-brand-border/10">
+                  <tr key={order.id} className="border-b border-brand-border/25">
                     <td className="py-4 px-6">
                       <span className="font-mono text-xs bg-brand-dark/40 px-2 py-1 rounded text-brand-accent/60">
                         {order.id.slice(0, 8)}
@@ -455,7 +455,7 @@ const ReorderTab: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center"><RefreshCw size={20} className="text-teal-500" /></div>
-          <div><h1 className="text-xl font-bold">إعادة الطلب التلقائي</h1><p className="text-xs text-brand-accent/40 dark:text-white/30">إعداد نقاط إعادة الطلب التلقائية للمخزون</p></div>
+          <div><h1 className="text-xl font-bold">إعادة الطلب التلقائي</h1><p className="text-xs text-brand-muted/60 dark:text-white/30">إعداد نقاط إعادة الطلب التلقائية للمخزون</p></div>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => autoReorderMutation.mutate()} variant="secondary" className="flex items-center gap-2"><Zap size={16} /> إعادة طلب تلقائية</Button>
@@ -471,8 +471,8 @@ const ReorderTab: React.FC = () => {
       )}
 
       <div className="flex gap-2">
-        <button onClick={() => setActiveTab('alerts')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'alerts' ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-accent/40 dark:text-white/30'}`}>تنبيهات المخزون</button>
-        <button onClick={() => setActiveTab('rules')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'rules' ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-accent/40 dark:text-white/30'}`}>قواعد إعادة الطلب</button>
+        <button onClick={() => setActiveTab('alerts')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'alerts' ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-muted/60 dark:text-white/30'}`}>تنبيهات المخزون</button>
+        <button onClick={() => setActiveTab('rules')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'rules' ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20' : 'text-brand-muted/60 dark:text-white/30'}`}>قواعد إعادة الطلب</button>
       </div>
 
       {activeTab === 'alerts' && (
@@ -483,26 +483,26 @@ const ReorderTab: React.FC = () => {
                 <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center"><Package size={16} className="text-amber-500" /></div>
                 <div>
                   <p className="font-semibold text-sm">{a.productName}</p>
-                  <p className="text-xs text-brand-accent/40 dark:text-white/30">المخزون الحالي: {a.currentStock} • نقطة الطلب: {a.reorderPoint}</p>
+                  <p className="text-xs text-brand-muted/60 dark:text-white/30">المخزون الحالي: {a.currentStock} • نقطة الطلب: {a.reorderPoint}</p>
                 </div>
               </div>
               <div className="text-right">
                 <p className="text-sm font-bold text-teal-500">الكمية المقترحة: {a.suggestedQty}</p>
-                {a.supplierName && <p className="text-xs text-brand-accent/30 dark:text-white/20">المورد: {a.supplierName}</p>}
+                {a.supplierName && <p className="text-xs text-brand-muted/50 dark:text-white/20">المورد: {a.supplierName}</p>}
               </div>
             </div>
           ))}
-          {alertCount === 0 && <p className="text-center text-brand-accent/30 dark:text-white/20 py-8">لا توجد تنبيهات حالياً</p>}
+          {alertCount === 0 && <p className="text-center text-brand-muted/50 dark:text-white/20 py-8">لا توجد تنبيهات حالياً</p>}
         </div>
       )}
 
       {activeTab === 'rules' && (
         <div className="grid gap-3">
           {(rules || []).map((r: ReorderRule) => (
-            <div key={r.id} className="bg-brand-surface/50 dark:bg-[#1e1e1e]/50 rounded-xl border border-brand-border/15 dark:border-white/[0.04] p-4 flex items-center justify-between">
+            <div key={r.id} className="bg-brand-surface/50 dark:bg-[#1e1e1e]/50 rounded-xl border border-brand-border/30 dark:border-white/[0.07] p-4 flex items-center justify-between">
               <div>
                 <p className="font-semibold text-sm">{r.productName || r.productId}</p>
-                <p className="text-xs text-brand-accent/40 dark:text-white/30">نقطة الطلب: {r.reorderPoint} • الكمية: {r.reorderQty} {r.autoOrder ? '• تلقائي' : ''}</p>
+                <p className="text-xs text-brand-muted/60 dark:text-white/30">نقطة الطلب: {r.reorderPoint} • الكمية: {r.reorderQty} {r.autoOrder ? '• تلقائي' : ''}</p>
               </div>
               <button onClick={() => {}} className="text-red-500/50 hover:text-red-500"><Trash2 size={14} /></button>
             </div>
@@ -512,9 +512,9 @@ const ReorderTab: React.FC = () => {
 
       <Modal isOpen={showRuleModal} onClose={() => setShowRuleModal(false)} title="قاعدة إعادة طلب جديدة">
         <div className="space-y-4 p-4">
-          <div><label className="text-xs font-semibold mb-1 block">معرف المنتج</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/20 dark:border-white/10 rounded-lg px-3 py-2 text-sm" placeholder="أدخل معرف المنتج" value={ruleForm.productId} onChange={e => setRuleForm({ ...ruleForm, productId: e.target.value })} /></div>
-          <div><label className="text-xs font-semibold mb-1 block">نقطة إعادة الطلب</label><input type="number" className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/20 dark:border-white/10 rounded-lg px-3 py-2 text-sm" value={ruleForm.reorderPoint} onChange={e => setRuleForm({ ...ruleForm, reorderPoint: parseFloat(e.target.value) || 0 })} /></div>
-          <div><label className="text-xs font-semibold mb-1 block">كمية الطلب</label><input type="number" className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/20 dark:border-white/10 rounded-lg px-3 py-2 text-sm" value={ruleForm.reorderQty} onChange={e => setRuleForm({ ...ruleForm, reorderQty: parseFloat(e.target.value) || 0 })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">معرف المنتج</label><input className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/35 dark:border-white/10 rounded-lg px-3 py-2 text-sm" placeholder="أدخل معرف المنتج" value={ruleForm.productId} onChange={e => setRuleForm({ ...ruleForm, productId: e.target.value })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">نقطة إعادة الطلب</label><input type="number" className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/35 dark:border-white/10 rounded-lg px-3 py-2 text-sm" value={ruleForm.reorderPoint} onChange={e => setRuleForm({ ...ruleForm, reorderPoint: parseFloat(e.target.value) || 0 })} /></div>
+          <div><label className="text-xs font-semibold mb-1 block">كمية الطلب</label><input type="number" className="w-full bg-brand-surface/50 dark:bg-[#1e1e1e] border border-brand-border/35 dark:border-white/10 rounded-lg px-3 py-2 text-sm" value={ruleForm.reorderQty} onChange={e => setRuleForm({ ...ruleForm, reorderQty: parseFloat(e.target.value) || 0 })} /></div>
           <div className="flex items-center gap-2"><input type="checkbox" checked={ruleForm.autoOrder} onChange={e => setRuleForm({ ...ruleForm, autoOrder: e.target.checked })} /><label className="text-sm">إعادة طلب تلقائية</label></div>
           <Button onClick={() => createRuleMutation.mutate({ ...ruleForm, id: '', productName: '', supplierId: '', lastOrderedAt: undefined, isActive: true, createdAt: '', updatedAt: '' } as ReorderRule)} className="w-full">إنشاء القاعدة</Button>
         </div>
@@ -595,7 +595,7 @@ const WasteTab: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex gap-2 border-b border-brand-border/20 pb-2">
+      <div className="flex gap-2 border-b border-brand-border/35 pb-2">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -613,7 +613,7 @@ const WasteTab: React.FC = () => {
       {activeTab === 'waste' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <select className="bg-brand-surface border border-brand-border/20 rounded-lg px-3 py-2 text-sm" value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+            <select className="bg-brand-surface border border-brand-border/35 rounded-lg px-3 py-2 text-sm" value={filterType} onChange={(e) => setFilterType(e.target.value)}>
               <option value="">كل الأنواع</option>
               <option value="spoilage">تلف</option>
               <option value="damage">كسر</option>
@@ -629,7 +629,7 @@ const WasteTab: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-brand-border/20">
+                <tr className="border-b border-brand-border/35">
                   <th className="text-right py-2 px-3">المنتج</th>
                   <th className="text-right py-2 px-3">النوع</th>
                   <th className="text-right py-2 px-3">الكمية</th>
@@ -641,7 +641,7 @@ const WasteTab: React.FC = () => {
               </thead>
               <tbody>
                 {(Array.isArray(wasteRecords) ? wasteRecords : []).map((r: WasteRecord) => (
-                  <tr key={r.id} className="border-b border-brand-border/10 hover:bg-brand-surface/50">
+                  <tr key={r.id} className="border-b border-brand-border/25 hover:bg-brand-surface/50">
                     <td className="py-2 px-3 font-medium">{r.productName}</td>
                     <td className="py-2 px-3">
                       <span className={`px-2 py-0.5 rounded text-xs ${
@@ -657,7 +657,7 @@ const WasteTab: React.FC = () => {
                     <td className="py-2 px-3 text-red-400 font-bold">{r.costLoss.toLocaleString()}</td>
                     <td className="py-2 px-3 text-brand-accent/60">{r.reason}</td>
                     <td className="py-2 px-3">{r.staffName}</td>
-                    <td className="py-2 px-3 text-brand-accent/40">{r.date}</td>
+                    <td className="py-2 px-3 text-brand-muted/60">{r.date}</td>
                   </tr>
                 ))}
               </tbody>
@@ -677,7 +677,7 @@ const WasteTab: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-brand-border/20">
+                <tr className="border-b border-brand-border/35">
                   <th className="text-right py-2 px-3">المنتج</th>
                   <th className="text-right py-2 px-3">النوع</th>
                   <th className="text-right py-2 px-3">قبل</th>
@@ -689,7 +689,7 @@ const WasteTab: React.FC = () => {
               </thead>
               <tbody>
                 {(Array.isArray(adjustments) ? adjustments : []).map((a: StockAdjustment) => (
-                  <tr key={a.id} className="border-b border-brand-border/10 hover:bg-brand-surface/50">
+                  <tr key={a.id} className="border-b border-brand-border/25 hover:bg-brand-surface/50">
                     <td className="py-2 px-3 font-medium">{a.productName}</td>
                     <td className="py-2 px-3">{a.type}</td>
                     <td className="py-2 px-3">{a.qtyBefore}</td>
@@ -708,10 +708,10 @@ const WasteTab: React.FC = () => {
       )}
 
       {activeTab === 'variance' && (
-        <div className="bg-brand-surface rounded-xl p-6 border border-brand-border/20 text-center">
-          <Package className="w-12 h-12 mx-auto mb-3 text-brand-accent/30" />
-          <p className="text-brand-accent/40">تقرير الفروقات يتطلب جرد فعلي</p>
-          <p className="text-sm text-brand-accent/30 mt-1">قم بتسوية المخزون أولاً ثم راجع التقرير</p>
+        <div className="bg-brand-surface rounded-xl p-6 border border-brand-border/35 text-center">
+          <Package className="w-12 h-12 mx-auto mb-3 text-brand-muted/50" />
+          <p className="text-brand-muted/60">تقرير الفروقات يتطلب جرد فعلي</p>
+          <p className="text-sm text-brand-muted/50 mt-1">قم بتسوية المخزون أولاً ثم راجع التقرير</p>
         </div>
       )}
 
@@ -720,12 +720,12 @@ const WasteTab: React.FC = () => {
           <div className="space-y-4 p-4">
             <div>
               <label className="text-sm text-brand-accent/60 mb-1 block">معرف المنتج</label>
-              <input className="w-full bg-brand-bg border border-brand-border/20 rounded-lg px-3 py-2" value={wasteForm.productId} onChange={(e) => setWasteForm({ ...wasteForm, productId: e.target.value })} />
+              <input className="w-full bg-brand-bg border border-brand-border/35 rounded-lg px-3 py-2" value={wasteForm.productId} onChange={(e) => setWasteForm({ ...wasteForm, productId: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm text-brand-accent/60 mb-1 block">نوع الهدر</label>
-                <select className="w-full bg-brand-bg border border-brand-border/20 rounded-lg px-3 py-2" value={wasteForm.wasteType} onChange={(e) => setWasteForm({ ...wasteForm, wasteType: e.target.value })}>
+                <select className="w-full bg-brand-bg border border-brand-border/35 rounded-lg px-3 py-2" value={wasteForm.wasteType} onChange={(e) => setWasteForm({ ...wasteForm, wasteType: e.target.value })}>
                   <option value="spoilage">تلف</option>
                   <option value="damage">كسر</option>
                   <option value="expired">منتهي الصلاحية</option>
@@ -735,12 +735,12 @@ const WasteTab: React.FC = () => {
               </div>
               <div>
                 <label className="text-sm text-brand-accent/60 mb-1 block">الكمية</label>
-                <input type="number" className="w-full bg-brand-bg border border-brand-border/20 rounded-lg px-3 py-2" value={wasteForm.qty || ''} onChange={(e) => setWasteForm({ ...wasteForm, qty: Number(e.target.value) })} />
+                <input type="number" className="w-full bg-brand-bg border border-brand-border/35 rounded-lg px-3 py-2" value={wasteForm.qty || ''} onChange={(e) => setWasteForm({ ...wasteForm, qty: Number(e.target.value) })} />
               </div>
             </div>
             <div>
               <label className="text-sm text-brand-accent/60 mb-1 block">السبب</label>
-              <textarea className="w-full bg-brand-bg border border-brand-border/20 rounded-lg px-3 py-2" rows={2} value={wasteForm.reason} onChange={(e) => setWasteForm({ ...wasteForm, reason: e.target.value })} />
+              <textarea className="w-full bg-brand-bg border border-brand-border/35 rounded-lg px-3 py-2" rows={2} value={wasteForm.reason} onChange={(e) => setWasteForm({ ...wasteForm, reason: e.target.value })} />
             </div>
             <Button className="w-full" onClick={() => createWasteMutation.mutate(wasteForm)}>تسجيل الهدر</Button>
           </div>
@@ -752,12 +752,12 @@ const WasteTab: React.FC = () => {
           <div className="space-y-4 p-4">
             <div>
               <label className="text-sm text-brand-accent/60 mb-1 block">معرف المنتج</label>
-              <input className="w-full bg-brand-bg border border-brand-border/20 rounded-lg px-3 py-2" value={adjustForm.productId} onChange={(e) => setAdjustForm({ ...adjustForm, productId: e.target.value })} />
+              <input className="w-full bg-brand-bg border border-brand-border/35 rounded-lg px-3 py-2" value={adjustForm.productId} onChange={(e) => setAdjustForm({ ...adjustForm, productId: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm text-brand-accent/60 mb-1 block">نوع التسوية</label>
-                <select className="w-full bg-brand-bg border border-brand-border/20 rounded-lg px-3 py-2" value={adjustForm.type} onChange={(e) => setAdjustForm({ ...adjustForm, type: e.target.value })}>
+                <select className="w-full bg-brand-bg border border-brand-border/35 rounded-lg px-3 py-2" value={adjustForm.type} onChange={(e) => setAdjustForm({ ...adjustForm, type: e.target.value })}>
                   <option value="correction">تصحيح</option>
                   <option value="count">جرد</option>
                   <option value="transfer">تحويل</option>
@@ -767,12 +767,12 @@ const WasteTab: React.FC = () => {
               </div>
               <div>
                 <label className="text-sm text-brand-accent/60 mb-1 block">الكمية الجديدة</label>
-                <input type="number" className="w-full bg-brand-bg border border-brand-border/20 rounded-lg px-3 py-2" value={adjustForm.newQty || ''} onChange={(e) => setAdjustForm({ ...adjustForm, newQty: Number(e.target.value) })} />
+                <input type="number" className="w-full bg-brand-bg border border-brand-border/35 rounded-lg px-3 py-2" value={adjustForm.newQty || ''} onChange={(e) => setAdjustForm({ ...adjustForm, newQty: Number(e.target.value) })} />
               </div>
             </div>
             <div>
               <label className="text-sm text-brand-accent/60 mb-1 block">السبب</label>
-              <textarea className="w-full bg-brand-bg border border-brand-border/20 rounded-lg px-3 py-2" rows={2} value={adjustForm.reason} onChange={(e) => setAdjustForm({ ...adjustForm, reason: e.target.value })} />
+              <textarea className="w-full bg-brand-bg border border-brand-border/35 rounded-lg px-3 py-2" rows={2} value={adjustForm.reason} onChange={(e) => setAdjustForm({ ...adjustForm, reason: e.target.value })} />
             </div>
             <Button className="w-full" onClick={() => createAdjustMutation.mutate(adjustForm)}>تسجيل التسوية</Button>
           </div>
@@ -787,7 +787,7 @@ const Products: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex items-center gap-1 p-2 px-6 bg-brand-surface/30 border-b border-brand-border/15">
+      <div className="flex items-center gap-1 p-2 px-6 bg-brand-surface/30 border-b border-brand-border/30">
         {TAB_ITEMS.map((tab) => (
           <button
             key={tab.id}
@@ -795,7 +795,7 @@ const Products: React.FC = () => {
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
               activeTab === tab.id
                 ? 'bg-primary-500/10 text-primary-500 border border-primary-500/20'
-                : 'text-brand-accent/40 dark:text-white/30 hover:bg-brand-surface/50 hover:text-brand-accent/70'
+                : 'text-brand-muted/60 dark:text-white/30 hover:bg-brand-surface/50 hover:text-brand-accent/70'
             }`}
           >
             {tab.icon}

@@ -1,78 +1,102 @@
 import React from 'react';
-import { LucideIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Package, Inbox, AlertCircle } from 'lucide-react';
 
 interface EmptyStateProps {
-  icon?: LucideIcon;
-  title: string;
+  title?: string;
   description?: string;
-  action?: {
-    label: string;
-    onClick: () => void;
-    icon?: LucideIcon;
-  };
+  icon?: React.ReactNode;
+  action?: React.ReactNode;
+  illustration?: 'default' | 'package' | 'alert';
   className?: string;
-  compact?: boolean;
 }
 
 const EmptyState: React.FC<EmptyStateProps> = ({
-  icon: Icon,
-  title,
-  description,
+  title = 'لا توجد بيانات',
+  description = 'لم يتم العثور على أي بيانات. حاول إضافة عناصر جديدة.',
+  icon,
   action,
+  illustration = 'default',
   className = '',
-  compact = false,
 }) => {
-  const ActionIcon = action?.icon;
+  const renderIllustration = () => {
+    const iconSize = 64;
+    const iconColor = 'text-brand-muted/30 dark:text-white/20';
+
+    switch (illustration) {
+      case 'package':
+        return <Package size={iconSize} className={iconColor} />;
+      case 'alert':
+        return <AlertCircle size={iconSize} className={iconColor} />;
+      default:
+        return <Inbox size={iconSize} className={iconColor} />;
+    }
+  };
 
   return (
-    <div
-      className={`flex flex-col items-center justify-center text-center animate-fade-in ${
-        compact ? 'py-10 px-4' : 'py-20 px-8'
-      } ${className}`}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className={`flex flex-col items-center justify-center py-16 text-center ${className}`}
     >
-      {Icon && (
-        <div className="relative mb-6">
-          <div
-            className={`${
-              compact ? 'w-16 h-16' : 'w-24 h-24'
-            } rounded-3xl bg-brand-border/10 border border-brand-border/20 flex items-center justify-center text-brand-accent/20 transition-all group-hover:scale-110`}
+      {/* Illustration */}
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
+        className="mb-6"
+      >
+        <div className="relative">
+          {renderIllustration()}
+          <motion.div
+            className="absolute inset-0 opacity-20"
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: [0.2, 0.3, 0.2],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
           >
-            <Icon size={compact ? 28 : 44} strokeWidth={1.5} />
-          </div>
-          {/* Decorative dots */}
-          <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary-500/20 border border-primary-500/30" />
-          <div className="absolute -bottom-1 -left-1 w-2 h-2 rounded-full bg-brand-border/30" />
+            {renderIllustration()}
+          </motion.div>
         </div>
-      )}
+      </motion.div>
 
-      <h3
-        className={`font-black text-brand-accent/50 mb-2 ${
-          compact ? 'text-base' : 'text-xl'
-        }`}
+      {/* Title */}
+      <motion.h3
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="text-lg font-semibold text-brand-accent dark:text-white mb-2"
       >
         {title}
-      </h3>
+      </motion.h3>
 
-      {description && (
-        <p
-          className={`text-brand-accent/30 font-medium max-w-xs leading-relaxed mb-6 ${
-            compact ? 'text-xs' : 'text-sm'
-          }`}
-        >
-          {description}
-        </p>
-      )}
+      {/* Description */}
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="text-sm text-brand-muted/70 dark:text-white/40 max-w-md mb-6"
+      >
+        {description}
+      </motion.p>
 
+      {/* Action */}
       {action && (
-        <button
-          onClick={action.onClick}
-          className="btn-primary flex items-center gap-2 text-sm"
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
         >
-          {ActionIcon && <ActionIcon size={16} />}
-          {action.label}
-        </button>
+          {action}
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

@@ -65,12 +65,19 @@ func (s *SaleService) Create(sale *domain.Sale) error {
 	sale.Date = time.Now().Format("2006-01-02")
 	sale.Timestamp = time.Now().Unix()
 
-	// Calculate totals
-	var subtotal, totalCost float64
+	// Calculate totals by fetching actual prices from DB to prevent tampering
+	var subtotal, totalCost int64
 	for i := range sale.Items {
+		product, err := s.productRepo.GetByID(sale.Items[i].ProductID)
+		if err == nil {
+			sale.Items[i].Price = product.Price
+			sale.Items[i].Cost = product.Cost
+		}
+		
 		sale.Items[i].SaleID = sale.ID
+		sale.Items[i].Total = int64(math.Round(float64(sale.Items[i].Price) * sale.Items[i].Quantity))
 		subtotal += sale.Items[i].Total
-		totalCost += sale.Items[i].Cost * sale.Items[i].Quantity
+		totalCost += int64(math.Round(float64(sale.Items[i].Cost) * sale.Items[i].Quantity))
 	}
 
 	sale.Subtotal = subtotal
@@ -230,14 +237,14 @@ func (s *SaleService) CalculateInstallmentPlan(total, downPayment float64, month
 		schedule[i] = domain.Installment{
 			Number:  i + 1,
 			DueDate: dueDate.Format("2006-01-02"),
-			Amount:  math.Round(amount*100) / 100,
+			Amount: int64(math.Round(amount*100)) / 100,
 			Status:  "pending",
 		}
 	}
 
 	return &domain.InstallmentPlan{
-		TotalAmount: total,
-		DownPayment: downPayment,
+		TotalAmount: int64(total),
+		DownPayment: int64(downPayment),
 		Months:      months,
 		StartDate:   startDate.Format("2006-01-02"),
 		Schedule:    schedule,
@@ -299,12 +306,13 @@ func (s *FinanceService) GetPayments(saleID string) ([]domain.Payment, error) {
 
 // StatsService handles dashboard statistics
 type StatsService struct {
-	repo repository.StatsRepository
-	log  *logger.Logger
+	repo  repository.StatsRepository
+	cache *cache.DashboardCache
+	log   *logger.Logger
 }
 
-func NewStatsService(repo repository.StatsRepository, log *logger.Logger) *StatsService {
-	return &StatsService{repo: repo, log: log}
+func NewStatsService(repo repository.StatsRepository, cache *cache.DashboardCache, log *logger.Logger) *StatsService {
+	return &StatsService{repo: repo, cache: cache, log: log}
 }
 
 func (s *StatsService) GetDashboardStats() (*domain.DashboardStats, error) {

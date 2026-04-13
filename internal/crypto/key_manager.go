@@ -1,6 +1,7 @@
 package crypto
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 )
@@ -33,6 +34,9 @@ func (km *KeyManager) GetOrCreateKey() ([]byte, error) {
 	key, err := os.ReadFile(km.keyPath)
 	if err == nil && len(key) == 32 {
 		return key, nil
+	}
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return nil, err
 	}
 
 	// Generate new key

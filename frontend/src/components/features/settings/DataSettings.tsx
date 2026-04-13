@@ -28,7 +28,7 @@ const DataSettings: React.FC<DataSettingsProps> = ({
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-brand-dark/20 p-6 rounded-2xl border border-brand-border/20 space-y-4">
+          <div className="bg-brand-dark/35 p-6 rounded-2xl border border-brand-border/35 space-y-4">
             <div className="flex items-center gap-3 text-primary-400">
               <Download size={24} />
               <h4 className="font-bold dark:text-white text-gray-900">تصدير قاعدة البيانات</h4>
@@ -46,7 +46,7 @@ const DataSettings: React.FC<DataSettingsProps> = ({
             </Button>
           </div>
 
-          <div className="bg-brand-dark/20 p-6 rounded-2xl border border-brand-border/20 space-y-4">
+          <div className="bg-brand-dark/35 p-6 rounded-2xl border border-brand-border/35 space-y-4">
             <div className="flex items-center gap-3 text-blue-400">
               <Upload size={24} />
               <h4 className="font-bold dark:text-white text-gray-900">استيراد قاعدة البيانات</h4>

@@ -33,7 +33,7 @@ func (s *WalletService) CreateWallet(customerID string, creditLimit float64) (*d
 		ID:          uuid.New().String(),
 		CustomerID:  customerID,
 		Balance:     0,
-		CreditLimit: creditLimit,
+		CreditLimit: int64(creditLimit),
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
@@ -49,13 +49,13 @@ func (s *WalletService) TopUp(customerID string, amount float64, staffID string)
 	if err != nil {
 		return err
 	}
-	wallet.Balance += amount
+	wallet.Balance += int64(amount)
 	if err := s.repo.Update(wallet); err != nil {
 		return err
 	}
 	tx := &domain.WalletTransaction{
 		CustomerID:  customerID,
-		Amount:      amount,
+		Amount:    int64(amount),
 		Type:        "topup",
 		Description: "شحن المحفظة",
 		StaffID:     staffID,
@@ -72,16 +72,16 @@ func (s *WalletService) Debit(customerID string, amount float64, saleID, staffID
 		return err
 	}
 	availableBalance := wallet.Balance + wallet.CreditLimit
-	if availableBalance < amount {
-		return errors.NewValidationError(domain.ModuleCustomer, "balance", fmt.Sprintf("رصيد غير كافٍ. المتاح: %.0f", availableBalance))
+	if availableBalance < int64(amount) {
+		return errors.NewValidationError(domain.ModuleCustomer, "balance", fmt.Sprintf("رصيد غير كافٍ. المتاح: %d", availableBalance))
 	}
-	wallet.Balance -= amount
+	wallet.Balance -= int64(amount)
 	if err := s.repo.Update(wallet); err != nil {
 		return err
 	}
 	tx := &domain.WalletTransaction{
 		CustomerID:  customerID,
-		Amount:      amount,
+		Amount:    int64(amount),
 		Type:        "debit",
 		ReferenceID: saleID,
 		Description: "خصم من المحفظة",
@@ -97,7 +97,7 @@ func (s *WalletService) UpdateCreditLimit(customerID string, creditLimit float64
 	if err != nil {
 		return err
 	}
-	wallet.CreditLimit = creditLimit
+	wallet.CreditLimit = int64(creditLimit)
 	wallet.UpdatedAt = time.Now()
 	return s.repo.Update(wallet)
 }

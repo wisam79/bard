@@ -23,7 +23,7 @@ const FormField: React.FC<FormFieldProps> = ({
 }) => {
   return (
     <div className={`space-y-1.5 ${className}`}>
-      <label className="flex items-center gap-1 text-[11px] font-black text-brand-accent/50 uppercase tracking-widest">
+      <label className="flex items-center gap-1 text-[11px] font-black text-brand-muted/60 uppercase tracking-widest">
         {label}
         {required && <span className="text-red-400 text-xs">*</span>}
       </label>
@@ -38,7 +38,7 @@ const FormField: React.FC<FormFieldProps> = ({
       )}
 
       {hint && !error && (
-        <p className="text-[11px] text-brand-accent/40 mt-0.5">{hint}</p>
+        <p className="text-[11px] text-brand-muted/45 mt-0.5">{hint}</p>
       )}
     </div>
   );

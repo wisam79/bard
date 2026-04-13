@@ -69,7 +69,7 @@ export const InstallmentAlerts: React.FC<InstallmentAlertsProps> = ({ notify }) 
           <Calendar className="w-8 h-8 text-emerald-500" />
         </div>
         <h3 className="text-lg font-bold text-brand-accent dark:text-white mb-2">لا توجد أقساط متأخرة</h3>
-        <p className="text-sm text-brand-accent/25 dark:text-white/15">جميع الأقساط مدفوعة في موعدها</p>
+        <p className="text-sm text-brand-muted/45 dark:text-white/30">جميع الأقساط مدفوعة في موعدها</p>
       </div>
     );
   }
@@ -85,27 +85,27 @@ export const InstallmentAlerts: React.FC<InstallmentAlertsProps> = ({ notify }) 
           <div className="flex items-center gap-3 mb-2"><div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center"><DollarSign className="w-5 h-5 text-amber-500" /></div><span className="text-sm text-amber-400">المبلغ الإجمالي</span></div>
           <p className="text-2xl font-black text-amber-500">{formatCurrency(summary.totalAmount)} <span className="text-[9px]">د.ع</span></p>
         </div>
-        <div className="bg-brand-surface/30 dark:bg-white/[0.02] border border-brand-border/15 dark:border-white/[0.05] rounded-2xl p-4">
-          <div className="flex items-center gap-3 mb-2"><div className="w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center"><Clock className="w-5 h-5 text-primary-500" /></div><span className="text-sm text-brand-accent/30 dark:text-white/20">حسب المدة</span></div>
+        <div className="bg-brand-surface/30 dark:bg-white/[0.06] border border-brand-border/30 dark:border-white/[0.08] rounded-2xl p-4">
+          <div className="flex items-center gap-3 mb-2"><div className="w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center"><Clock className="w-5 h-5 text-primary-500" /></div><span className="text-sm text-brand-muted/50 dark:text-white/20">حسب المدة</span></div>
           <div className="flex gap-2 text-xs">
             <span className="px-2 py-1 bg-yellow-500/20 text-yellow-500 rounded-lg">1-7: {summary.byDay['1-7']}</span>
             <span className="px-2 py-1 bg-amber-500/20 text-amber-500 rounded-lg">8-30: {summary.byDay['8-30']}</span>
             <span className="px-2 py-1 bg-red-500/20 text-red-500 rounded-lg">30+: {summary.byDay['30+']}</span>
           </div>
         </div>
-        <div className="bg-brand-surface/30 dark:bg-white/[0.02] border border-brand-border/15 dark:border-white/[0.05] rounded-2xl p-4">
-          <div className="flex items-center gap-3 mb-2"><div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center"><Users className="w-5 h-5 text-violet-500" /></div><span className="text-sm text-brand-accent/30 dark:text-white/20">عملاء متأخرين</span></div>
+        <div className="bg-brand-surface/30 dark:bg-white/[0.06] border border-brand-border/30 dark:border-white/[0.08] rounded-2xl p-4">
+          <div className="flex items-center gap-3 mb-2"><div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center"><Users className="w-5 h-5 text-violet-500" /></div><span className="text-sm text-brand-muted/50 dark:text-white/20">عملاء متأخرين</span></div>
           <p className="text-2xl font-black text-brand-accent dark:text-white">{summary.topCustomers.length}</p>
         </div>
       </div>
 
-      <div className="bg-brand-surface/20 dark:bg-white/[0.02] border border-brand-border/15 dark:border-white/[0.05] rounded-2xl overflow-hidden">
-        <div className="p-4 border-b border-brand-border/15 dark:border-white/[0.04]">
+      <div className="bg-brand-surface/35 dark:bg-white/[0.06] border border-brand-border/30 dark:border-white/[0.08] rounded-2xl overflow-hidden">
+        <div className="p-4 border-b border-brand-border/30 dark:border-white/[0.07]">
           <h3 className="font-bold text-brand-accent dark:text-white flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-amber-500" /> تفاصيل الأقساط المتأخرة</h3>
         </div>
         <div className="divide-y divide-brand-border/10 dark:divide-white/[0.03] max-h-96 overflow-y-auto">
           {summary.alerts.map((alert, i) => (
-            <div key={i} className="p-4 hover:bg-brand-surface/15 dark:hover:bg-white/[0.02] transition-colors">
+            <div key={i} className="p-4 hover:bg-brand-surface/30 dark:hover:bg-white/[0.06] transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${getSeverityColor(alert.daysOverdue)}`}>
@@ -113,13 +113,13 @@ export const InstallmentAlerts: React.FC<InstallmentAlertsProps> = ({ notify }) 
                   </div>
                   <div>
                     <p className="font-bold text-brand-accent dark:text-white/80">{alert.customerName}</p>
-                    <p className="text-xs text-brand-accent/20 dark:text-white/10">قسط #{alert.instNumber} • {alert.dueDate}</p>
+                    <p className="text-xs text-brand-muted/40 dark:text-white/25">قسط #{alert.instNumber} • {alert.dueDate}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-left">
                     <p className="font-bold text-red-500">{formatCurrency(alert.amount)} <span className="text-[8px]">د.ع</span></p>
-                    <p className="text-[10px] text-brand-accent/15 dark:text-white/10">متأخر {alert.daysOverdue} يوم</p>
+                    <p className="text-[10px] text-brand-muted/35 dark:text-white/25">متأخر {alert.daysOverdue} يوم</p>
                   </div>
                   <button onClick={() => sendWhatsAppReminder(alert)} className="p-2.5 bg-green-500/10 hover:bg-green-500 text-green-500 hover:text-white rounded-xl transition-all border border-green-500/30" title="إرسال تذكير WhatsApp">
                     <MessageCircle className="w-5 h-5" />
@@ -137,18 +137,18 @@ export const InstallmentAlerts: React.FC<InstallmentAlertsProps> = ({ notify }) 
       </div>
 
       {summary.topCustomers.length > 0 && (
-        <div className="bg-brand-surface/20 dark:bg-white/[0.02] border border-brand-border/15 dark:border-white/[0.05] rounded-2xl overflow-hidden">
-          <div className="p-4 border-b border-brand-border/15 dark:border-white/[0.04]">
+        <div className="bg-brand-surface/35 dark:bg-white/[0.06] border border-brand-border/30 dark:border-white/[0.08] rounded-2xl overflow-hidden">
+          <div className="p-4 border-b border-brand-border/30 dark:border-white/[0.07]">
             <h3 className="font-bold text-brand-accent dark:text-white flex items-center gap-2"><Users className="w-5 h-5 text-violet-500" /> أكثر العملاء تأخراً</h3>
           </div>
           <div className="divide-y divide-brand-border/10 dark:divide-white/[0.03]">
             {summary.topCustomers.slice(0, 5).map((customer, i) => (
-              <div key={i} className="p-4 flex items-center justify-between hover:bg-brand-surface/15 dark:hover:bg-white/[0.02] transition-colors">
+              <div key={i} className="p-4 flex items-center justify-between hover:bg-brand-surface/30 dark:hover:bg-white/[0.06] transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center text-violet-500 font-bold text-sm">{i + 1}</div>
                   <div>
                     <p className="font-bold text-brand-accent dark:text-white/80">{customer.customerName}</p>
-                    <p className="text-xs text-brand-accent/20 dark:text-white/10">{customer.overdueCount} أقساط متأخرة</p>
+                    <p className="text-xs text-brand-muted/40 dark:text-white/25">{customer.overdueCount} أقساط متأخرة</p>
                   </div>
                 </div>
                 <span className="font-bold text-red-500">{formatCurrency(customer.totalDebt)} <span className="text-[8px]">د.ع</span></span>

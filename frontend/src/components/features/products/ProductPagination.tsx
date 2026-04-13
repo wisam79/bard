@@ -9,8 +9,8 @@ interface ProductPaginationProps {
 
 const ProductPagination: React.FC<ProductPaginationProps> = ({ page, setPage, productsData }) => {
   return (
-    <div className="p-4 bg-brand-dark/20 border-t border-brand-border/30 flex items-center justify-between">
-      <p className="text-xs font-bold text-brand-accent/40">
+    <div className="p-4 bg-brand-dark/35 border-t border-brand-border/30 flex items-center justify-between">
+      <p className="text-xs font-bold text-brand-muted/60">
         عرض <span className="dark:text-white text-gray-900">{(page - 1) * 20 + 1}</span> إلى <span className="dark:text-white text-gray-900">{Math.min(page * 20, productsData?.total || 0)}</span> من <span className="dark:text-white text-gray-900">{productsData?.total || 0}</span> منتج
       </p>
       {productsData && productsData.totalPages > 1 && (
@@ -28,7 +28,7 @@ const ProductPagination: React.FC<ProductPaginationProps> = ({ page, setPage, pr
                 key={i}
                 onClick={() => setPage(i + 1)}
                 className={`w-8 h-8 rounded-lg text-xs font-black transition-all ${
-                  page === i + 1 ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20' : 'bg-brand-dark/40 text-brand-accent/40 hover:bg-brand-dark/60'
+                  page === i + 1 ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20' : 'bg-brand-dark/40 text-brand-muted/60 hover:bg-brand-dark/60'
                 }`}
               >
                 {i + 1}

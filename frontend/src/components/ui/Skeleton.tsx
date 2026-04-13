@@ -1,108 +1,82 @@
 import React from 'react';
-
-type SkeletonVariant = 'text' | 'circle' | 'card' | 'table-row' | 'stat-card' | 'rect';
+import { motion } from 'framer-motion';
 
 interface SkeletonProps {
-  variant?: SkeletonVariant;
-  width?: string;
-  height?: string;
+  variant?: 'text' | 'circular' | 'rectangular' | 'rounded';
+  width?: string | number;
+  height?: string | number;
   className?: string;
+  animation?: 'pulse' | 'wave' | 'none';
   count?: number;
 }
 
-const baseClass =
-  'animate-pulse bg-brand-border/20 rounded-xl relative overflow-hidden';
-
-const shimmer =
-  "after:absolute after:inset-0 after:translate-x-[-100%] after:bg-gradient-to-r after:from-transparent after:via-white/5 after:to-transparent after:animate-shimmer";
-
 const Skeleton: React.FC<SkeletonProps> = ({
-  variant = 'rect',
+  variant = 'text',
   width,
   height,
   className = '',
+  animation = 'pulse',
   count = 1,
 }) => {
-  const items = Array.from({ length: count });
-
-  const renderVariant = (_: unknown, i: number) => {
-    switch (variant) {
-      case 'text':
-        return (
-          <div
-            key={i}
-            className={`${baseClass} ${shimmer} h-4 rounded-lg ${className}`}
-            style={{ width: width || '100%' }}
-          />
-        );
-
-      case 'circle':
-        return (
-          <div
-            key={i}
-            className={`${baseClass} ${shimmer} rounded-full ${className}`}
-            style={{
-              width: width || '40px',
-              height: height || '40px',
-            }}
-          />
-        );
-
-      case 'stat-card':
-        return (
-          <div
-            key={i}
-            className={`bg-brand-surface border-2 border-brand-border/30 rounded-3xl p-6 space-y-4 ${className}`}
-          >
-            <div className="flex items-center justify-between">
-              <div className={`${baseClass} ${shimmer} w-14 h-14 rounded-2xl`} />
-              <div className={`${baseClass} ${shimmer} w-12 h-6 rounded-lg`} />
-            </div>
-            <div className="space-y-2">
-              <div className={`${baseClass} ${shimmer} h-3 w-20 rounded-lg`} />
-              <div className={`${baseClass} ${shimmer} h-8 w-32 rounded-xl`} />
-            </div>
-          </div>
-        );
-
-      case 'card':
-        return (
-          <div
-            key={i}
-            className={`bg-brand-surface border border-brand-border/30 rounded-3xl p-6 space-y-4 ${className}`}
-          >
-            <div className={`${baseClass} ${shimmer} h-6 w-1/3 rounded-lg`} />
-            <div className={`${baseClass} ${shimmer} h-4 w-full rounded-lg`} />
-            <div className={`${baseClass} ${shimmer} h-4 w-2/3 rounded-lg`} />
-            <div className={`${baseClass} ${shimmer} h-4 w-3/4 rounded-lg`} />
-          </div>
-        );
-
-      case 'table-row':
-        return (
-          <div
-            key={i}
-            className={`flex items-center gap-4 p-4 border-b border-brand-border/10 ${className}`}
-          >
-            <div className={`${baseClass} ${shimmer} w-8 h-8 rounded-xl flex-shrink-0`} />
-            <div className={`${baseClass} ${shimmer} flex-1 h-4 rounded-lg`} />
-            <div className={`${baseClass} ${shimmer} w-24 h-4 rounded-lg`} />
-            <div className={`${baseClass} ${shimmer} w-16 h-6 rounded-lg`} />
-          </div>
-        );
-
-      default:
-        return (
-          <div
-            key={i}
-            className={`${baseClass} ${shimmer} ${className}`}
-            style={{ width: width || '100%', height: height || '16px' }}
-          />
-        );
-    }
+  const baseClasses = 'inline-block bg-brand-border/20 dark:bg-white/[0.06]';
+  
+  const variantClasses = {
+    text: 'rounded-md h-3',
+    circular: 'rounded-full',
+    rectangular: 'rounded-none',
+    rounded: 'rounded-lg',
   };
 
-  return <>{items.map(renderVariant)}</>;
+  const animationClasses = {
+    pulse: 'animate-pulse',
+    wave: '',
+    none: '',
+  };
+
+  const style: React.CSSProperties = {
+    width: width ? (typeof width === 'number' ? `${width}px` : width) : '100%',
+    height: height ? (typeof height === 'number' ? `${height}px` : height) : undefined,
+  };
+
+  const items = Array.from({ length: count });
+
+  if (animation === 'wave') {
+    return (
+      <div className={`${className}`}>
+        {items.map((_, index) => (
+          <div
+            key={index}
+            className={`${baseClasses} ${variantClasses[variant]} relative overflow-hidden`}
+            style={style}
+          >
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+              animate={{
+                x: ['100%', '-100%'],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: 'linear',
+              }}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {items.map((_, index) => (
+        <div
+          key={index}
+          className={`${baseClasses} ${variantClasses[variant]} ${animationClasses[animation]} ${className}`}
+          style={style}
+        />
+      ))}
+    </>
+  );
 };
 
 export default Skeleton;

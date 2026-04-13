@@ -144,7 +144,7 @@ const Settings: React.FC = () => {
             <SettingsIcon className="text-primary-500" size={24} />
             مركز الإعدادات
           </h1>
-          <p className="text-[10px] text-brand-accent/20 dark:text-white/10 font-medium">تخصيص النظام وإدارة موارد متجرك</p>
+          <p className="text-[10px] text-brand-muted/40 dark:text-white/25 font-medium">تخصيص النظام وإدارة موارد متجرك</p>
         </div>
       </div>
 
@@ -157,7 +157,7 @@ const Settings: React.FC = () => {
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-300 whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
-                  : 'bg-brand-surface/30 dark:bg-white/[0.02] text-brand-accent/30 dark:text-white/15 hover:text-brand-accent dark:hover:text-white/50 hover:bg-brand-surface/50 dark:hover:bg-white/[0.04] border border-brand-border/10 dark:border-white/[0.03]'
+                  : 'bg-brand-surface/30 dark:bg-white/[0.06] text-brand-muted/50 dark:text-white/30 hover:text-brand-accent dark:hover:text-white/50 hover:bg-brand-surface/50 dark:hover:bg-white/[0.06] border border-brand-border/25 dark:border-white/[0.09]'
               }`}
             >
               <span className={activeTab === tab.id ? 'text-white' : tab.color}>{tab.icon}</span>
@@ -166,7 +166,7 @@ const Settings: React.FC = () => {
           ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto bg-brand-surface/20 dark:bg-white/[0.02] backdrop-blur-xl border border-brand-border/15 dark:border-white/[0.05] rounded-2xl p-6 shadow-sm">
+        <div className="flex-1 overflow-y-auto bg-brand-surface/35 dark:bg-white/[0.06] backdrop-blur-xl border border-brand-border/30 dark:border-white/[0.08] rounded-2xl p-6 shadow-sm">
           {activeTab === 'store' && <StoreSettings formData={formData} setFormData={setFormData} onSave={handleSavePrefs} />}
           {activeTab === 'appearance' && <AppearanceSettings formData={formData} setFormData={setFormData} onSave={handleSavePrefs} />}
           {activeTab === 'print' && <PrintSettings formData={formData} setFormData={setFormData} onSave={handleSavePrefs} />}
@@ -197,20 +197,20 @@ const Settings: React.FC = () => {
       }>
         <form onSubmit={(e) => { e.preventDefault(); handleCreateStaff(); }} className="space-y-5">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-brand-accent/30 dark:text-white/15 uppercase tracking-[0.15em]">اسم المستخدم *</label>
+            <label className="text-[10px] font-bold text-brand-muted/50 dark:text-white/30 uppercase tracking-[0.15em]">اسم المستخدم *</label>
             <input type="text" value={staffForm.username} onChange={(e) => setStaffForm({ ...staffForm, username: e.target.value })} className="input py-3 font-mono" placeholder="username" required />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-brand-accent/30 dark:text-white/15 uppercase tracking-[0.15em]">الاسم الكامل *</label>
+            <label className="text-[10px] font-bold text-brand-muted/50 dark:text-white/30 uppercase tracking-[0.15em]">الاسم الكامل *</label>
             <input type="text" value={staffForm.name} onChange={(e) => setStaffForm({ ...staffForm, name: e.target.value })} className="input py-3" required />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-brand-accent/30 dark:text-white/15 uppercase tracking-[0.15em]">كلمة المرور *</label>
+            <label className="text-[10px] font-bold text-brand-muted/50 dark:text-white/30 uppercase tracking-[0.15em]">كلمة المرور *</label>
             <input type="password" value={staffForm.password} onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })} className="input py-3 font-mono" required />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-brand-accent/30 dark:text-white/15 uppercase tracking-[0.15em]">الصلاحية</label>
+              <label className="text-[10px] font-bold text-brand-muted/50 dark:text-white/30 uppercase tracking-[0.15em]">الصلاحية</label>
               <select value={staffForm.role} onChange={(e) => setStaffForm({ ...staffForm, role: e.target.value as "cashier" | "manager" | "admin" })} className="input py-3">
                 <option value="cashier">كاشير</option>
                 <option value="manager">مدير فرع</option>
@@ -218,7 +218,7 @@ const Settings: React.FC = () => {
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-brand-accent/30 dark:text-white/15 uppercase tracking-[0.15em]">رقم الهاتف</label>
+              <label className="text-[10px] font-bold text-brand-muted/50 dark:text-white/30 uppercase tracking-[0.15em]">رقم الهاتف</label>
               <input type="text" value={staffForm.phone} onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })} className="input py-3 font-mono" />
             </div>
           </div>

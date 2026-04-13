@@ -62,7 +62,7 @@ func (s *KioskService) EndSession(sessionID uint, saleID string, totalAmount flo
 		ID:          sessionID,
 		SaleID:      saleID,
 		EndedAt:     &now,
-		TotalAmount: totalAmount,
+		TotalAmount: int64(totalAmount),
 		Status:      "completed",
 	}
 	return s.repo.UpdateSession(session)

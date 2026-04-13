@@ -1,11 +1,14 @@
 package sqlite
 
 import (
+	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
 
+	"bard/internal/audit"
 	"bard/internal/domain"
+	migration "bard/migrations"
 	"bard/pkg/utils"
 
 	"github.com/glebarez/sqlite"
@@ -13,6 +16,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
+
+func boolPtr(b bool) *bool { return &b }
 
 // NewDatabase creates and initializes the database
 func NewDatabase() (*gorm.DB, error) {
@@ -44,6 +49,15 @@ func NewDatabase() (*gorm.DB, error) {
 	sqlDB.Exec("PRAGMA busy_timeout=5000;")
 	sqlDB.Exec("PRAGMA foreign_keys=ON;")
 
+	// Run versioned migrations (goose) for schema changes.
+	// AutoMigrate is kept temporarily for backward compatibility during transition.
+	// Once all schema changes go through goose, AutoMigrate can be removed.
+	migRunner := migration.NewRunner(sqlDB, slog.Default())
+	if err := migRunner.Up(); err != nil {
+		// Non-fatal: log and continue with AutoMigrate as fallback
+		slog.Warn("Goose migration failed, falling back to AutoMigrate", "error", err)
+	}
+
 	// Auto migrate all models
 	err = db.AutoMigrate(
 		&domain.Product{},
@@ -58,6 +72,7 @@ func NewDatabase() (*gorm.DB, error) {
 		&domain.AppPreferences{},
 		&domain.Discount{},
 		&domain.Staff{},
+		&audit.AuditLog{},
 		&domain.ActivityLog{},
 		&domain.SecurityLog{},
 		&domain.ParkedSale{},
@@ -165,7 +180,7 @@ func NewDatabase() (*gorm.DB, error) {
 			Password:           hashedPassword,
 			Name:               "المدير",
 			Role:               "admin",
-			IsActive:           true,
+			IsActive: boolPtr(true),
 			MustChangePassword: true,
 			CreatedAt:          time.Now(),
 			UpdatedAt:          time.Now(),

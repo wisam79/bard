@@ -66,6 +66,17 @@ func (c *Cache) Delete(key string) {
 	delete(c.items, key)
 }
 
+func (c *Cache) DeletePrefix(prefix string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for key := range c.items {
+		// prefix match
+		if len(key) >= len(prefix) && key[:len(prefix)] == prefix {
+			delete(c.items, key)
+		}
+	}
+}
+
 func (c *Cache) Clear() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -167,7 +178,7 @@ func (c *ProductCache) SetCategories(categories interface{}) {
 
 func (c *ProductCache) InvalidateProduct(id string) {
 	c.Delete("product:" + id)
-	c.Delete("products:list:")
+	c.DeletePrefix("products:list:")
 	c.Delete("categories:list")
 }
 
@@ -218,7 +229,9 @@ func (c *SaleCache) SetRecentSales(limit int, sales interface{}) {
 
 func (c *SaleCache) InvalidateSale(id string) {
 	c.Delete("sale:" + id)
-	c.Delete("sales:recent:")
+	c.DeletePrefix("sales:list:")
+	c.DeletePrefix("sales:recent:")
+	c.DeletePrefix("dashboard:stats")
 }
 
 func (c *SaleCache) InvalidateAllSales() {
@@ -259,5 +272,5 @@ func (c *CustomerCache) SetCustomer(id string, customer interface{}) {
 
 func (c *CustomerCache) InvalidateCustomer(id string) {
 	c.Delete("customer:" + id)
-	c.Delete("customers:list:")
+	c.DeletePrefix("customers:list:")
 }

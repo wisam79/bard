@@ -185,8 +185,8 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
       >
         <div className="bg-brand-surface border border-brand-border/50 rounded-3xl shadow-2xl overflow-hidden">
           {/* Search input */}
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-brand-border/20">
-            <Search size={20} className="text-brand-accent/40 flex-shrink-0" />
+          <div className="flex items-center gap-3 px-5 py-4 border-b border-brand-border/35">
+            <Search size={20} className="text-brand-muted/60 flex-shrink-0" />
             <input
               ref={inputRef}
               type="text"
@@ -202,7 +202,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
             />
             <button
               onClick={onClose}
-              className="text-brand-accent/30 hover:text-brand-accent/60 transition-colors"
+              className="text-brand-muted/50 hover:text-brand-accent/60 transition-colors"
             >
               <X size={18} />
             </button>
@@ -212,14 +212,14 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
           <div ref={listRef} className="max-h-[360px] overflow-y-auto py-2">
             {filtered.length === 0 ? (
               <div className="py-12 text-center">
-                <p className="text-brand-accent/30 font-bold text-sm">
+                <p className="text-brand-muted/50 font-bold text-sm">
                   لا توجد نتائج لـ &quot;{query}&quot;
                 </p>
               </div>
             ) : (
               Object.entries(grouped).map(([category, cmds]) => (
                 <div key={category}>
-                  <p className="px-5 py-2 text-[10px] font-black text-brand-accent/30 uppercase tracking-widest">
+                  <p className="px-5 py-2 text-[10px] font-black text-brand-muted/50 uppercase tracking-widest">
                     {category}
                   </p>
                   {cmds.map((cmd) => {
@@ -234,7 +234,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
                         className={`w-full flex items-center gap-4 px-5 py-3 transition-all text-right ${
                           isSelected
                             ? 'bg-primary-500/15 text-primary-400'
-                            : 'text-brand-accent hover:bg-brand-dark/20'
+                            : 'text-brand-accent hover:bg-brand-dark/35'
                         }`}
                       >
                         {/* Icon */}
@@ -242,7 +242,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
                           className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
                             isSelected
                               ? 'bg-primary-500/20 text-primary-400'
-                              : 'bg-brand-dark/30 text-brand-accent/50'
+                              : 'bg-brand-dark/45 text-brand-accent/50'
                           }`}
                         >
                           {cmd.icon}
@@ -252,7 +252,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-sm leading-tight">{cmd.label}</p>
                           {cmd.description && (
-                            <p className="text-[11px] text-brand-accent/40 mt-0.5 truncate">
+                            <p className="text-[11px] text-brand-muted/60 mt-0.5 truncate">
                               {cmd.description}
                             </p>
                           )}
@@ -260,7 +260,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
 
                         {/* Shortcut badge */}
                         {cmd.shortcut && (
-                          <span className="px-2 py-1 rounded-lg bg-brand-dark/40 border border-brand-border/30 text-[10px] font-black text-brand-accent/40 flex-shrink-0">
+                          <span className="px-2 py-1 rounded-lg bg-brand-dark/40 border border-brand-border/30 text-[10px] font-black text-brand-muted/60 flex-shrink-0">
                             {cmd.shortcut}
                           </span>
                         )}
@@ -278,7 +278,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Footer hints */}
-          <div className="flex items-center gap-4 px-5 py-3 border-t border-brand-border/15 text-[10px] font-black text-brand-accent/25">
+          <div className="flex items-center gap-4 px-5 py-3 border-t border-brand-border/30 text-[10px] font-black text-brand-muted/45">
             <span className="flex items-center gap-1.5">
               <Keyboard size={11} />
               <span>↑↓ للتنقل</span>

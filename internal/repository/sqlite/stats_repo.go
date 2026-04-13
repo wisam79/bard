@@ -49,7 +49,7 @@ func (r *statsRepository) GetDashboardStats() (*domain.DashboardStats, error) {
 	stats.TotalCustomers = int(totalCustomers)
 
 	// Total debt
-	var totalDebt float64
+	var totalDebt int64
 	if err := r.db.Model(&domain.Customer{}).Select("COALESCE(SUM(debt + installment_debt), 0)").Row().Scan(&totalDebt); err != nil {
 		return nil, err
 	}

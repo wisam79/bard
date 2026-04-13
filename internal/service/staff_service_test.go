@@ -13,8 +13,10 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func boolPtr(b bool) *bool { return &b }
+
 func TestStaffService_GetAll(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
@@ -33,7 +35,7 @@ func TestStaffService_GetAll(t *testing.T) {
 }
 
 func TestStaffService_GetByID(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
@@ -49,7 +51,7 @@ func TestStaffService_GetByID(t *testing.T) {
 }
 
 func TestStaffService_Create(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
@@ -133,7 +135,7 @@ func TestStaffService_Create_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mocks.MockStaffRepository)
+			mockRepo := new(mocks.StaffRepository)
 			log := logger.New(logger.LevelInfo, false)
 			svc := NewStaffService(mockRepo, log)
 
@@ -155,7 +157,7 @@ func TestStaffService_Create_Validation(t *testing.T) {
 }
 
 func TestStaffService_Create_EmptyPassword(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
@@ -176,7 +178,7 @@ func TestStaffService_Create_EmptyPassword(t *testing.T) {
 }
 
 func TestStaffService_Create_AlreadyHashedPassword(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
@@ -198,7 +200,7 @@ func TestStaffService_Create_AlreadyHashedPassword(t *testing.T) {
 }
 
 func TestStaffService_Update(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
@@ -219,7 +221,7 @@ func TestStaffService_Update(t *testing.T) {
 }
 
 func TestStaffService_Update_PreservePassword(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
@@ -248,7 +250,7 @@ func TestStaffService_Update_PreservePassword(t *testing.T) {
 }
 
 func TestStaffService_Update_EmptyName(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
@@ -265,7 +267,7 @@ func TestStaffService_Update_EmptyName(t *testing.T) {
 }
 
 func TestStaffService_Delete(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
@@ -278,11 +280,11 @@ func TestStaffService_Delete(t *testing.T) {
 }
 
 func TestStaffService_Authenticate_Success(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
-	expected := &domain.Staff{ID: "staff-1", Username: "admin", Role: "admin", IsActive: true}
+	expected := &domain.Staff{ID: "staff-1", Username: "admin", Role: "admin", IsActive: boolPtr(true)}
 	mockRepo.On("Authenticate", "admin", "password123").Return(expected, nil)
 
 	result, err := svc.Authenticate("admin", "password123")
@@ -293,7 +295,7 @@ func TestStaffService_Authenticate_Success(t *testing.T) {
 }
 
 func TestStaffService_Authenticate_Failure(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
@@ -307,7 +309,7 @@ func TestStaffService_Authenticate_Failure(t *testing.T) {
 }
 
 func TestStaffService_UpdatePassword_Success(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
@@ -327,7 +329,7 @@ func TestStaffService_UpdatePassword_Success(t *testing.T) {
 }
 
 func TestStaffService_UpdatePassword_WrongOldPassword(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
@@ -346,7 +348,7 @@ func TestStaffService_UpdatePassword_WrongOldPassword(t *testing.T) {
 }
 
 func TestStaffService_UpdatePassword_StaffNotFound(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 
@@ -358,7 +360,7 @@ func TestStaffService_UpdatePassword_StaffNotFound(t *testing.T) {
 }
 
 func TestStaffService_UpdatePassword_ClearMustChangePassword(t *testing.T) {
-	mockRepo := new(mocks.MockStaffRepository)
+	mockRepo := new(mocks.StaffRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewStaffService(mockRepo, log)
 

@@ -7,7 +7,7 @@ interface SpotlightCardProps {
   onClick?: () => void;
 }
 
-export const SpotlightCard = memo(({ children, className = '', spotlightColor = 'rgba(99, 102, 241, 0.06)', onClick }: SpotlightCardProps) => {
+export const SpotlightCard = memo(({ children, className = '', spotlightColor = 'rgba(99, 102, 241, 0.08)', onClick }: SpotlightCardProps) => {
   const divRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [opacity, setOpacity] = useState(0);
@@ -25,7 +25,7 @@ export const SpotlightCard = memo(({ children, className = '', spotlightColor = 
       onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setOpacity(0)}
-      className={`relative bg-brand-surface/40 dark:bg-white/[0.02] border border-brand-border/20 dark:border-white/[0.05] rounded-2xl transition-all duration-500 hover:shadow-xl dark:hover:shadow-primary-500/5 backdrop-blur-xl ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      className={`relative bg-brand-surface/50 dark:bg-white/[0.03] border border-brand-border/35 dark:border-white/[0.08] rounded-2xl transition-all duration-500 hover:shadow-xl dark:hover:shadow-primary-500/8 backdrop-blur-xl ${onClick ? 'cursor-pointer' : ''} ${className}`}
     >
       <div
         className="pointer-events-none absolute -inset-px opacity-0 transition duration-500 rounded-2xl"

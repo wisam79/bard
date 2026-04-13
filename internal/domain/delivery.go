@@ -23,7 +23,7 @@ type DeliveryOrder struct {
 	DriverID      string     `json:"driverId,omitempty"`
 	DriverName    string     `json:"driverName,omitempty"`
 	Status        string     `json:"status"`
-	Fee           float64    `json:"fee"`
+	Fee           int64      `json:"fee"`
 	EstimatedAt   *time.Time `json:"estimatedAt,omitempty"`
 	DeliveredAt   *time.Time `json:"deliveredAt,omitempty"`
 	CreatedAt     time.Time  `json:"createdAt"`

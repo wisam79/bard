@@ -153,15 +153,25 @@ let cleanupActivityListeners: (() => void) | null = null;
 const setupActivityListeners = (
   resetTimer: () => void
 ) => {
+  let timerId: number | null = null;
+  const throttledReset = () => {
+    if (timerId !== null) return;
+    timerId = window.setTimeout(() => {
+      resetTimer();
+      timerId = null;
+    }, 1000);
+  };
+
   const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
   
   events.forEach(event => {
-    document.addEventListener(event, resetTimer, { passive: true });
+    document.addEventListener(event, throttledReset, { passive: true });
   });
 
   return () => {
+    if (timerId !== null) window.clearTimeout(timerId);
     events.forEach(event => {
-      document.removeEventListener(event, resetTimer);
+      document.removeEventListener(event, throttledReset);
     });
   };
 };

@@ -20,8 +20,8 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   return (
     <label
       htmlFor={id}
-      className={`flex items-center justify-between gap-4 p-4 rounded-2xl bg-brand-dark/20 border border-brand-border/20 cursor-pointer group transition-all ${
-        disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary-500/30 hover:bg-brand-dark/30'
+      className={`flex items-center justify-between gap-4 p-4 rounded-2xl bg-brand-dark/25 border border-brand-border/30 cursor-pointer group transition-all ${
+        disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary-500/35 hover:bg-brand-dark/35'
       }`}
     >
       <div className="flex-1">
@@ -29,7 +29,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
           {label}
         </p>
         {description && (
-          <p className="text-[11px] text-brand-accent/50 mt-0.5 leading-relaxed">
+          <p className="text-[11px] text-brand-muted/60 mt-0.5 leading-relaxed">
             {description}
           </p>
         )}
@@ -49,8 +49,8 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
           onClick={() => !disabled && onChange(!checked)}
           className={`w-12 h-6 rounded-full transition-all duration-300 border ${
             checked
-              ? 'bg-primary-500 border-primary-600 shadow-lg shadow-primary-500/30'
-              : 'bg-brand-dark/50 border-brand-border/50'
+              ? 'bg-primary-500 border-primary-600 shadow-lg shadow-primary-500/35'
+              : 'bg-brand-dark/50 border-brand-border/60'
           }`}
         >
           <div

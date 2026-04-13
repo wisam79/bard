@@ -1,6 +1,10 @@
 package domain
 
-import "time"
+import (
+	"time"
+
+	"bard/internal/crypto"
+)
 
 // Staff represents a system user
 type Staff struct {
@@ -10,7 +14,7 @@ type Staff struct {
 	Name               string    `json:"name"`
 	Role               string    `json:"role"` // admin, cashier, manager
 	Phone              string    `json:"phone,omitempty"`
-	IsActive           bool      `json:"isActive" gorm:"default:true"`
+	IsActive           *bool     `json:"isActive" gorm:"default:true"`
 	MustChangePassword bool      `json:"mustChangePassword" gorm:"default:false"`
 	Token              string    `gorm:"-" json:"token,omitempty"` // Transient session token
 	CreatedAt          time.Time `json:"createdAt"`
@@ -30,7 +34,7 @@ type AppPreferences struct {
 	EnableSound           bool    `json:"enableSound"`
 	Language              string  `json:"language"`
 	LowStockTrigger       int     `json:"lowStockTrigger"`
-	AdminPin              string  `json:"adminPin"`
+	AdminPin              crypto.SecureString `json:"adminPin"`
 	FontSize              string  `json:"fontSize"`
 	AutoLockTime          int     `json:"autoLockTime"`
 	SessionTimeoutMinutes int     `json:"sessionTimeoutMinutes" gorm:"default:30"`

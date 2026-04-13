@@ -568,9 +568,9 @@ func (r *budgetRepository) GetSpentForBudget(budgetID string) (float64, error) {
 	if err := r.db.First(&b, "id = ?", budgetID).Error; err != nil {
 		return 0, err
 	}
-	var total float64
+	var total int64
 	r.db.Model(&domain.Expense{}).Where("category = ? AND date >= ? AND date <= ?", b.Category, b.StartDate, b.EndDate).Select("COALESCE(SUM(amount), 0)").Scan(&total)
-	return total, nil
+	return float64(total), nil
 }
 
 type reportBuilderRepository struct {

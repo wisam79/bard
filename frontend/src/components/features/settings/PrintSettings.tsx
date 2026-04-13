@@ -29,10 +29,10 @@ const PrintSettings: React.FC<PrintSettingsProps> = ({ formData, setFormData, on
             />
           </div>
 
-          <div className="flex items-center justify-between p-6 bg-brand-dark/20 rounded-2xl border border-brand-border/20">
+          <div className="flex items-center justify-between p-6 bg-brand-dark/35 rounded-2xl border border-brand-border/35">
             <div>
               <p className="text-sm font-bold">الطباعة التلقائية (Web)</p>
-              <p className="text-xs text-brand-accent/40 font-medium mt-1">فتح نافذة الطباعة مباشرة بعد البيع</p>
+              <p className="text-xs text-brand-muted/60 font-medium mt-1">فتح نافذة الطباعة مباشرة بعد البيع</p>
             </div>
             <button
               onClick={() => setFormData({ ...formData, autoPrint: !formData.autoPrint })}

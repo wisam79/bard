@@ -1,13 +1,17 @@
 package middleware
 
 import (
-	"bard/internal/domain"
-	"bard/internal/logger"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"net/http"
-	"sync"
 	"time"
+
+	"bard/internal/domain"
+	"bard/internal/logger"
+	"bard/internal/repository"
+
+	"github.com/google/uuid"
 )
 
 const (
@@ -95,25 +99,21 @@ var RolePermissions = map[string]map[string]bool{
 	},
 }
 
-type sessionInfo struct {
-	staff      *domain.Staff
-	createdAt  time.Time
-	lastActive time.Time
-}
-
 type AuthMiddleware struct {
 	log         *logger.Logger
 	rateLimiter *RateLimiter
-	mu          sync.RWMutex
-	sessions    map[string]*sessionInfo
+	sessionRepo repository.SessionRepository
+	staffRepo   repository.StaffRepository
 }
 
-func NewAuthMiddleware(log *logger.Logger, rateLimiter *RateLimiter) *AuthMiddleware {
+func NewAuthMiddleware(log *logger.Logger, rateLimiter *RateLimiter, sessionRepo repository.SessionRepository, staffRepo repository.StaffRepository) *AuthMiddleware {
 	am := &AuthMiddleware{
 		log:         log,
 		rateLimiter: rateLimiter,
-		sessions:    make(map[string]*sessionInfo),
+		sessionRepo: sessionRepo,
+		staffRepo:   staffRepo,
 	}
+	// Start background cleanup of expired sessions
 	go am.cleanupSessions()
 	return am
 }
@@ -132,18 +132,15 @@ func (m *AuthMiddleware) MiddlewareFunc() func(http.Handler) http.Handler {
 			}
 
 			if token != "" {
-				m.mu.RLock()
-				sess, exists := m.sessions[token]
-				m.mu.RUnlock()
-
-				if exists && time.Since(sess.lastActive) < 30*time.Minute {
-					sess.lastActive = time.Now()
+				tokenHash := hashToken(token)
+				sess, err := m.sessionRepo.GetSessionByTokenHash(tokenHash)
+				if err == nil && sess != nil {
+					// Update last active time periodically (e.g. if older than 5 mins to avoid hitting DB every request)
+					if time.Since(sess.LastActive) > 5*time.Minute {
+						m.sessionRepo.UpdateLastActive(sess.ID, time.Now())
+					}
 					next.ServeHTTP(w, r)
 					return
-				} else if exists {
-					m.mu.Lock()
-					delete(m.sessions, token)
-					m.mu.Unlock()
 				}
 			}
 
@@ -155,45 +152,64 @@ func (m *AuthMiddleware) MiddlewareFunc() func(http.Handler) http.Handler {
 
 func (m *AuthMiddleware) CreateSession(staff *domain.Staff) string {
 	token := generateToken()
-	m.mu.Lock()
-	m.sessions[token] = &sessionInfo{
-		staff:      staff,
-		createdAt:  time.Now(),
-		lastActive: time.Now(),
+	tokenHash := hashToken(token)
+
+	// Determine session length (you could fetch this from app preferences)
+	expiresAt := time.Now().Add(24 * time.Hour) // default to 24h for persistent desktop sessions
+
+	session := &domain.Session{
+		ID:         uuid.New().String(),
+		TokenHash:  tokenHash,
+		StaffID:    staff.ID,
+		StaffRole:  staff.Role,
+		LastActive: time.Now(),
+		ExpiresAt:  expiresAt,
+		CreatedAt:  time.Now(),
 	}
-	m.mu.Unlock()
+
+	if err := m.sessionRepo.CreateSession(session); err != nil {
+		m.log.Error("Failed to create session in DB", "error", err, "staffID", staff.ID)
+		return ""
+	}
+
 	m.log.Info("Session created", "staffID", staff.ID, "role", staff.Role)
 	return token
 }
 
 func (m *AuthMiddleware) DestroySession(token string) {
-	m.mu.Lock()
-	delete(m.sessions, token)
-	m.mu.Unlock()
+	tokenHash := hashToken(token)
+	if err := m.sessionRepo.DeleteSessionByTokenHash(tokenHash); err != nil {
+		m.log.Error("Failed to destroy session", "error", err)
+	}
 }
 
 func (m *AuthMiddleware) GetStaff(token string) (*domain.Staff, bool) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	sess, exists := m.sessions[token]
-	if !exists || time.Since(sess.lastActive) > 30*time.Minute {
+	if token == "" {
 		return nil, false
 	}
-	return sess.staff, true
+	tokenHash := hashToken(token)
+	sess, err := m.sessionRepo.GetSessionByTokenHash(tokenHash)
+	if err != nil || sess == nil {
+		return nil, false
+	}
+
+	// Fetch fresh staff details so we reflect role/status changes instantly
+	staff, err := m.staffRepo.GetByID(sess.StaffID)
+	if err != nil || (staff.IsActive != nil && !*staff.IsActive) {
+		m.sessionRepo.DeleteSession(sess.ID)
+		return nil, false
+	}
+
+	return staff, true
 }
 
 func (m *AuthMiddleware) cleanupSessions() {
-	ticker := time.NewTicker(10 * time.Minute)
+	ticker := time.NewTicker(1 * time.Hour)
 	defer ticker.Stop()
 	for range ticker.C {
-		m.mu.Lock()
-		now := time.Now()
-		for token, sess := range m.sessions {
-			if now.Sub(sess.lastActive) > 30*time.Minute {
-				delete(m.sessions, token)
-			}
+		if err := m.sessionRepo.CleanExpiredSessions(); err != nil {
+			m.log.Error("Failed to clean expired sessions", "error", err)
 		}
-		m.mu.Unlock()
 	}
 }
 
@@ -226,4 +242,9 @@ func generateToken() string {
 	b := make([]byte, 32)
 	_, _ = rand.Read(b)
 	return hex.EncodeToString(b)
+}
+
+func hashToken(token string) string {
+	hash := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(hash[:])
 }

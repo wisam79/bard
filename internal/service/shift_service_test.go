@@ -12,7 +12,7 @@ import (
 )
 
 func TestShiftService_StartShift_Success(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewShiftService(mockRepo, log)
 
@@ -25,14 +25,14 @@ func TestShiftService_StartShift_Success(t *testing.T) {
 	assert.NotNil(t, shift)
 	assert.Equal(t, "staff-1", shift.StaffID)
 	assert.Equal(t, "John Doe", shift.StaffName)
-	assert.Equal(t, float64(1000), shift.StartCash)
+	assert.Equal(t, int64(1000), shift.StartCash)
 	assert.Equal(t, "active", shift.Status)
 	assert.NotEmpty(t, shift.ID)
 	mockRepo.AssertExpectations(t)
 }
 
 func TestShiftService_StartShift_AlreadyExists(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewShiftService(mockRepo, log)
 
@@ -51,7 +51,7 @@ func TestShiftService_StartShift_AlreadyExists(t *testing.T) {
 }
 
 func TestShiftService_StartShift_RepoError(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewShiftService(mockRepo, log)
 
@@ -65,7 +65,7 @@ func TestShiftService_StartShift_RepoError(t *testing.T) {
 }
 
 func TestShiftService_CloseShift_Success(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewShiftService(mockRepo, log)
 
@@ -84,14 +84,14 @@ func TestShiftService_CloseShift_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, shift)
-	assert.Equal(t, float64(1500), shift.EndCash)
+	assert.Equal(t, int64(1500), shift.EndCash)
 	assert.Equal(t, "closed", shift.Status)
 	assert.NotZero(t, shift.EndTime)
 	mockRepo.AssertExpectations(t)
 }
 
 func TestShiftService_CloseShift_NotFound(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewShiftService(mockRepo, log)
 
@@ -105,7 +105,7 @@ func TestShiftService_CloseShift_NotFound(t *testing.T) {
 }
 
 func TestShiftService_GetActiveShift(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewShiftService(mockRepo, log)
 
@@ -122,7 +122,7 @@ func TestShiftService_GetActiveShift(t *testing.T) {
 }
 
 func TestShiftService_GetActiveShift_None(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewShiftService(mockRepo, log)
 
@@ -136,7 +136,7 @@ func TestShiftService_GetActiveShift_None(t *testing.T) {
 }
 
 func TestShiftService_GetShifts(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewShiftService(mockRepo, log)
 
@@ -156,7 +156,7 @@ func TestShiftService_GetShifts(t *testing.T) {
 }
 
 func TestShiftService_GetShifts_InvalidPagination(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewShiftService(mockRepo, log)
 
@@ -171,7 +171,7 @@ func TestShiftService_GetShifts_InvalidPagination(t *testing.T) {
 }
 
 func TestShiftService_AddCashMovement(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewShiftService(mockRepo, log)
 
@@ -184,7 +184,7 @@ func TestShiftService_AddCashMovement(t *testing.T) {
 }
 
 func TestShiftService_AddCashMovement_Remove(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewShiftService(mockRepo, log)
 
@@ -199,7 +199,7 @@ func TestShiftService_AddCashMovement_Remove(t *testing.T) {
 }
 
 func TestShiftService_GetCashMovements(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewShiftService(mockRepo, log)
 
@@ -218,7 +218,7 @@ func TestShiftService_GetCashMovements(t *testing.T) {
 }
 
 func TestShiftService_GetCashMovements_Empty(t *testing.T) {
-	mockRepo := new(mocks.MockShiftRepository)
+	mockRepo := new(mocks.ShiftRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewShiftService(mockRepo, log)
 

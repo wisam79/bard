@@ -12,7 +12,7 @@ import (
 )
 
 func TestFinanceService_GetExpenses(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewFinanceService(mockRepo, log)
 
@@ -32,7 +32,7 @@ func TestFinanceService_GetExpenses(t *testing.T) {
 }
 
 func TestFinanceService_GetExpenses_WithCategory(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewFinanceService(mockRepo, log)
 
@@ -51,7 +51,7 @@ func TestFinanceService_GetExpenses_WithCategory(t *testing.T) {
 }
 
 func TestFinanceService_CreateExpense(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewFinanceService(mockRepo, log)
 
@@ -74,7 +74,7 @@ func TestFinanceService_CreateExpense(t *testing.T) {
 }
 
 func TestFinanceService_UpdateExpense(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewFinanceService(mockRepo, log)
 
@@ -94,7 +94,7 @@ func TestFinanceService_UpdateExpense(t *testing.T) {
 }
 
 func TestFinanceService_DeleteExpense(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewFinanceService(mockRepo, log)
 
@@ -107,7 +107,7 @@ func TestFinanceService_DeleteExpense(t *testing.T) {
 }
 
 func TestFinanceService_GetExpenseCategories(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewFinanceService(mockRepo, log)
 
@@ -124,7 +124,7 @@ func TestFinanceService_GetExpenseCategories(t *testing.T) {
 }
 
 func TestFinanceService_GetDiscounts(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewFinanceService(mockRepo, log)
 
@@ -143,7 +143,7 @@ func TestFinanceService_GetDiscounts(t *testing.T) {
 }
 
 func TestFinanceService_CreateDiscount(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewFinanceService(mockRepo, log)
 
@@ -163,7 +163,7 @@ func TestFinanceService_CreateDiscount(t *testing.T) {
 }
 
 func TestFinanceService_CreatePayment(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewFinanceService(mockRepo, log)
 
@@ -185,7 +185,7 @@ func TestFinanceService_CreatePayment(t *testing.T) {
 }
 
 func TestFinanceService_GetPayments(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewFinanceService(mockRepo, log)
 
@@ -204,7 +204,7 @@ func TestFinanceService_GetPayments(t *testing.T) {
 }
 
 func TestFinanceService_GetExpenses_Empty(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewFinanceService(mockRepo, log)
 
@@ -219,7 +219,7 @@ func TestFinanceService_GetExpenses_Empty(t *testing.T) {
 }
 
 func TestFinanceService_GetDiscounts_Empty(t *testing.T) {
-	mockRepo := new(mocks.MockFinanceRepository)
+	mockRepo := new(mocks.FinanceRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewFinanceService(mockRepo, log)
 

@@ -12,7 +12,7 @@ import (
 )
 
 func TestSupplierService_GetAll(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSupplierService(mockRepo, log)
 
@@ -31,7 +31,7 @@ func TestSupplierService_GetAll(t *testing.T) {
 }
 
 func TestSupplierService_GetAll_Empty(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSupplierService(mockRepo, log)
 
@@ -45,7 +45,7 @@ func TestSupplierService_GetAll_Empty(t *testing.T) {
 }
 
 func TestSupplierService_GetByID(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSupplierService(mockRepo, log)
 
@@ -61,7 +61,7 @@ func TestSupplierService_GetByID(t *testing.T) {
 }
 
 func TestSupplierService_GetByID_NotFound(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSupplierService(mockRepo, log)
 
@@ -75,7 +75,7 @@ func TestSupplierService_GetByID_NotFound(t *testing.T) {
 }
 
 func TestSupplierService_Create(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSupplierService(mockRepo, log)
 
@@ -97,7 +97,7 @@ func TestSupplierService_Create(t *testing.T) {
 }
 
 func TestSupplierService_Create_EmptyName(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSupplierService(mockRepo, log)
 
@@ -114,7 +114,7 @@ func TestSupplierService_Create_EmptyName(t *testing.T) {
 }
 
 func TestSupplierService_Update(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSupplierService(mockRepo, log)
 
@@ -134,7 +134,7 @@ func TestSupplierService_Update(t *testing.T) {
 }
 
 func TestSupplierService_Update_EmptyName(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSupplierService(mockRepo, log)
 
@@ -152,7 +152,7 @@ func TestSupplierService_Update_EmptyName(t *testing.T) {
 }
 
 func TestSupplierService_Delete(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSupplierService(mockRepo, log)
 
@@ -165,7 +165,7 @@ func TestSupplierService_Delete(t *testing.T) {
 }
 
 func TestSupplierService_Delete_Error(t *testing.T) {
-	mockRepo := new(mocks.MockSupplierRepository)
+	mockRepo := new(mocks.SupplierRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewSupplierService(mockRepo, log)
 

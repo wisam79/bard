@@ -14,7 +14,7 @@ import (
 )
 
 func TestCustomerService_GetAll(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -34,7 +34,7 @@ func TestCustomerService_GetAll(t *testing.T) {
 }
 
 func TestCustomerService_GetByID(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -50,7 +50,7 @@ func TestCustomerService_GetByID(t *testing.T) {
 }
 
 func TestCustomerService_Create(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -103,7 +103,7 @@ func TestCustomerService_Create_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mocks.MockCustomerRepository)
+			mockRepo := new(mocks.CustomerRepository)
 			log := logger.New(logger.LevelInfo, false)
 			svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -125,7 +125,7 @@ func TestCustomerService_Create_Validation(t *testing.T) {
 }
 
 func TestCustomerService_Update(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -148,14 +148,14 @@ func TestCustomerService_Update(t *testing.T) {
 	err := svc.Update(customer)
 
 	assert.NoError(t, err)
-	assert.Equal(t, float64(500), customer.Debt, "Debt should be preserved")
-	assert.Equal(t, float64(200), customer.InstallmentDebt, "InstallmentDebt should be preserved")
-	assert.Equal(t, float64(1000), customer.TotalPurchases, "TotalPurchases should be preserved")
+	assert.Equal(t, int64(500), customer.Debt, "Debt should be preserved")
+	assert.Equal(t, int64(200), customer.InstallmentDebt, "InstallmentDebt should be preserved")
+	assert.Equal(t, int64(1000), customer.TotalPurchases, "TotalPurchases should be preserved")
 	mockRepo.AssertExpectations(t)
 }
 
 func TestCustomerService_Update_PreservesFinancialFields(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -178,14 +178,14 @@ func TestCustomerService_Update_PreservesFinancialFields(t *testing.T) {
 	err := svc.Update(customer)
 
 	assert.NoError(t, err)
-	assert.Equal(t, float64(1000), customer.Debt)
-	assert.Equal(t, float64(500), customer.InstallmentDebt)
-	assert.Equal(t, float64(5000), customer.TotalPurchases)
+	assert.Equal(t, int64(1000), customer.Debt)
+	assert.Equal(t, int64(500), customer.InstallmentDebt)
+	assert.Equal(t, int64(5000), customer.TotalPurchases)
 	mockRepo.AssertExpectations(t)
 }
 
 func TestCustomerService_Delete(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -198,7 +198,7 @@ func TestCustomerService_Delete(t *testing.T) {
 }
 
 func TestCustomerService_GetByPhone(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 
@@ -213,7 +213,7 @@ func TestCustomerService_GetByPhone(t *testing.T) {
 }
 
 func TestCustomerService_GetTop(t *testing.T) {
-	mockRepo := new(mocks.MockCustomerRepository)
+	mockRepo := new(mocks.CustomerRepository)
 	log := logger.New(logger.LevelInfo, false)
 	svc := NewCustomerService(mockRepo, cache.NewCustomerCache(), log)
 

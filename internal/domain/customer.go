@@ -7,9 +7,9 @@ type Customer struct {
 	ID              string    `gorm:"primaryKey" json:"id"`
 	Name            string    `gorm:"index" json:"name"`
 	Phone           string    `gorm:"uniqueIndex" json:"phone"`
-	Debt            float64   `json:"debt"`
-	InstallmentDebt float64   `json:"installmentDebt"`
-	TotalPurchases  float64   `json:"totalPurchases"`
+	Debt  int64  `json:"debt"`
+	InstallmentDebt  int64  `json:"installmentDebt"`
+	TotalPurchases  int64  `json:"totalPurchases"`
 	LastVisit       string    `json:"lastVisit"`
 	Points          int       `json:"points"`
 	Notes           string    `json:"notes,omitempty"`
@@ -25,7 +25,7 @@ type Supplier struct {
 	Phone       string    `json:"phone"`
 	Email       string    `json:"email,omitempty"`
 	Notes       string    `json:"notes,omitempty"`
-	Balance     float64   `json:"balance"`
+	Balance  int64  `json:"balance"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
@@ -35,7 +35,7 @@ type Payment struct {
 	ID         uint      `gorm:"primaryKey;autoIncrement" json:"id"`
 	SaleID     string    `gorm:"index" json:"saleId"`
 	CustomerID string    `gorm:"index" json:"customerId"`
-	Amount     float64   `json:"amount"`
+	Amount  int64  `json:"amount"`
 	Method     string    `json:"method"`
 	Note       string    `json:"note,omitempty"`
 	Timestamp  int64     `gorm:"index" json:"timestamp"`

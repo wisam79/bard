@@ -51,13 +51,13 @@ func (s *KitService) CalculateKitPrice(kitID string) (float64, error) {
 		return 0, err
 	}
 	if kit.Price > 0 {
-		return kit.Price, nil
+		return float64(kit.Price), nil
 	}
-	var total float64
+	var total int64
 	for _, item := range kit.Items {
-		total += item.UnitPrice * item.Qty
+		total += item.UnitPrice * int64(item.Qty)
 	}
-	return total, nil
+	return float64(total), nil
 }
 
 func (s *KitService) ValidateKitStock(kitID string, qty float64) (bool, error) {
